@@ -39,8 +39,15 @@ path = "src/owlstation/version.py"
 [tool.hatch.metadata]
 allow-direct-references = true
 
+[tool.hatch.build]
+include = [
+  "src/owlstation/conf/**/*.yaml",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/owlstation"]
+
+
 
 # -------------------------------
 # Ruff configuration

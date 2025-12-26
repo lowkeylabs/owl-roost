@@ -2,6 +2,8 @@ import sys
 
 from loguru import logger
 
+logger.remove()
+
 LOG_LEVELS = {
     "TRACE",
     "DEBUG",
@@ -14,6 +16,8 @@ LOG_LEVELS = {
 
 
 def configure_logging(log_level: str = "INFO"):
+    if not log_level:
+        return
     log_level = log_level.upper()
 
     if log_level not in LOG_LEVELS:
