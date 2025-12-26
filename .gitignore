@@ -57,3 +57,24 @@ Thumbs.db
 # VS Code
 .vscode/
 *.code-workspace
+
+# -------------------------------
+# Environment / password files
+# -------------------------------
+
+# Real environment files (secrets)
+.env
+*.env
+*.env.*
+.env.*
+
+# Backup / editor artifacts
+.env~
+.env.bak
+.env.backup
+.env.old
+.env.save
+.env.swp
+
+# Allow documented example only
+!.env.example
