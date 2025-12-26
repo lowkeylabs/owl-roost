@@ -5,12 +5,11 @@ from hydra.core.hydra_config import HydraConfig
 from loguru import logger
 from omegaconf import OmegaConf
 
-from owlstation.solver_info import get_owl_solver_info
+from owlstation.core.configure_logging import LOG_LEVELS, configure_logging
+from owlstation.core.hydra_loader import load_hydra_config
+from owlstation.core.solver_info import get_owl_solver_info
 from owlstation.version import __version__
 
-from ..configure_logging import LOG_LEVELS, configure_logging
-from ..hydra_loader import load_hydra_config
-from .cmd_hydra import cmd_hydra
 from .cmd_init import cmd_init
 from .cmd_list import cmd_list
 from .cmd_run import cmd_run
@@ -60,7 +59,6 @@ def cli(ctx, log_level: str | None):
 cli.add_command(cmd_init)
 cli.add_command(cmd_list)
 cli.add_command(cmd_run)
-cli.add_command(cmd_hydra)
 
 
 @cli.command()
