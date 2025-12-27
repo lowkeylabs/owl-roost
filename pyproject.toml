@@ -13,6 +13,7 @@ dependencies = [
     # OWL is under active development; pin to commit for reproducibility
     "owlplanner @ git+https://github.com/mdlacasse/Owl.git@7abca00",  # 2025-12-25
     "python-dotenv>=1.2.1",
+    "hydra-joblib-launcher>=1.2.0",
 ]
 
 [project.optional-dependencies]

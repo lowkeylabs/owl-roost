@@ -1,28 +1,71 @@
+# src/owlstation/cli/cmd_run.py
+
 from pathlib import Path
 
 import click
-import owlplanner as owl
+from hydra import compose, initialize_config_dir
 from loguru import logger
 from openpyxl import load_workbook
 
+from owlstation.core.override_parser import hydra_overrides_to_dict
+from owlstation.core.owl_runner import run_single_case
 
-def insert_text_file_as_first_sheet(
+# ---------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------
+
+
+def load_hydra_cfg(overrides=None):
+    """
+    Load Hydra configuration from ./conf relative to the current working directory.
+
+    Supports SINGLE-RUN overrides only.
+    """
+    conf_dir = Path.cwd() / "conf"
+
+    if not conf_dir.exists():
+        raise RuntimeError(
+            f"Hydra config directory not found: {conf_dir}\n"
+            "Expected to run from a directory containing ./conf"
+        )
+
+    with initialize_config_dir(
+        config_dir=str(conf_dir),
+        version_base=None,
+    ):
+        return compose(
+            config_name="config",
+            overrides=overrides or [],
+        )
+
+
+def reject_sweeps(overrides):
+    """
+    Explicitly reject Hydra multirun / sweep syntax.
+    """
+    for tok in overrides:
+        if tok in {"-m", "--multirun"} or "," in tok:
+            raise click.UsageError(
+                "Parameter sweeps are not supported in `owls run`.\n\n"
+                "Use single-value overrides only, e.g.:\n"
+                "  owls run Case.toml -- longevity.jack=85 longevity.jill=90\n\n"
+                "For sweeps, use the Hydra runner."
+            )
+
+
+def insert_text_as_first_sheet(
     xlsx_path: Path,
-    text_path: Path,
-    sheet_name: str = "Config (.toml)",
+    text: str,
+    sheet_name: str = "Config (resolved TOML)",
 ):
     """
-    Insert the contents of a text file as the first worksheet in an Excel file.
-    Each line goes into its own row (column A).
+    Insert provided text (resolved TOML) as the first worksheet.
     """
     wb = load_workbook(xlsx_path)
-
-    # Create new sheet at position 0
     ws = wb.create_sheet(title=sheet_name, index=0)
 
-    with text_path.open("r", encoding="utf-8") as f:
-        for row_idx, line in enumerate(f, start=1):
-            ws.cell(row=row_idx, column=1, value=line.rstrip())
+    for row_idx, line in enumerate(text.splitlines(), start=1):
+        ws.cell(row=row_idx, column=1, value=line)
 
     wb.save(xlsx_path)
 
@@ -31,15 +74,12 @@ def validate_toml(ctx, param, value: Path):
     if value is None:
         return None
 
-    # If no suffix, append .toml
     if value.suffix == "":
         value = value.with_suffix(".toml")
 
-    # Enforce .toml extension
     if value.suffix.lower() != ".toml":
         raise click.BadParameter("File must have a .toml extension")
 
-    # Check existence AFTER normalization
     if not value.exists():
         raise click.BadParameter(f"File '{value}' does not exist")
 
@@ -49,37 +89,83 @@ def validate_toml(ctx, param, value: Path):
     return value
 
 
-@click.command(name="run")
+# ---------------------------------------------------------------------
+# CLI command
+# ---------------------------------------------------------------------
+
+
+@click.command(
+    name="run",
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True,
+    ),
+)
 @click.argument(
     "filename",
     type=click.Path(exists=False, dir_okay=False, path_type=Path),
     callback=validate_toml,
 )
-def cmd_run(filename: Path):
-    """Run the solver for an input OWL plan file.
-
-    FILENAME is the OWL plan file to run. If no extension is provided,
-    .toml will be appended. The file must exist.
-
-    An output Excel file with results will be created in the current directory.
-    The output filename is derived from the input filename by appending
-    '_results.xlsx' to the stem of the input filename.
-
-    The input TOML file will be inserted as the first worksheet in the output Excel file
-    for reference.
-
+@click.pass_context
+def cmd_run(ctx, filename: Path):
     """
-    logger.debug(f"Executing the run command with file: {filename}")
+    Run the solver for an input OWL plan file.
 
-    plan = owl.readConfig(str(filename), logstreams="loguru", readContributions=False)
-    plan.solve(plan.objective, plan.solverOptions)
-    click.echo(f"Case status: {plan.caseStatus}")
-    if plan.caseStatus == "solved":
-        output_filename = filename.with_name(filename.stem + "_results.xlsx")
-        plan.saveWorkbook(basename=output_filename, overwrite=True)
-        # Insert TOML file as first worksheet
-        insert_text_file_as_first_sheet(
+    - The TOML file defines the base case
+    - Hydra overrides are applied to TOML BEFORE execution
+    - The resolved TOML is embedded in the output workbook
+    - Parameter sweeps are NOT supported here
+    """
+
+    logger.debug("Executing run command with file: {}", filename)
+    logger.debug("Hydra overrides received: {}", ctx.args)
+
+    # -----------------------------
+    # Reject sweep syntax
+    # -----------------------------
+    reject_sweeps(ctx.args)
+
+    # -----------------------------
+    # Load Hydra configuration
+    # -----------------------------
+    load_hydra_cfg(overrides=ctx.args)
+
+    # -----------------------------
+    # Extract EXACT Hydra overrides
+    # -----------------------------
+    overrides = hydra_overrides_to_dict(ctx.args)
+
+    logger.info("Scenario overrides: {}", overrides)
+
+    # -----------------------------
+    # Output filename
+    # -----------------------------
+    # Keep filename stable; scenario details live in:
+    #   - embedded resolved TOML
+    #   - Hydra metadata
+    output_filename = filename.with_suffix(".xlsx")
+
+    # -----------------------------
+    # Run OWL via core runner
+    # -----------------------------
+    result = run_single_case(
+        case_file=str(filename),
+        overrides=overrides,
+        output_file=str(output_filename),
+    )
+
+    click.echo(f"Case status: {result.status}")
+
+    if result.status != "solved":
+        return
+
+    # -----------------------------
+    # Insert resolved TOML
+    # -----------------------------
+    if result.adjusted_toml:
+        insert_text_as_first_sheet(
             xlsx_path=output_filename,
-            text_path=filename,
+            text=result.adjusted_toml,
         )
-        click.echo(f"Results saved to: {output_filename}")
+
+    click.echo(f"Results saved to: {output_filename}")

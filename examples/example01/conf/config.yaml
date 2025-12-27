@@ -1,0 +1,12 @@
+defaults:
+  - logging: default
+  - longevity: default
+  - case: default
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
+  - override hydra/launcher: joblib
+  - _self_
+
+hydra:
+  launcher:
+    n_jobs: 1
