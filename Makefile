@@ -1,14 +1,8 @@
-.PHONY: help
+.PHONY: help sync pre-commit pytest test
 
 help:
 	cat Makefile
 
-
-.PHONY: dev
-dev:
-	uv sync --extra dev
-
-.PHONY: sync pre-commit pytest test
 sync:
 	uv sync --extra dev
 
