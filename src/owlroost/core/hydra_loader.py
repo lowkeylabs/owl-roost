@@ -13,11 +13,11 @@ def load_hydra_config(overrides=None):
 
     Primary config source:
       1. ./conf (if present)
-      2. pkg://owlstation.conf
+      2. pkg://owlroost.conf
 
     Secondary (fallback) sources:
-      - ~/.config/owlstation/conf
-      - pkg://owlstation.conf
+      - ~/.config/owlroost/conf
+      - pkg://owlroost.conf
     """
     try:
         overrides = overrides or []
@@ -29,26 +29,26 @@ def load_hydra_config(overrides=None):
         if (cwd / "conf").exists():
             primary_config_dir = cwd / "conf"
         else:
-            import owlstation
+            import owlroost
 
-            primary_config_dir = Path(owlstation.__file__).parent / "conf"
+            primary_config_dir = Path(owlroost.__file__).parent / "conf"
 
         # -------- Secondary search paths --------
         search_paths = []
 
-        user_conf = xdg_config_home / "owlstation" / "conf"
+        user_conf = xdg_config_home / "owlroost" / "conf"
         if user_conf.exists():
             search_paths.append(f"file://{user_conf}")
 
         # Package defaults ALWAYS available
-        search_paths.append("pkg://owlstation.conf")
+        search_paths.append("pkg://owlroost.conf")
 
         hydra_overrides = [f"hydra.searchpath=[{','.join(search_paths)}]"]
 
         with initialize_config_dir(
             version_base=None,
             config_dir=str(primary_config_dir),
-            job_name="owlstation",
+            job_name="owlroost",
         ):
             cfg = compose(
                 config_name="config",

@@ -1,4 +1,4 @@
-# src/owlstation/cli/cmd_run.py
+# src/owlroost/cli/cmd_run.py
 
 from pathlib import Path
 
@@ -6,7 +6,7 @@ import click
 from loguru import logger
 from openpyxl import load_workbook
 
-from owlstation.core.owl_runner import run_single_case
+from owlroost.core.owl_runner import run_single_case
 
 
 def insert_text_as_first_sheet(

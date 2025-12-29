@@ -5,10 +5,10 @@ from hydra.core.hydra_config import HydraConfig
 from loguru import logger
 from omegaconf import OmegaConf
 
-from owlstation.core.configure_logging import LOG_LEVELS, configure_logging
-from owlstation.core.hydra_loader import load_hydra_config
-from owlstation.core.solver_info import get_owl_solver_info
-from owlstation.version import __version__
+from owlroost.core.configure_logging import LOG_LEVELS, configure_logging
+from owlroost.core.hydra_loader import load_hydra_config
+from owlroost.core.solver_info import get_owl_solver_info
+from owlroost.version import __version__
 
 from .cmd_init import cmd_init
 from .cmd_list import cmd_list
@@ -28,7 +28,7 @@ if early_level in LOG_LEVELS:
     default=None,
     help="Set logging verbosity.",
 )
-@click.version_option(version=__version__, prog_name="owlstation")
+@click.version_option(version=__version__, prog_name="owlroost")
 @click.pass_context
 def cli(ctx, log_level: str | None):
     """SSG command-line interface."""

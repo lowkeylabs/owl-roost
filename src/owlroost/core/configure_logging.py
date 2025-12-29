@@ -1,4 +1,4 @@
-# src/owlstation/core/configure_logging.py
+# src/owlroost/core/configure_logging.py
 
 import sys
 from typing import Union

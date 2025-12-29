@@ -1,4 +1,4 @@
-# src/owlstation/cli/cmd_run.py
+# src/owlroost/cli/cmd_run.py
 
 from pathlib import Path
 
@@ -7,8 +7,8 @@ from hydra import compose, initialize_config_dir
 from loguru import logger
 from openpyxl import load_workbook
 
-from owlstation.core.override_parser import hydra_overrides_to_dict
-from owlstation.core.owl_runner import run_single_case
+from owlroost.core.override_parser import hydra_overrides_to_dict
+from owlroost.core.owl_runner import run_single_case
 
 # ---------------------------------------------------------------------
 # Helpers

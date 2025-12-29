@@ -1,6 +1,6 @@
-# OWLCLI - a Command Line Interface for OWL
+# OWLR - a Command Line Interface for OWL-ROOST
 
-OWLCLI is a command line interface tool to streamline the listing, running and experimenting with OWL plan files outside the streamlit interface.
+`owlroost` or `owlr` is a command line interface tool to streamline the listing, running and experimenting with OWL case files outside the streamlit interface.
 
 ## Installation
 

@@ -23,9 +23,9 @@ def init_project_config(force: bool = False):
     logging_dir.mkdir(parents=True, exist_ok=True)
 
     # Copy config.yaml template
-    with resources.path("owlstation.conf", "config.yaml") as src:
+    with resources.path("owlroost.conf", "config.yaml") as src:
         shutil.copy(src, conf_dir / "config.yaml")
 
     # Copy logging/default.yaml template
-    with resources.path("owlstation.conf.logging", "default.yaml") as src:
+    with resources.path("owlroost.conf.logging", "default.yaml") as src:
         shutil.copy(src, logging_dir / "default.yaml")

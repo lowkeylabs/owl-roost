@@ -1,7 +1,7 @@
 [project]
-name = "owl-station"
-version = "0.2.0"
-description = "OWL-Station - experimental design and orchestration framework built on Optimal Wealth Laboratory (OWL)"
+name = "owl-roost"
+version = "0.3.0"
+description = "OWL-ROOST - Retirement Options and Outcomes Studies Toolkit"
 readme = "README.md"
 requires-python = ">=3.13"
 
@@ -20,11 +20,13 @@ dependencies = [
 dev = [
     "ruff>=0.6.9",
     "pre-commit>=3.7.0",
+    "pytest>=9.0.2",
 ]
 
+
 [project.scripts]
-owlstation = "owlstation.cli._main:cli"
-owls       = "owlstation.cli._main:cli"
+owlroost = "owlroost.cli._main:cli"
+owlr     = "owlroost.cli._main:cli"
 
 [build-system]
 requires = ["hatchling"]
@@ -35,18 +37,18 @@ build-backend = "hatchling.build"
 # -------------------------------
 
 [tool.hatch.version]
-path = "src/owlstation/version.py"
+path = "src/owlroost/version.py"
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build]
 include = [
-  "src/owlstation/conf/**/*.yaml",
+  "src/owlroost/conf/**/*.yaml",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/owlstation"]
+packages = ["src/owlroost"]
 
 
 
@@ -84,3 +86,9 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,7 +1,7 @@
 import click
 from loguru import logger
 
-from owlstation.core.config_init import init_project_config
+from owlroost.core.config_init import init_project_config
 
 
 @click.command("init")

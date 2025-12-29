@@ -1,4 +1,4 @@
-# src/owlstation/core/owl_runner.py
+# src/owlroost/core/owl_runner.py
 
 import json
 from copy import deepcopy
@@ -12,7 +12,7 @@ import owlplanner as owl
 import toml
 from loguru import logger
 
-from owlstation.core.metrics_from_plan import write_metrics_json
+from owlroost.core.metrics_from_plan import write_metrics_json
 
 # ---------------------------------------------------------------------
 # Result object
