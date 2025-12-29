@@ -10,4 +10,6 @@ dev:
 
 .PHONY: pre-commit
 pre-commit:
-	uv run python -m pre_commit run --all-files
+	uv sync --extra dev
+	uv run pre-commit run --all-files
+	uv run pytest

@@ -8,7 +8,7 @@ from owlroost.core.config_init import init_project_config
 @click.option("--force", is_flag=True, help="Overwrite existing config.")
 def cmd_init(force: bool):
     """
-    Initialize an OWL-Station project configuration.
+    Initialize an OWL-ROOST ./conf folder
     """
     init_project_config(force=force)
-    logger.success("OWL-Station configuration initialized in ./conf")
+    logger.success("OWL-ROOST configuration initialized in ./conf")

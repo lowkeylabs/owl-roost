@@ -13,7 +13,7 @@ from loguru import logger
 )
 def cmd_list(directory):
     """
-    List OWL plan files in a directory.
+    List OWL case files in a directory.
 
     DIRECTORY defaults to the current directory.
     """

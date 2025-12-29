@@ -65,10 +65,9 @@ def validate_toml(ctx, param, value: Path):
 @click.pass_context
 def cmd_run(ctx, filename: Path):
     """
-    Run the solver for an input OWL plan file.
+    Run the OWLsolver for an input case (TOML) file.
 
     - The TOML file defines the base case
-    - Hydra overrides are applied to TOML BEFORE execution
     - The resolved TOML is embedded in the output workbook
     - Parameter sweeps are NOT supported here
     """
