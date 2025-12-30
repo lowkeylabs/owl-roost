@@ -92,6 +92,22 @@ def cmd_results(
     effective: bool,
     nominal: bool,
 ):
+    """
+    Display case and run results from the ./results directory.
+
+    roost results [CASE] [RUN_ID]
+
+    roost results - displays summary of runs by case name found in the ./results directory
+
+    \b
+    roost results jack+jill
+    roost results 0           - displays detailed breakdown of runs for the specified case
+
+    \b
+    roost results jack+jill 0 - displays detailed results for the specified run ID
+
+    Use options to customize the output for a specific run.
+    """
     if diff and diff_project:
         raise click.ClickException("Use only one of --diff or --diff-project")
 

@@ -27,7 +27,23 @@ if early_level in LOG_LEVELS:
 @click.version_option(version=__version__, prog_name="owlroost")
 @click.pass_context
 def cli(ctx, log_level: str | None):
-    """OWL-ROOST command-line interface."""
+    """ROOST - Retirement Options and Outcomes Studies Toolkit
+
+    Examples:
+
+    \b
+    roost cases                       <- show all case/TOML files in current directory
+    roost run Case_jack+jill.toml     <- run a case
+    roost run 0                       <- run a case by its ID from 'roost cases' or 'roost run'
+    roost run 0 longevity.values.0=99 <- run OWL on case ID 0, first setting longevity for person 0 to 99
+    roost results                     <- show results of all runs for all cases in ./results
+    roost results jack+jill           <- show results for case 'jack+jill'
+    roost results 0                   <- show results for case ID 0 from 'roost results'
+    roost results 0 0                 <- show results for run ID 0 of case ID 0 from 'roost results'
+    roost results 0 0 --summary       <- show summary of run ID 0 of case ID 0 from 'roost results'
+    roost results 0 0 --original      <- show original TOML case file ...
+    roost results 0 0 --effective     <- show effective TOML case file ...
+    """
     ctx.ensure_object(dict)
 
     configure_logging(log_level)
