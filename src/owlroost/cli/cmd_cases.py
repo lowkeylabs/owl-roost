@@ -1,18 +1,18 @@
-from pathlib import Path
 import tomllib
+from pathlib import Path
 
 import click
 from loguru import logger
-
 
 # ======================================================================
 # Main command
 # ======================================================================
 
+
 @click.command(name="cases")
 @click.argument(
     "selector",
-    nargs=-1,   # allow multiple selectors
+    nargs=-1,  # allow multiple selectors
 )
 def cmd_cases(selector):
     """
@@ -113,10 +113,7 @@ def cmd_cases(selector):
         if len(case_name) > 20:
             case_name = case_name[:16] + "..."
 
-        hfp_name = (
-            data.get("Household Financial Profile", {})
-                .get("HFP file name", "")
-        )
+        hfp_name = data.get("Household Financial Profile", {}).get("HFP file name", "")
 
         opt_display = _format_optimization(data)
 
@@ -133,6 +130,7 @@ def cmd_cases(selector):
 # Helpers
 # ======================================================================
 
+
 def _format_optimization(data: dict) -> str:
     opt_block = data.get("Optimization Parameters", {})
     solver_opts = data.get("Solver Options", {})
@@ -141,19 +139,11 @@ def _format_optimization(data: dict) -> str:
 
     if objective == "maxSpending":
         target = solver_opts.get("bequest")
-        return (
-            f"maxSpending (bequest={target})"
-            if target is not None
-            else "maxSpending"
-        )
+        return f"maxSpending (bequest={target})" if target is not None else "maxSpending"
 
     if objective == "maxBequest":
         target = solver_opts.get("netSpending")
-        return (
-            f"maxBequest (netSpending={target})"
-            if target is not None
-            else "maxBequest"
-        )
+        return f"maxBequest (netSpending={target})" if target is not None else "maxBequest"
 
     return objective or ""
 
@@ -161,6 +151,7 @@ def _format_optimization(data: dict) -> str:
 # ======================================================================
 # Single-case display (UNCHANGED)
 # ======================================================================
+
 
 def _display_case(path: Path):
     """
@@ -217,9 +208,13 @@ def _display_case(path: Path):
         if fixed.get("Pension monthly amounts") or fixed.get("Social security PIA amounts"):
             click.echo("FIXED INCOME")
             if fixed.get("Pension monthly amounts"):
-                click.echo(f"  Pensions (monthly): {', '.join(map(str, fixed['Pension monthly amounts']))}")
+                click.echo(
+                    f"  Pensions (monthly): {', '.join(map(str, fixed['Pension monthly amounts']))}"
+                )
             if fixed.get("Social security PIA amounts"):
-                click.echo(f"  Social Security PIA: {', '.join(map(str, fixed['Social security PIA amounts']))}")
+                click.echo(
+                    f"  Social Security PIA: {', '.join(map(str, fixed['Social security PIA amounts']))}"
+                )
             click.echo()
 
     rates = data.get("Rates Selection", {})
@@ -287,6 +282,7 @@ def _display_case(path: Path):
 # Comparison display
 # ======================================================================
 
+
 def _display_case_compare(paths: list[Path]):
     """
     Display a side-by-side comparison of multiple ROOST case files.
@@ -330,20 +326,25 @@ def _display_case_compare(paths: list[Path]):
         ("START DATE", lambda d: get(d, "Basic Info", "Start date")),
         ("LIFE EXPECTANCY", lambda d: fmt(get(d, "Basic Info", "Life expectancy"))),
         ("TAXABLE ASSETS", lambda d: sum(get(d, "Assets", "taxable savings balances") or [])),
-        ("TAX-DEFERRED ASSETS", lambda d: sum(get(d, "Assets", "tax-deferred savings balances") or [])),
+        (
+            "TAX-DEFERRED ASSETS",
+            lambda d: sum(get(d, "Assets", "tax-deferred savings balances") or []),
+        ),
         ("TAX-FREE ASSETS", lambda d: sum(get(d, "Assets", "tax-free savings balances") or [])),
         ("OPT OBJECTIVE", lambda d: get(d, "Optimization Parameters", "Objective")),
-        ("OPT TARGET", lambda d:
-            f"bequest={get(d,'Solver Options','bequest')}"
+        (
+            "OPT TARGET",
+            lambda d: f"bequest={get(d,'Solver Options','bequest')}"
             if get(d, "Optimization Parameters", "Objective") == "maxSpending"
             else f"netSpending={get(d,'Solver Options','netSpending')}"
             if get(d, "Optimization Parameters", "Objective") == "maxBequest"
-            else "."
+            else ".",
         ),
-        ("ROTH EXCLUDED", lambda d:
-            "no one excluded"
+        (
+            "ROTH EXCLUDED",
+            lambda d: "no one excluded"
             if get(d, "Solver Options", "noRothConversions") == "None"
-            else fmt(get(d, "Solver Options", "noRothConversions"))
+            else fmt(get(d, "Solver Options", "noRothConversions")),
         ),
         ("ROTH START YEAR", lambda d: get(d, "Solver Options", "startRothConversions")),
         ("MAX ROTH CONV", lambda d: get(d, "Solver Options", "maxRothConversion")),
