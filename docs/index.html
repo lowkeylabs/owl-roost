@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>OWL-Station</title>
+<title>ROOST</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -81,7 +81,7 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">OWL-Station</span>
+    <span class="navbar-title">ROOST</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -93,10 +93,6 @@ ul.task-list li input[type="checkbox"] {
   <li class="nav-item">
     <a class="nav-link active" href="./index.html" aria-current="page">
 <span class="menu-text">Home</span></a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="./about.html">
-<span class="menu-text">About</span></a>
   </li>
 </ul>
           </div> <!-- /navcollapse -->
@@ -114,7 +110,25 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
 
   <ul>
-  <li><a href="#how-owl-and-owl-station-differ" id="toc-how-owl-and-owl-station-differ" class="nav-link active" data-scroll-target="#how-owl-and-owl-station-differ">How OWL and OWL-Station Differ</a></li>
+  <li><a href="#roost-and-owl-complementary-tools" id="toc-roost-and-owl-complementary-tools" class="nav-link active" data-scroll-target="#roost-and-owl-complementary-tools">ROOST and OWL: Complementary Tools</a>
+  <ul class="collapse">
+  <li><a href="#how-owl-and-roost-differ" id="toc-how-owl-and-roost-differ" class="nav-link" data-scroll-target="#how-owl-and-roost-differ">How OWL and ROOST Differ</a></li>
+  <li><a href="#what-owl-does" id="toc-what-owl-does" class="nav-link" data-scroll-target="#what-owl-does">What OWL Does</a></li>
+  <li><a href="#what-roost-adds" id="toc-what-roost-adds" class="nav-link" data-scroll-target="#what-roost-adds">What ROOST Adds</a></li>
+  <li><a href="#core-concepts-in-roost" id="toc-core-concepts-in-roost" class="nav-link" data-scroll-target="#core-concepts-in-roost">Core Concepts in ROOST</a>
+  <ul class="collapse">
+  <li><a href="#options" id="toc-options" class="nav-link" data-scroll-target="#options"><strong>Options</strong></a></li>
+  <li><a href="#choices" id="toc-choices" class="nav-link" data-scroll-target="#choices"><strong>Choices</strong></a></li>
+  <li><a href="#cases" id="toc-cases" class="nav-link" data-scroll-target="#cases"><strong>Cases</strong></a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><strong>Results</strong></a></li>
+  <li><a href="#conceptual-summary" id="toc-conceptual-summary" class="nav-link" data-scroll-target="#conceptual-summary">Conceptual Summary</a></li>
+  </ul></li>
+  <li><a href="#a-clear-boundary" id="toc-a-clear-boundary" class="nav-link" data-scroll-target="#a-clear-boundary">A Clear Boundary</a></li>
+  <li><a href="#typical-workflow" id="toc-typical-workflow" class="nav-link" data-scroll-target="#typical-workflow">Typical Workflow</a></li>
+  <li><a href="#feedback-loop-to-owl" id="toc-feedback-loop-to-owl" class="nav-link" data-scroll-target="#feedback-loop-to-owl">Feedback Loop to OWL</a></li>
+  <li><a href="#relationship-to-interactive-tools" id="toc-relationship-to-interactive-tools" class="nav-link" data-scroll-target="#relationship-to-interactive-tools">Relationship to Interactive Tools</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -123,7 +137,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">OWL-Station</h1>
+<h1 class="title">ROOST</h1>
 </div>
 
 
@@ -140,11 +154,22 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p><strong>OWL-Station</strong> is a research and experimental design framework built on top of <a href="https://github.com/mdlacasse/Owl">Optimal Wealth Laboratory (OWL)</a>.</p>
-<p>OWL-Station does <strong>not</strong> replace OWL. OWL-Station is <strong>not</strong> a retirement planner.</p>
-<p>Instead, OWL-Station provides an infrastructure for <strong>designing, executing, and analyzing controlled experiments</strong> that use OWL as the core optimization engine.</p>
-<section id="how-owl-and-owl-station-differ" class="level2">
-<h2 class="anchored" data-anchor-id="how-owl-and-owl-station-differ">How OWL and OWL-Station Differ</h2>
+<p><strong>ROOST</strong> (Retirement Options and Outcomes Studies Tool) provides tools for the exploration and study of retirement questions.</p>
+<p>ROOST encapsulates four key concepts:</p>
+<ul>
+<li><p>Options — A focused retirement question that organizes the exploration of alternative strategies in order to understand trade-offs and risks. <em>Examples: Roth conversion options, early retirement options, spending guardrail options, asset class mix options.</em></p></li>
+<li><p>Choices — Distinct courses of action within an options set, each representing a different way to address the underlying retirement question. <em>Examples: no Roth conversions, partial annual conversions, aggressive bracket-filling conversions; retire at 62 vs 65 vs 67; fixed real spending vs guardrail spending.</em></p></li>
+<li><p>Cases — Fully specified OWL cases that define the assumptions and inputs for a particular choice, independent of any computed outcomes. <em>Examples:</em> a baseline OWL case with no overrides, a case with modified tax assumptions, a case with altered asset allocation or contribution rules.</p></li>
+<li><p>Results — The artifacts produced by running OWL on a case, used to evaluate outcomes, uncertainty, and trade-offs across choices. <em>Examples: all the numbers in the current run synopsis, projected balance trajectories, lifetime tax paid, probability of shortfall, percentile outcomes, charts and summary tables.</em></p></li>
+</ul>
+<p>In summary: <strong>Options</strong> define the questions; <strong>Choices</strong> define the alternatives; <strong>Cases</strong> define the assumptions; <strong>Results</strong> define the evidence</p>
+<section id="roost-and-owl-complementary-tools" class="level1">
+<h1>ROOST and OWL: Complementary Tools</h1>
+<p><strong>ROOST does not replace OWL.</strong> ROOST <strong>builds on OWL</strong> by organizing and comparing OWL results in ways that help people understand choices, trade-offs, and risk.</p>
+<p>OWL is the optimization engine. ROOST is the decision-support environment.</p>
+<p>Together, they form a rigorous framework for exploring retirement questions under uncertainty.</p>
+<section id="how-owl-and-roost-differ" class="level2">
+<h2 class="anchored" data-anchor-id="how-owl-and-roost-differ">How OWL and ROOST Differ</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 31%">
@@ -159,20 +184,179 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><strong>OWL (Optimal Wealth Laboratory)</strong></td>
-<td>Optimizes a <em>single</em> retirement scenario under a specified set of assumptions</td>
+<td>Optimizes a <em>single</em> retirement case under a specified set of assumptions</td>
 </tr>
 <tr class="even">
-<td><strong>OWL-Station</strong></td>
-<td>Designs and executes <em>experiments</em> that systematically vary those assumptions</td>
+<td><strong>ROOST</strong></td>
+<td>Organizes and compares <em>multiple</em> OWL cases to explore options and trade-offs</td>
 </tr>
 </tbody>
 </table>
 <p>Put simply:</p>
 <blockquote class="blockquote">
-<p><strong>OWL optimizes retirement scenarios. OWL-Station studies the sensitivity of those optimizations.</strong></p>
+<p><strong>OWL computes optimal outcomes.</strong> <strong>ROOST helps you understand your options.</strong></p>
 </blockquote>
+</section>
+<section id="what-owl-does" class="level2">
+<h2 class="anchored" data-anchor-id="what-owl-does">What OWL Does</h2>
+<p><a href="https://github.com/mdlacasse/Owl">OWL</a> is a modeling framework for exploring retirement financial decisions under uncertainty. It uses rigorous mathematical optimization to compute optimal strategies under a given set of assumptions.</p>
+<p>OWL:</p>
+<ul>
+<li><p>Optimizes a <strong>single case</strong></p></li>
+<li><p>Uses <strong>linear programming</strong></p></li>
+<li><p>Solves for either:</p>
+<ul>
+<li>maximum sustainable spending, or</li>
+<li>maximum after-tax bequest</li>
+</ul></li>
+<li><p>Applies detailed constraints involving:</p>
+<ul>
+<li>taxes</li>
+<li>Roth conversions</li>
+<li>Social Security</li>
+<li>Medicare and IRMAA</li>
+</ul></li>
+<li><p>Re-optimizes under each run rather than simulating fixed behavior</p></li>
+</ul>
+<p>OWL is a <strong>laboratory instrument</strong>, not a prescriptive planner.</p>
+</section>
+<section id="what-roost-adds" class="level2">
+<h2 class="anchored" data-anchor-id="what-roost-adds">What ROOST Adds</h2>
+<p>Retirement decisions cannot be planned with certainty. Markets are volatile, tax rules change, and life rarely follows a single path.</p>
+<p>What <em>can</em> be done is to understand:</p>
+<ul>
+<li>how sensitive outcomes are to assumptions,</li>
+<li>how different strategies trade risk for reward, and</li>
+<li>which choices feel robust across uncertainty.</li>
+</ul>
+<p><strong>ROOST exists to support that understanding.</strong></p>
+<p>ROOST provides structure for:</p>
+<ul>
+<li>organizing retirement questions,</li>
+<li>defining meaningful alternatives,</li>
+<li>executing consistent OWL runs, and</li>
+<li>comparing results across choices.</li>
+</ul>
+</section>
+<section id="core-concepts-in-roost" class="level2">
+<h2 class="anchored" data-anchor-id="core-concepts-in-roost">Core Concepts in ROOST</h2>
+<p>ROOST is built around four core concepts:</p>
+<section id="options" class="level3">
+<h3 class="anchored" data-anchor-id="options"><strong>Options</strong></h3>
+<p>A focused retirement question that organizes the exploration of alternative strategies in order to understand trade-offs and risks.</p>
+<p><em>Examples:</em></p>
+<ul>
+<li>Roth conversion options</li>
+<li>Early retirement options</li>
+<li>Spending guardrail options</li>
+<li>Asset class mix options</li>
+</ul>
+</section>
+<section id="choices" class="level3">
+<h3 class="anchored" data-anchor-id="choices"><strong>Choices</strong></h3>
+<p>Distinct courses of action within an options set, each representing a different way to address the underlying retirement question.</p>
+<p><em>Examples:</em></p>
+<ul>
+<li>No Roth conversions vs partial vs aggressive conversions</li>
+<li>Retire at 62 vs 65 vs 67</li>
+<li>Fixed real spending vs guardrail spending</li>
+</ul>
+<hr>
+</section>
+<section id="cases" class="level3">
+<h3 class="anchored" data-anchor-id="cases"><strong>Cases</strong></h3>
+<p>Fully specified OWL cases that define the assumptions and inputs for a particular choice, independent of any computed outcomes.</p>
+<p><em>Examples:</em></p>
+<ul>
+<li>A baseline OWL case with no overrides</li>
+<li>A case with modified tax assumptions</li>
+<li>A case with altered asset allocation or contribution rules</li>
+</ul>
+</section>
+<section id="results" class="level3">
+<h3 class="anchored" data-anchor-id="results"><strong>Results</strong></h3>
+<p>The artifacts produced by running OWL on a case, used to evaluate outcomes, uncertainty, and trade-offs across choices.</p>
+<p><em>Examples:</em></p>
+<ul>
+<li>Run synopses and summary tables</li>
+<li>Projected balance trajectories</li>
+<li>Lifetime taxes paid</li>
+<li>Probability of shortfall or ruin</li>
+<li>Percentile outcomes and charts</li>
+</ul>
+</section>
+<section id="conceptual-summary" class="level3">
+<h3 class="anchored" data-anchor-id="conceptual-summary">Conceptual Summary</h3>
+<blockquote class="blockquote">
+<p><strong>Options define the questions.</strong> <strong>Choices define the alternatives.</strong> <strong>Cases define the assumptions.</strong> <strong>Results define the evidence.</strong></p>
+</blockquote>
+<p>ROOST does <strong>not</strong> decide for you — it helps you understand.</p>
+</section>
+</section>
+<section id="a-clear-boundary" class="level2">
+<h2 class="anchored" data-anchor-id="a-clear-boundary">A Clear Boundary</h2>
+<p>ROOST intentionally excludes:</p>
+<ul>
+<li>retirement planning logic</li>
+<li>financial rules</li>
+<li>tax calculations</li>
+<li>optimization formulations</li>
+</ul>
+<p>Those remain <strong>authoritative inside OWL</strong>.</p>
+<p>ROOST focuses exclusively on:</p>
+<ul>
+<li>how assumptions vary across choices,</li>
+<li>which cases are compared,</li>
+<li>how uncertainty is explored, and</li>
+<li>what can be learned from comparing results.</li>
+</ul>
+</section>
+<section id="typical-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="typical-workflow">Typical Workflow</h2>
+<ol type="1">
+<li>Identify a retirement question and define an <strong>options</strong> set</li>
+<li>Define one or more <strong>choices</strong> that represent meaningful alternatives</li>
+<li>Specify <strong>cases</strong> for each choice using OWL inputs and overrides</li>
+<li>Run OWL to generate <strong>results</strong></li>
+<li>Compare results across choices to understand trade-offs and risk</li>
+</ol>
+<p>Insights may inform:</p>
+<ul>
+<li>personal decision-making, or</li>
+<li>future refinement of OWL models and assumptions</li>
+</ul>
+</section>
+<section id="feedback-loop-to-owl" class="level2">
+<h2 class="anchored" data-anchor-id="feedback-loop-to-owl">Feedback Loop to OWL</h2>
+<p>ROOST is not a one-way consumer of OWL.</p>
+<p>Insights gained while comparing options may motivate:</p>
+<ul>
+<li>improved formulations,</li>
+<li>new constraints,</li>
+<li>better objective handling,</li>
+<li>enhanced rate modeling, or</li>
+<li>performance optimizations in OWL itself.</li>
+</ul>
+<p>OWL remains the authoritative solver. ROOST serves as a structured environment for learning from its results.</p>
+</section>
+<section id="relationship-to-interactive-tools" class="level2">
+<h2 class="anchored" data-anchor-id="relationship-to-interactive-tools">Relationship to Interactive Tools</h2>
+<ul>
+<li><a href="https://owlplanner.streamlit.app/"><code>owlplanner.streamlit.app</code></a> provides interactive exploration of individual OWL cases and limited multi-case comparison.</li>
+<li><strong>ROOST</strong> emphasizes <strong>reproducible, scriptable, and research-oriented</strong> comparison of choices across multiple OWL runs.</li>
+</ul>
+<p>These tools are complementary, not competing.</p>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li><strong>OWL</strong> is the optimizer.</li>
+<li><strong>ROOST</strong> organizes options, choices, cases, and results.</li>
+<li>Together, they support thoughtful retirement planning under uncertainty — without pretending there is a single “right” answer.</li>
+</ul>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

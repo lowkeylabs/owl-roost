@@ -3,13 +3,11 @@ project:
   output-dir: ../docs
 
 website:
-  title: "OWL-Station"
+  title: "ROOST"
   navbar:
     left:
       - href: index.qmd
         text: Home
-      - href: about.qmd
-        text: About
 
 format:
   html:
