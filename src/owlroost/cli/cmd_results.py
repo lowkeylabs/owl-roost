@@ -15,14 +15,14 @@ Supports:
 
 from __future__ import annotations
 
+import json
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Literal
+from typing import Literal
 
 import click
 import yaml
-import tomllib
-import json
 
 # ---------------------------------------------------------------------
 # Configuration
@@ -41,15 +41,15 @@ IGNORE_PREFIXES = ("Hydra", "hydra")
 class Experiment:
     type: Literal["single", "multi"]
     run_count: int
-    overrides: List[str]
-    sample_run: Path   # representative run dir (None/ or run_0)
+    overrides: list[str]
+    sample_run: Path  # representative run dir (None/ or run_0)
 
 
 @dataclass
 class Case:
     name: str
     path: Path
-    experiments: List[Experiment]
+    experiments: list[Experiment]
 
 
 # ---------------------------------------------------------------------
@@ -126,8 +126,8 @@ def cmd_results(case: str | None, diff: bool, diff_project: bool, nominal: bool)
 # ---------------------------------------------------------------------
 
 
-def discover_cases(results_dir: Path) -> List[Case]:
-    cases: List[Case] = []
+def discover_cases(results_dir: Path) -> list[Case]:
+    cases: list[Case] = []
     for case_dir in sorted(p for p in results_dir.iterdir() if p.is_dir()):
         cases.append(
             Case(
@@ -139,8 +139,8 @@ def discover_cases(results_dir: Path) -> List[Case]:
     return cases
 
 
-def discover_experiments(case_dir: Path) -> List[Experiment]:
-    experiments: List[Experiment] = []
+def discover_experiments(case_dir: Path) -> list[Experiment]:
+    experiments: list[Experiment] = []
 
     for date_dir in sorted(p for p in case_dir.iterdir() if p.is_dir()):
         for time_dir in sorted(p for p in date_dir.iterdir() if p.is_dir()):
@@ -179,7 +179,7 @@ def discover_experiments(case_dir: Path) -> List[Experiment]:
 # ---------------------------------------------------------------------
 
 
-def extract_multirun_overrides(time_dir: Path) -> List[str]:
+def extract_multirun_overrides(time_dir: Path) -> list[str]:
     path = time_dir / "multirun.yaml"
     if not path.exists():
         return []
@@ -189,11 +189,7 @@ def extract_multirun_overrides(time_dir: Path) -> List[str]:
     except Exception:
         return []
 
-    overrides = (
-        data.get("hydra", {})
-        .get("overrides", {})
-        .get("task", [])
-    )
+    overrides = data.get("hydra", {}).get("overrides", {}).get("task", [])
 
     return [
         strip_override_prefix(o)
@@ -202,7 +198,7 @@ def extract_multirun_overrides(time_dir: Path) -> List[str]:
     ]
 
 
-def extract_single_overrides(time_dir: Path) -> List[str]:
+def extract_single_overrides(time_dir: Path) -> list[str]:
     meta = time_dir / "None" / "hydra_meta.yaml"
     if not meta.exists():
         return []
@@ -241,9 +237,8 @@ def load_original_toml(run_dir: Path) -> dict | None:
 
 
 def load_project_toml(run_dir: Path) -> dict | None:
-    src = (
-        next(run_dir.glob("*_original.toml"), None)
-        or next(run_dir.glob("*_effective.toml"), None)
+    src = next(run_dir.glob("*_original.toml"), None) or next(
+        run_dir.glob("*_effective.toml"), None
     )
     if not src or not src.name.startswith("Case_"):
         return None
@@ -268,7 +263,7 @@ def load_metrics(run_dir: Path) -> dict | None:
 # ---------------------------------------------------------------------
 
 
-def render_case_summary(cases: List[Case]):
+def render_case_summary(cases: list[Case]):
     click.echo(f"Found {len(cases)} cases in ./results\n")
     header = f"{'ID':<3} {'CASE NAME':<25} {'EXPERIMENTS':<12}"
     click.echo(header)
@@ -288,7 +283,7 @@ def render_case_breakdown(case: Case, diff_mode: str | None, value_mode: str):
     w_run = 5
     w_type = 7
     w_obj = 12
-    w_avg = 9     # NEW: $/yr column
+    w_avg = 9  # NEW: $/yr column
     w_net = 9
     w_beq = 9
 
@@ -344,7 +339,7 @@ def render_case_breakdown(case: Case, diff_mode: str | None, value_mode: str):
             y1 = metrics.get("year_final_bequest")
 
             if total_real is not None and y0 is not None and y1 is not None:
-                years = (y1 - y0 + 1)
+                years = y1 - y0 + 1
                 avg_real = (total_real / years) / 1000.0
                 avg_fmt = f"${avg_real:,.1f}K"
             else:
@@ -436,7 +431,7 @@ def diff_toml(original: dict, effective: dict) -> dict:
 # ---------------------------------------------------------------------
 
 
-def resolve_case(token: str, cases: List[Case]) -> Case:
+def resolve_case(token: str, cases: list[Case]) -> Case:
     if token.isdigit():
         idx = int(token)
         if idx < 0 or idx >= len(cases):
