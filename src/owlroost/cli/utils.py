@@ -1,10 +1,10 @@
-from pathlib import Path
-from typing import Iterable
-import yaml
 import tomllib
-import click
-from loguru import logger
+from collections.abc import Iterable
+from pathlib import Path
 
+import click
+import yaml
+from loguru import logger
 
 # ---------------------------------------------------------------------
 # Config discovery utilities (Hydra-free)
@@ -62,6 +62,7 @@ def _extract_leaf_paths(data, prefix="") -> list[str]:
 
     return paths
 
+
 def extract_leaf_paths_with_values(data, prefix=""):
     """
     Recursively extract (path, value) pairs from nested dicts.
@@ -76,13 +77,12 @@ def extract_leaf_paths_with_values(data, prefix=""):
             full_key = f"{prefix}.{key}" if prefix else key
 
             if isinstance(value, dict):
-                results.extend(
-                    extract_leaf_paths_with_values(value, full_key)
-                )
+                results.extend(extract_leaf_paths_with_values(value, full_key))
             else:
                 results.append((full_key, value))
 
     return results
+
 
 def list_group_override_paths(conf_dir: Path, group: str) -> list[str]:
     """
@@ -121,6 +121,7 @@ def list_override_paths(
 
     return overrides
 
+
 def list_group_override_items(
     conf_dir: Path,
     group: str,
@@ -138,6 +139,7 @@ def list_group_override_items(
         return []
 
     return extract_leaf_paths_with_values(schema)
+
 
 def list_override_items(
     conf_dir: Path,
@@ -200,7 +202,7 @@ def format_click_options(cmd: click.Command) -> str:
 
     if len(lines) == 0:
         return ""
-    
+
     lines.insert(0, "\nOptions:\n")
     return "\n".join(lines)
 
@@ -208,6 +210,7 @@ def format_click_options(cmd: click.Command) -> str:
 # ---------------------------------------------------------------------
 # Case discovery & indexing
 # ---------------------------------------------------------------------
+
 
 def find_case_files(directory: Path) -> list[Path]:
     """Return sorted list of .toml case files."""
@@ -222,6 +225,7 @@ def index_case_files(files: list[Path]) -> list[tuple[int, Path]]:
 # ---------------------------------------------------------------------
 # Selector resolution
 # ---------------------------------------------------------------------
+
 
 def resolve_case_selector(
     selector: str,
@@ -254,6 +258,7 @@ def resolve_case_selector(
 # ---------------------------------------------------------------------
 # Display helpers
 # ---------------------------------------------------------------------
+
 
 def load_case_metadata(path: Path) -> dict:
     """Load TOML safely; return empty dict on failure."""
@@ -311,9 +316,7 @@ def print_case_list(directory: Path) -> list[Path]:
         if len(case_name) > 20:
             case_name = case_name[:16] + "..."
 
-        hfp_name = data.get("Household Financial Profile", {}).get(
-            "HFP file name", ""
-        )
+        hfp_name = data.get("Household Financial Profile", {}).get("HFP file name", "")
 
         opt_display = format_optimization_summary(data)
 

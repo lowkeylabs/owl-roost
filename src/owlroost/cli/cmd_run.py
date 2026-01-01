@@ -8,12 +8,12 @@ import click
 from loguru import logger
 
 from owlroost.cli.utils import (
-    format_override_help,
-    format_click_options,
     find_case_files,
+    format_click_options,
+    format_override_help,
     index_case_files,
-    resolve_case_selector,
     print_case_list,
+    resolve_case_selector,
 )
 
 CONF_DIR = Path(__file__).parents[1] / "conf"
@@ -157,9 +157,7 @@ def cmd_run(ctx: click.Context, case: str | None):
     try:
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
-        raise click.ClickException(
-            f"Hydra run failed (exit {e.returncode})"
-        ) from None
+        raise click.ClickException(f"Hydra run failed (exit {e.returncode})") from None
 
 
 cmd_run.get_help = lambda ctx: build_run_help(cmd_run)

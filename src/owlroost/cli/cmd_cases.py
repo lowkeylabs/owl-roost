@@ -7,10 +7,9 @@ from loguru import logger
 from owlroost.cli.utils import (
     find_case_files,
     index_case_files,
-    resolve_case_selector,
     print_case_list,
+    resolve_case_selector,
 )
-
 
 # ======================================================================
 # Main command

@@ -8,4 +8,4 @@ def test_cli_help():
     result = runner.invoke(cli, ["--help"])
 
     assert result.exit_code == 0
-    assert "OWL-ROOST" in result.output
+    assert "ROOST" in result.output

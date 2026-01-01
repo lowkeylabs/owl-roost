@@ -8,11 +8,11 @@ from hydra.utils import to_absolute_path
 from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 
+from owlroost.cli.utils import normalize_case_file_overrides
 from owlroost.core.configure_logging import configure_logging
 from owlroost.core.override_parser import hydra_overrides_to_dict
 from owlroost.core.owl_runner import run_single_case
 from owlroost.core.toml_utils import toml_plan_name
-from owlroost.cli.utils import normalize_case_file_overrides
 
 # Loguru needs to initially be set OUTSIDE of main
 level = os.getenv("OWLROOST_LOG_LEVEL")
@@ -103,7 +103,7 @@ def main(cfg: DictConfig):
     # Parse semantic overrides (shared with cmd_run)
     # -------------------------------------------------
     overrides = hydra_overrides_to_dict(raw_overrides)
-    clean_overrides = normalize_case_file_overrides( raw_overrides )
+    clean_overrides = normalize_case_file_overrides(raw_overrides)
 
     logger.info(
         "{} - overrides: {}",
