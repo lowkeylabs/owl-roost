@@ -1,199 +1,286 @@
----
-title: ROOST
----
+# OWL-ROOST
 
-**ROOST** (Retirement Options and Outcomes Studies Tool) provides tools for the exploration and study of retirement questions.
+**Retirement Options and Outcomes Studies Tool**
 
-ROOST encapsulates four key concepts:
+**ROOST** (Retirement Options and Outcomes Studies Tool) evaluates **retirement decision policies**—not just static plans—by comparing how **agent-controlled actions** perform under **uncertainty** when those decisions are revisited annually.
 
-* Options — A focused retirement question that organizes the exploration of alternative strategies in order to understand trade-offs and risks.  *Examples: Roth conversion options, early retirement options, spending guardrail options, asset class mix options.*
+ROOST is designed to answer questions like:
 
-* Choices — Distinct courses of action within an options set, each representing a different way to address the underlying retirement question. *Examples: no Roth conversions, partial annual conversions, aggressive bracket-filling conversions; retire at 62 vs 65 vs 67; fixed real spending vs guardrail spending.*
+> *“Given the uncertainty I face, how flexible are my retirement decisions—and which decision policies are most robust?”*
 
-* Cases — Fully specified OWL cases that define the assumptions and inputs for a particular choice, independent of any computed outcomes. *Examples:* a baseline OWL case with no overrides, a case with modified tax assumptions, a case with altered asset allocation or contribution rules.
+It does this by organizing retirement analysis around a small number of clear, orthogonal concepts.
 
-* Results — The artifacts produced by running OWL on a case, used to evaluate outcomes, uncertainty, and trade-offs across choices. *Examples: all the numbers in the current run synopsis, projected balance trajectories, lifetime tax paid, probability of shortfall, percentile outcomes, charts and summary tables.*
+## Core Concepts
 
-In summary: **Options** define the questions; **Choices** define the alternatives; **Cases** define the assumptions; **Results** define the evidence
+ROOST introduces five key concepts in extending the work of OWL.
 
-# ROOST and OWL: Complementary Tools
+* **Decision options** define *what question is being asked*
+* **Choice templates** define *policy alternatives*
+* **Cases** define *assumptions and a snapshot of uncertainty*
+* **Runs** define *a policy instance applied to a case*
+* **Results** provide *evidence for comparison and insight*
 
-**ROOST does not replace OWL.**
-ROOST **builds on OWL** by organizing and comparing OWL results in ways that help people understand choices, trade-offs, and risk.
+Cases and runs are shared between OWL and ROOST.  They are represented by exactly the same files and outputs.
 
-OWL is the optimization engine.
-ROOST is the decision-support environment.
+### **Decision Options**
 
-Together, they form a rigorous framework for exploring retirement questions under uncertainty.
+A **decision option** represents a focused retirement question—something the agent can choose and re-choose over time.
 
-## How OWL and ROOST Differ
+Examples:
 
-| Tool                                | Purpose                                                                       |
-| ----------------------------------- | ----------------------------------------------------------------------------- |
-| **OWL (Optimal Wealth Laboratory)** | Optimizes a *single* retirement case under a specified set of assumptions     |
-| **ROOST**                           | Organizes and compares *multiple* OWL cases to explore options and trade-offs |
+* Roth conversion strategy
+* Spending policy
+* Social Security claiming strategy
+* Retirement timing
+* Asset allocation policy
 
-Put simply:
+Each decision option defines a **policy dimension** to be explored, not a single action.
 
-> **OWL computes optimal outcomes.**
-> **ROOST helps you understand your options.**
+### **Choice Templates**
 
-## What OWL Does
+A **choice template** is a concrete **decision policy** within a decision option.
+It defines a rule for choosing an action each year, conditional on the current state.
 
-[OWL](https://github.com/mdlacasse/Owl) is a modeling framework for exploring retirement financial decisions under uncertainty.
-It uses rigorous mathematical optimization to compute optimal strategies under a given set of assumptions.
+Examples:
 
-OWL:
+* *Roth options*:
 
-* Optimizes a **single case**
-* Uses **linear programming**
-* Solves for either:
+  * No Roth conversions
+  * Fixed annual conversion amounts
+  * Fill to a target marginal tax bracket
+  * Let OWL optimize Roth conversions
+* *Spending options*:
 
-  * maximum sustainable spending, or
-  * maximum after-tax bequest
-* Applies detailed constraints involving:
+  * Fixed real spending
+  * Guardrail spending
+  * Utility-maximizing spending
+  * “Smile” spending profile
 
-  * taxes
-  * Roth conversions
-  * Social Security
-  * Medicare and IRMAA
-* Re-optimizes under each run rather than simulating fixed behavior
-
-OWL is a **laboratory instrument**, not a prescriptive planner.
-
-## What ROOST Adds
-
-Retirement decisions cannot be planned with certainty.
-Markets are volatile, tax rules change, and life rarely follows a single path.
-
-What *can* be done is to understand:
-
-* how sensitive outcomes are to assumptions,
-* how different strategies trade risk for reward, and
-* which choices feel robust across uncertainty.
-
-**ROOST exists to support that understanding.**
-
-ROOST provides structure for:
-
-* organizing retirement questions,
-* defining meaningful alternatives,
-* executing consistent OWL runs, and
-* comparing results across choices.
-
-## Core Concepts in ROOST
-
-ROOST is built around four core concepts:
-
-### **Options**
-
-A focused retirement question that organizes the exploration of alternative strategies in order to understand trade-offs and risks.
-
-*Examples:*
-
-* Roth conversion options
-* Early retirement options
-* Spending guardrail options
-* Asset class mix options
-
-### **Choices**
-
-Distinct courses of action within an options set, each representing a different way to address the underlying retirement question.
-
-*Examples:*
-
-* No Roth conversions vs partial vs aggressive conversions
-* Retire at 62 vs 65 vs 67
-* Fixed real spending vs guardrail spending
-
----
+Choice templates are **reusable**, **comparable**, and represent different ways to answer the same underlying decision question.
 
 ### **Cases**
 
-Fully specified OWL cases that define the assumptions and inputs for a particular choice, independent of any computed outcomes.
+A **case** defines the **initial state and constraints** of a retirement scenario.
+It is specified by:
 
-*Examples:*
+* A TOML plan file
+* A referenced Household Financial Profile (HFP) file
 
-* A baseline OWL case with no overrides
-* A case with modified tax assumptions
-* A case with altered asset allocation or contribution rules
+Cases encode **exogenous assumptions** that the agent does not directly control, including:
+
+* Longevity assumptions
+* Rates of return and inflation assumptions
+* Tax rules and policy parameters
+* Household structure, income sources, and contribution rules
+
+These values are treated as **given** for a case and are held fixed when comparing decision policies.
+
+Cases are **sources of truth** and are independent of computed outcomes.
+
+### **Uncertainty**
+
+**Uncertainty** represents aspects of the world that affect outcomes but are **not controlled by the agent**.
+
+In ROOST today, uncertainty is represented **implicitly and scenario-based**:
+
+* Longevity and return paths are specified *ex ante* in the case
+* Each case corresponds to a particular realization or assumption set
+* Decision policies are evaluated *conditional on those assumptions*
+
+ROOST compares **decision policies under a given uncertainty model**, rather than attempting to predict which uncertainty will occur.
+
+This separation allows ROOST to answer questions such as:
+
+* *How sensitive is a decision policy to different longevity assumptions?*
+* *Which policies remain robust across pessimistic and optimistic return scenarios?*
+
+Future extensions may introduce richer stochastic or multi-path representations of uncertainty, but the conceptual separation remains the same:
+**decisions are chosen; uncertainty is not.**
+
+### **Runs**
+
+A **run** is the application of a single **choice template** to a single **case**, producing one realization of outcomes under the case’s uncertainty assumptions.
+
+Conceptually:
+
+```
+Case × Choice Template → Run
+```
 
 ### **Results**
 
-The artifacts produced by running OWL on a case, used to evaluate outcomes, uncertainty, and trade-offs across choices.
+**Results** are the artifacts produced by OWL for a run and form the basis for evaluation and comparison.
 
-*Examples:*
+Examples:
 
-* Run synopses and summary tables
-* Projected balance trajectories
-* Lifetime taxes paid
-* Probability of shortfall or ruin
-* Percentile outcomes and charts
+* Optimal objective values (max spending, bequest, etc.)
+* Effective (post-override) TOML and HFP artifacts
+* Summary and metrics JSON files
+* Time-series projections and distributions
+* Comparative tables and visualizations
 
-### Conceptual Summary
+Results are fully reproducible from the effective TOML and HFP alone.
 
-> **Options define the questions.**
-> **Choices define the alternatives.**
-> **Cases define the assumptions.**
-> **Results define the evidence.**
+## How the Pieces Fit Together
 
-ROOST does **not** decide for you — it helps you understand.
+* **Decision options** define *what question is being asked*
+* **Choice templates** define *policy alternatives*
+* **Cases** define *assumptions and a snapshot of uncertainty*
+* **Runs** define *a policy instance applied to a case*
+* **Results** provide *evidence for comparison and insight*
 
-## A Clear Boundary
+In short:
 
-ROOST intentionally excludes:
+> **Decision options define the questions;  
+> choice templates define the policies;  
+> cases define the assumptions and a snapshot of uncertainty;  
+> runs define the policy instance applied to a case;  
+> results define the evidence of a run.**
 
-* retirement planning logic
-* financial rules
-* tax calculations
-* optimization formulations
+## Design Philosophy
 
-Those remain **authoritative inside OWL**.
+ROOST treats retirement planning as a **sequential decision problem**:
 
-ROOST focuses exclusively on:
+* Decisions are agent-controlled
+* They are revisited annually
+* Outcomes unfold under uncertainty
+* Policies are evaluated for robustness, not just optimality
 
-* how assumptions vary across choices,
-* which cases are compared,
-* how uncertainty is explored, and
-* what can be learned from comparing results.
+Rather than asking *“What is the single optimal plan?”*, ROOST helps answer:
 
-## Typical Workflow
+> *“Which decision policies perform well across many plausible futures—and how much flexibility do I really have?”*
 
-1. Identify a retirement question and define an **options** set
-2. Define one or more **choices** that represent meaningful alternatives
-3. Specify **cases** for each choice using OWL inputs and overrides
-4. Run OWL to generate **results**
-5. Compare results across choices to understand trade-offs and risk
 
-Insights may inform:
+## Relation to OWL-Planner
 
-* personal decision-making, or
-* future refinement of OWL models and assumptions
+### OWL-Planner
 
-## Feedback Loop to OWL
+**OWL-Planner** (Optimal Wealth Laboratory) is a retirement planning and optimization framework that computes optimal retirement strategies over a full planning horizon, subject to detailed tax rules, account constraints, longevity assumptions, and return scenarios.
 
-ROOST is not a one-way consumer of OWL.
+Given a fully specified input case—defined by a TOML plan file and a referenced Household Financial Profile (HFP)—OWL solves for optimal actions (such as spending levels, asset allocation, and Roth conversions) under the assumed conditions. OWL’s strength lies in its rigorous optimization engine and its ability to reason consistently across time, taxes, and multiple interacting constraints.
 
-Insights gained while comparing options may motivate:
+OWL answers questions of the form:
 
-* improved formulations,
-* new constraints,
-* better objective handling,
-* enhanced rate modeling, or
-* performance optimizations in OWL itself.
+> *“Given these assumptions and constraints, what strategy is optimal over the planning horizon?”*
 
-OWL remains the authoritative solver.
-ROOST serves as a structured environment for learning from its results.
+### How ROOST Extends OWL
 
-## Relationship to Interactive Tools
+**ROOST does not replace OWL.**
+Instead, ROOST **extends OWL by systematizing how retirement decisions are explored, compared, and interpreted under uncertainty.**
 
-* [`owlplanner.streamlit.app`](https://owlplanner.streamlit.app/) provides interactive exploration of individual OWL cases and limited multi-case comparison.
-* **ROOST** emphasizes **reproducible, scriptable, and research-oriented** comparison of choices across multiple OWL runs.
+In particular, ROOST introduces a structured framework for:
 
-These tools are complementary, not competing.
+1. **Explicitly separating agent-controlled decisions from external uncertainty**
+2. **Organizing retirement analysis around decision policies rather than single optimized plans**
+3. **Comparing alternative decision policies in a reproducible, scalable way**
 
-## Summary
+While OWL focuses on computing optimal outcomes for a single, fully specified case, ROOST focuses on exploring *decision flexibility and robustness* across multiple choices and assumptions.
 
-* **OWL** is the optimizer.
-* **ROOST** organizes options, choices, cases, and results.
-* Together, they support thoughtful retirement planning under uncertainty — without pretending there is a single “right” answer.
+
+### Key Extensions Introduced by ROOST
+
+**1. Decision-centric framing**
+
+ROOST treats retirement planning as a sequence of **agent-controlled decisions**—such as spending, Roth conversions, or claiming Social Security—that are revisited annually. These decisions are represented as **decision options**, each supported by multiple **choice templates** (policy rules).
+
+This framing makes explicit that:
+
+* Decisions are chosen by the agent
+* They can be discrete or continuous
+* They are evaluated as *policies*, not one-time actions
+
+
+**2. Explicit treatment of uncertainty**
+
+In ROOST, uncertainty is treated as **exogenous**:
+
+* Longevity assumptions
+* Return and inflation paths
+* Tax and policy environments
+
+These elements are encoded in **cases** and are not directly controlled by the agent. Decision policies are evaluated *conditional on this uncertainty snapshot*, allowing ROOST to explore sensitivity and robustness without conflating choices with outcomes.
+
+
+**3. Systematic comparison of alternatives**
+
+ROOST introduces structure around OWL runs by:
+
+* Applying multiple choice templates to one or more cases
+* Executing these runs in a consistent, reproducible manner
+* Capturing comparable results and artifacts for analysis
+
+This enables ROOST to answer questions such as:
+
+* *Which decision policies perform best under a given set of assumptions?*
+* *How sensitive are outcomes to different first-year decisions?*
+* *Where does meaningful flexibility exist across plausible futures?*
+
+
+Below is a **respectful, balanced “When to Use OWL vs ROOST” section** you can append immediately after **“How ROOST Extends OWL”** in the new *Relation to OWL-Planner* section. It is careful to position ROOST as *complementary*, not superior, and to emphasize OWL’s strengths clearly.
+
+### When to Use OWL vs ROOST
+
+**OWL and ROOST are complementary tools**, designed to answer different—but closely related—questions in retirement planning.
+
+#### Use **OWL-Planner** when you want to:
+
+* Solve a **single, well-defined retirement case**
+* Compute an **optimal strategy** under a specific set of assumptions
+* Explore the implications of detailed tax, account, and timing constraints
+* Generate a **best-response plan** given fixed inputs
+
+OWL is ideal when the question is:
+
+> *“Given these assumptions, what strategy is optimal over the planning horizon?”*
+
+OWL’s optimization engine is the authoritative source for computing internally consistent, horizon-wide solutions.
+
+
+#### Use **ROOST** when you want to:
+
+* **Compare multiple decision policies**, not just a single optimized plan
+* Explore **trade-offs and robustness** across alternative choices
+* Understand **decision flexibility** under uncertainty
+* Systematically evaluate *families of strategies* (e.g., Roth policies, spending rules, claiming strategies)
+* Organize and automate **reproducible experiments** across cases and choices
+
+ROOST is ideal when the question is:
+
+> *“Across plausible decision policies and assumptions, which choices perform well—and how sensitive are outcomes to what I decide today?”*
+
+ROOST builds on OWL by running it repeatedly in a structured way, making comparisons explicit and interpretable.
+
+
+#### How They Work Together
+
+A typical workflow looks like:
+
+1. **Define a case** (TOML + HFP)
+2. **Use ROOST** to explore and compare decision policies
+3. **Use OWL outputs** to understand the mechanics and outcomes of each policy
+4. **Focus decision-making** on policies that appear robust and flexible
+5. Optionally, **refine or deepen analysis in OWL** for a specific scenario
+
+In this sense:
+
+* **OWL provides the optimization engine**
+* **ROOST provides the experimental framework**
+
+ROOST does not replace OWL’s role; it amplifies its usefulness by placing individual OWL runs in a broader decision-analysis context.
+
+### In One Sentence
+
+> **Use OWL to find optimal strategies for a given case;
+> use ROOST to compare and understand decision policies across uncertainty.**
+
+This distinction keeps each tool focused on what it does best, while allowing them to work together naturally.
+
+### Summary
+
+In short:
+
+* **OWL** computes optimal strategies for a given case
+* **ROOST** compares decision policies across cases to understand trade-offs, uncertainty, and flexibility
+
+ROOST builds on OWL’s optimization engine by providing the conceptual structure and tooling needed to explore retirement decisions as they are actually faced: sequentially, under uncertainty, and with multiple plausible policies under consideration.
+
