@@ -142,7 +142,9 @@ class DisplayProfile:
 
     content_align: str = "left"
 
-    width: int | None = None
+    width: int | Literal["auto"] | None = None
+    min_width: int | None = None
+    max_width: int | None = None
 
     wrap: bool = False
 

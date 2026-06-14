@@ -63,6 +63,15 @@ FACETS: dict[
     Callable,
 ] = {}
 
+# default order if more than one is requested.  FACETS
+# not in this order will appear at end.
+FACET_ORDER = [
+    "variables",
+    "sources",
+    "values",
+    "display",
+]
+
 # =========================================================
 # Discovery
 # =========================================================

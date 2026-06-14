@@ -68,8 +68,10 @@ def register_display_fields(
             profiles={
                 "table": DisplayProfile(
                     label="Metric",
-                    width=30,
-                    wrap=True,
+                    width="auto",
+                    min_width=8,
+                    max_width=35,
+                    wrap=False,
                 ),
             },
             **PIVOT_ONTOLOGY,
@@ -87,14 +89,16 @@ def register_display_fields(
             profiles={
                 "table": DisplayProfile(
                     label="Value",
-                    width=40,
+                    width=25,
                     wrap=True,
                     content_align="left",
                 ),
                 "pivot": DisplayProfile(
                     label="Value",
-                    width=40,
-                    wrap=True,
+                    width="auto",
+                    min_width=20,
+                    max_width=45,
+                    wrap=False,
                     content_align="left",
                 ),
             },
@@ -113,7 +117,7 @@ def register_display_fields(
             profiles={
                 "table": DisplayProfile(
                     label="Explanation",
-                    width=50,
+                    # width=50,
                     wrap=True,
                 ),
             },

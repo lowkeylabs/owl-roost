@@ -64,11 +64,7 @@ def render(
         lines.append(f"Defined In: {defined_in}")
 
     else:
-        lines.append("Defined In: AUTO-CREATED")
-
-        namespace = field_name.split(".")[0] if field_name else "custom"
-
-        lines.append(f"Suggested File: display/fields/{namespace}.py")
+        lines.append(f"Defined In: NOT FOUND.  ({field_name}: this is an error!)")
 
     # =====================================================
     # Profiles
@@ -81,15 +77,13 @@ def render(
     )
 
     if profiles:
-        lines.append("")
-
         for name, profile in sorted(
             profiles.items(),
         ):
             attrs = []
 
             if profile.label:
-                attrs.append(f"label={profile.label}")
+                attrs.append(f"label={profile.label}".replace("\n", "\\n"))
 
             if profile.width is not None:
                 attrs.append(f"width={profile.width}")
@@ -98,7 +92,7 @@ def render(
                 attrs.append(f"fmt={profile.fmt}")
 
             if profile.content_align and profile.content_align != "left":
-                attrs.append(f"align={profile.content_align}")
+                attrs.append(f"content_align={profile.content_align}")
 
             if profile.wrap:
                 attrs.append(f"wrap={profile.wrap}")

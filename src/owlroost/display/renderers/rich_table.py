@@ -48,11 +48,20 @@ def build_rich_table(
         show_lines=False,
     )
 
+    # swap out this definition for the one above to get borders
+    _rich_table_for_debugging = Table(
+        box=box.SQUARE,
+        show_edge=True,
+        show_lines=True,
+    )
+
     # =====================================================
     # Columns
     # =====================================================
 
-    for col in table.columns:
+    for col_idx, col in enumerate(
+        table.columns,
+    ):
         if col.content_align == "right":
             justify = "right"
 
@@ -65,7 +74,10 @@ def build_rich_table(
         rich_table.add_column(
             col.label,
             justify=justify,
-            width=col.width,
+            width=_resolve_column_width(
+                table,
+                col_idx,
+            ),
             no_wrap=not col.wrap,
             overflow="fold",
             vertical="top",
@@ -212,14 +224,7 @@ def build_rich_table(
                 )
                 and rendered
             ):
-                rendered = "\n".join(
-                    textwrap.wrap(
-                        rendered,
-                        width=row_width,
-                        break_long_words=False,
-                        break_on_hyphens=False,
-                    )
-                )
+                rendered = _wrap_preserving_lines(rendered, row_width)
 
             formatted.append(
                 rendered,
@@ -254,3 +259,119 @@ def render_rich_table(
     )
 
     return ""
+
+
+# =========================================================
+# Width Resolution
+# =========================================================
+
+
+def _measure_column_width(
+    table,
+    col_idx,
+):
+    """
+    Return maximum rendered width
+    observed in a column.
+    """
+
+    column = table.columns[col_idx]
+
+    width = len(column.label or "")
+
+    for row in table.rows:
+        if col_idx >= len(row):
+            continue
+
+        value = row[col_idx]
+
+        rendered = format_value(
+            value,
+            column.fmt,
+        )
+
+        if rendered is None:
+            continue
+
+        rendered = str(
+            rendered,
+        )
+
+        for line in rendered.splitlines():
+            width = max(
+                width,
+                len(line),
+            )
+
+    return width
+
+
+def _resolve_column_width(
+    table,
+    col_idx,
+):
+    """
+    Resolve effective Rich width
+    from DisplayProfile settings.
+    """
+
+    column = table.columns[col_idx]
+
+    width = column.width
+
+    # Rich-managed sizing
+    if width is None:
+        return None
+
+    # Fixed width
+    if isinstance(
+        width,
+        int,
+    ):
+        return width
+
+    # Auto width
+    if width == "auto":
+        width = _measure_column_width(
+            table,
+            col_idx,
+        )
+
+        if column.min_width is not None:
+            width = max(
+                width,
+                column.min_width,
+            )
+
+        if column.max_width is not None:
+            width = min(
+                width,
+                column.max_width,
+            )
+
+        return width
+
+    return None
+
+
+def _wrap_preserving_lines(
+    text: str,
+    width: int,
+) -> str:
+    parts = []
+
+    for line in text.splitlines():
+        if not line:
+            parts.append("")
+            continue
+
+        wrapped = textwrap.wrap(
+            line,
+            width=width,
+            break_long_words=False,
+            break_on_hyphens=False,
+        )
+
+        parts.extend(wrapped)
+
+    return "\n".join(parts)

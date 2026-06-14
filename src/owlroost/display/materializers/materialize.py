@@ -243,9 +243,11 @@ def pivot_table(
         TableColumn(
             key="pivot_metric",
             label=str(metric_profile.label if metric_profile is not None else "Metric"),
-            width=(metric_profile.width if metric_profile else 25),
             wrap=(metric_profile.wrap if metric_profile else True),
-            content_align="left",
+            content_align=(metric_profile.content_align if metric_profile else "left"),
+            width=metric_profile.width if metric_profile else 25,
+            min_width=(metric_profile.min_width if metric_profile else None),
+            max_width=(metric_profile.max_width if metric_profile else None),
         )
     ]
 
@@ -256,9 +258,11 @@ def pivot_table(
             TableColumn(
                 key=str(idx),
                 label=str(idx),
-                width=(value_profile.width if value_profile else 80),
                 wrap=(value_profile.wrap if value_profile else True),
-                content_align="right",
+                content_align=(value_profile.content_align if value_profile else "right"),
+                width=(value_profile.width if value_profile else 80),
+                min_width=(value_profile.min_width if value_profile else None),
+                max_width=(value_profile.max_width if value_profile else None),
             )
         )
 
@@ -273,7 +277,11 @@ def pivot_table(
                 label=str(explanation_profile.label if explanation_profile else "Explanation"),
                 width=(explanation_profile.width if explanation_profile else 50),
                 wrap=(explanation_profile.wrap if explanation_profile else True),
-                content_align="left",
+                content_align=(
+                    explanation_profile.content_align if explanation_profile else "left"
+                ),
+                min_width=(explanation_profile.min_width if explanation_profile else None),
+                max_width=(explanation_profile.max_width if explanation_profile else None),
             )
         )
 

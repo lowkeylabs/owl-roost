@@ -29,23 +29,62 @@ auto-discovered facet plugins located in:
 
 from __future__ import annotations
 
-from owlroost.display.explain.facets import (
-    FACETS,
-)
+from owlroost.display.explain.facets import FACET_ORDER, FACETS
 
 # =========================================================
 # Helpers
 # =========================================================
 
 
-def _render_parts(
+def _render_partsx(
     parts: list[str],
 ) -> str:
     parts = [part for part in parts if part]
 
-    return "\n\n".join(
-        parts,
+    return (
+        "\n".join(
+            parts,
+        )
+        + "\n"
     )
+
+
+def _render_parts(
+    parts,
+) -> str:
+    if not parts:
+        return ""
+
+    if len(parts) == 1:
+        return parts[0][1]
+
+    rendered = []
+
+    for facet_name, text in parts:
+        rendered.append(f"[bold]{facet_name}[/bold]: {text}")
+
+    return (
+        "\n".join(
+            rendered,
+        )
+        + "\n"
+    )
+
+
+def _ordered_facets(
+    explain_facets: set[str],
+):
+    ordered = []
+
+    for name in FACET_ORDER:
+        if name in explain_facets:
+            ordered.append(name)
+
+    for name in sorted(explain_facets):
+        if name not in FACET_ORDER:
+            ordered.append(name)
+
+    return ordered
 
 
 # =========================================================
@@ -69,9 +108,7 @@ def build_field_explanation(
 
     parts = []
 
-    for facet_name in sorted(
-        explain_facets,
-    ):
+    for facet_name in _ordered_facets(explain_facets):
         render_fn = FACETS.get(
             facet_name,
         )
@@ -91,7 +128,10 @@ def build_field_explanation(
 
         if text:
             parts.append(
-                text,
+                (
+                    facet_name,
+                    text,
+                )
             )
 
     return _render_parts(

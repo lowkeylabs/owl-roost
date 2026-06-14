@@ -64,7 +64,7 @@ def register_display_views(
                 # Identity
                 # =====================================
                 "case_name",
-                ("description", {"modes": ["pivot"]}),
+                # ("description", {"modes": ["pivot"]}),
                 ("basic_info.names", {"modes": ["pivot"]}),
                 "display.starting_ages",
                 "basic_info.life_expectancy",

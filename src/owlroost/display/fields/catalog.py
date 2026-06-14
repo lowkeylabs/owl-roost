@@ -507,7 +507,7 @@ def profiles_display(
         )
 
         lines.append(
-            f"{name}: {{ label='{label}', fmt={profile.get('fmt')}, width={profile.get('width')} }}"
+            f"{name}: {{ label='{label}', fmt={profile.get('fmt')}, width={profile.get('width')}}}"
         )
 
     return "\n".join(

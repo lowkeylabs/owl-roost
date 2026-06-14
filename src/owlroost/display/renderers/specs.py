@@ -32,6 +32,7 @@ be resolved during materialization.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 # =========================================================
 # Column
@@ -87,7 +88,9 @@ class TableColumn:
     # Layout
     # =====================================================
 
-    width: int | None = None
+    width: int | Literal["auto"] | None = None
+    min_width: int | None = None
+    max_width: int | None = None
 
     # =====================================================
     # Explain Metadata
