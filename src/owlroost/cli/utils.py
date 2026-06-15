@@ -418,3 +418,24 @@ def parse_override_request(
         overrides,
         errors,
     )
+
+
+def render_available_views(
+    registry,
+    *,
+    level,
+):
+    click.echo()
+
+    click.echo(f"Current level: {level}")
+
+    click.echo()
+
+    click.echo("Available views:")
+
+    for name, source in registry.available_views(
+        level,
+    ):
+        click.echo(f"  {name} ({source})")
+
+    click.echo()

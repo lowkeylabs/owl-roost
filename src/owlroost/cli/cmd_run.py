@@ -21,6 +21,7 @@ from pathlib import Path
 import click
 
 from owlroost.cli.utils import (
+    render_available_views,
     render_table,
     resolve_renderer,
 )
@@ -144,6 +145,27 @@ def cmd_run(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
     )
+
+    # =====================================================
+    # Check requested view
+    # =====================================================
+
+    level = "run"
+
+    if not view or not display_registry.has_view_for_level(
+        level,
+        view,
+    ):
+        if view:
+            click.echo(f"Display view not found: {level}/{view}")
+
+        render_available_views(
+            display_registry,
+            level=level,
+        )
+
+        return
+
     # =====================================================
     # Discover + Load Runs
     # =====================================================

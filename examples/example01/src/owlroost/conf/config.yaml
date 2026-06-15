@@ -9,7 +9,7 @@ defaults:
 - household_financial_profile: default
 - optimization_parameters: default
 - rates_selection: default
-#- results: default
+- results: default
 - roost_environment: default
 - roost_settings: default
 - roost_sweeps: default

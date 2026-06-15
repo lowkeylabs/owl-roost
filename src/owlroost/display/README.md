@@ -413,83 +413,346 @@ Views define:
 * grouping
 * default presentation
 
+Views are described in detail under:
+
+    Analytical Composition
+
+The display subsystem treats views as
+reusable analytical presentations.
+
+---
+
+# Analytical Composition
+
+The display subsystem separates:
+
+* analytical content
+* visual presentation
+* spatial organization
+
+These concerns intentionally evolve independently.
+
+## Analytical Hierarchy
+
+Analytical content is organized through:
+
+```text
+VARIABLE
+    ↓
+GROUP
+    ↓
+VIEW
+```
+
+### Variables
+
+Variables represent canonical analytical entities.
+
+Examples include:
+
+```text
+rates_selection.method
+timing.elapsed_seconds
+display.net_worth
+```
+
+Variables possess:
+
+* semantic identity
+* provenance
+* lineage
+* explainability
+
+### Groups
+
+Groups provide reusable analytical organization.
+
+Groups contain ordered collections of:
+
+* variables
+* groups
+
+Examples include:
+
+```text
+identity
+balances
+methodology
+runtime
+provenance
+```
+
+Groups improve:
+
+* navigation
+* discoverability
+* reporting
+* reuse across views
+
+Groups remain presentation-oriented and do not establish semantic ownership.
+
+### Views
+
+Views define reusable analytical presentations.
+
+Views contain ordered collections of:
+
+* variables
+* groups
+
+Views answer:
+
+```text
+What information is relevant?
+```
+
+rather than:
+
+```text
+How should it be rendered?
+```
+
+Examples include:
+
+```text
+cases
+balance_sheet
+timing
+catalog
+```
+
+Views define:
+
+* analytical scope
+* field participation
+* ordering
+* grouping
+* mode-aware presentation behavior
+
 Views SHOULD remain declarative.
 
 Views SHOULD NOT contain business logic.
 
----
+## Architectural Invariant
 
-The current README is very good on **Catalog vs Display ownership**, but it does not yet lock in the newer concepts we've been discussing:
+Views are presentation-independent.
 
-1. **Display Modes** (`table`, `pivot`)
-2. **Display Profiles**
-3. **Mode-aware view/group entries**
-4. The distinction between:
+A view defines analytical content rather than a specific rendering technology.
 
-   * View composition
-   * Mode participation
-   * Profile selection
+The same view may ultimately appear as:
 
-Without documenting these, a future LLM (or future John) will almost certainly drift back toward:
+* a table
+* a pivot presentation
+* a dashboard panel
+* a report section
+* a future visualization
 
-```text
-Views are column lists.
-Pivot is a table transformation.
-Profiles are optional formatting helpers.
-```
+Views therefore remain stable even as rendering technologies evolve.
 
-when the architecture is actually becoming:
-
-```text
-Views
-    define analytical presentations
-
-Modes
-    define user workflows
-
-Profiles
-    define renderer behavior
-```
 
 # Dashboards
 
-Dashboards organize analytical panels into
-higher-level inspection and reporting
-layouts.
+Dashboards provide higher-level analytical workspaces.
+
+Dashboards organize visual presentations independently from analytical content.
+
+Analytical content originates from views.
+
+## Visual Composition Hierarchy:
 
 Conceptually:
 
-    DisplayField
+```text
+VIEW
+    ↓
+PANEL
+    ↓
+LAYOUT
+    ↓
+DASHBOARD
+```
+
+## Panels
+
+Panels define visual realizations of views:
+
+Current examples include:
+
+* SummaryPanel
+* CounterPanel
+* CrossTabPanel
+
+Multiple panel types may visualize the
+same view.
+
+Panels answer:
+
+```text
+How should information be visualized?
+```
+
+rather than:
+
+```text
+What information is relevant?
+```
+
+Current panel implementations primarily materialize tables.
+
+Future panel types may include:
+
+* LineChartPanel
+* HistogramPanel
+* ScatterPlotPanel
+* ImagePanel
+* VideoPanel
+* InteractivePanel
+
+Panels define visualization intent.
+
+Renderers determine how that intent is ultimately presented.
+
+## Layouts
+
+Layouts define the spatial arrangement of panels.
+
+Layouts answer:
+
+```text
+Where should information appear?
+```
+
+Examples include:
+
+* single-column layouts
+* multi-column layouts
+* summary/detail layouts
+* dashboard grids
+
+Layouts remain presentation artifacts and do not establish semantic ownership.
+
+## Dashboards
+
+Dashboards organize one or more layouts into complete analytical workspaces.
+
+Examples include:
+
+* QA/QC dashboards
+* ontology inspection dashboards
+* catalog exploration dashboards
+* executive summary dashboards
+* validation dashboards
+
+Dashboards answer:
+
+```text
+How should multiple analytical presentations be organized?
+```
+
+rather than:
+
+```text
+What information is relevant?
+```
+
+Dashboard ownership resides entirely within the display subsystem.
+
+Dashboards remain presentation artifacts and do not establish semantic ownership.
+
+## Architectural Invariant
+
+The display subsystem intentionally separates:
+
+```text
+Analytical Content
+
+VARIABLE
+    ↓
+GROUP
+    ↓
+VIEW
+```
+
+from:
+
+```text
+Visual Presentation
+
+VIEW
+    ↓
+PANEL
+    ↓
+LAYOUT
+    ↓
+DASHBOARD
+```
+
+This separation allows analytical presentations to remain stable while visualization technologies evolve.
+
+Tables are currently the primary presentation mechanism.
+
+Future implementations may introduce:
+
+* charts
+* plots
+* images
+* videos
+* interactive visualizations
+
+without altering the analytical hierarchy.
+
+---
+## Future Visualization Forms
+
+The display architecture is intentionally
+independent from any specific visualization
+technology.
+
+Current implementations primarily render:
+
+* tables
+* pivot presentations
+
+Future implementations may include:
+
+* charts
+* plots
+* images
+* videos
+* interactive visualizations
+
+These additions SHOULD be introduced as
+new panel types rather than modifications
+to the analytical hierarchy.
+
+Architectural Invariant
+
+    VARIABLE
         ↓
-    DisplayGroup
+    GROUP
         ↓
-    DisplayView
+    VIEW
 
-and
+remains stable regardless of the visual
+presentation technology used by panels.
 
-    DisplayField
-        ↓
-    DisplayDashboard
+Current primary panel types:
 
-Dashboards complement views rather than
-replace them.
+    SummaryPanel
+    CounterPanel
+    CrossTabPanel
 
-Views typically produce a single table.
+Future panel types may include:
 
-Dashboards produce multi-panel analytical
-layouts suitable for:
+    ChartPanel
+    HistogramPanel
+    ScatterPanel
+    ImagePanel
+    VideoPanel
 
-* QA/QC workflows
-* ontology inspection
-* catalog exploration
-* validation reports
-* executive summaries
-
-Dashboard ownership resides entirely within
-the display subsystem.
-
-Dashboards remain presentation artifacts and
-do not establish semantic ownership.
+The introduction of new panel types
+SHOULD NOT require changes to the
+analytical hierarchy.
 
 ---
 
@@ -569,15 +832,9 @@ pivot
 
 The renderer may implement pivot mode through row/column transposition, but that implementation detail does not define the mode.
 
-````
 
 ---
 
-# New Section: Display Profiles
-
-Immediately after the new Display Modes section.
-
-```markdown
 # Display Profiles
 
 Display profiles provide renderer-facing presentation customization.
@@ -1022,6 +1279,24 @@ View Entry Metadata
         ↓
 Participating View Field
 ```
+
+## Panels consume views
+
+Panels SHOULD derive analytical content
+from views rather than directly from
+variables.
+
+This preserves the separation between:
+
+    analytical composition
+
+and
+
+    visual presentation
+
+Exceptions may exist for specialized
+diagnostic panels, but view-based
+composition is preferred.
 
 ## Entry metadata determines participation
 

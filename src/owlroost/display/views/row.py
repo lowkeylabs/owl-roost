@@ -15,8 +15,13 @@ and architectural role.
 
 from __future__ import annotations
 
+from owlroost.core.utils import normalize_module_path
 from owlroost.display.specs import (
     DisplayView,
+)
+
+SHARED_VIEW_ONTOLOGY = dict(
+    defined_in=normalize_module_path(__file__),
 )
 
 
@@ -52,6 +57,7 @@ def register_display_views(
                 ("description", {"modes": ["pivot"]}),
             ],
             description=(""),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )
 
@@ -69,10 +75,13 @@ def register_display_views(
                 "display.starting_ages",
                 "basic_info.life_expectancy",
                 "balance_sheet.net_worth",
-                "rates_selection.method",
+                # "rates_selection.method",
+                # "rates_selection.values",
+                "display.compact_rates",
                 "display.optimization_goal",
             ],
             description=(""),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )
 
@@ -92,6 +101,7 @@ def register_display_views(
                 "balance_sheet.fixed_assets_debt_remaining_value",
             ],
             description=(""),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )
 
@@ -107,6 +117,7 @@ def register_display_views(
                 "description",
             ],
             description=(""),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )
 
@@ -141,5 +152,6 @@ def register_display_views(
                 "assets, liabilities, total assets, "
                 "and net worth."
             ),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )

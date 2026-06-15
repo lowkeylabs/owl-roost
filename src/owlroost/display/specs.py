@@ -514,6 +514,7 @@ class DisplayView:
     entries: list[DisplayViewEntry]
 
     description: str = ""
+    defined_in: str | None = None
 
 
 @dataclass
@@ -522,3 +523,4 @@ class DisplayDashboard:
     title: str | None = None
     rows: list[DashboardRow] = field(default_factory=list)
     description: str = ""
+    defined_in: str | None = None

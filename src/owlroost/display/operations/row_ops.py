@@ -67,4 +67,10 @@ def apply_top(
     if top_n is None:
         return rows
 
-    return rows[:top_n]
+    top_int = 0
+    try:
+        top_int = int(top_n)
+    except Exception as e:
+        raise e
+
+    return rows[:top_int]

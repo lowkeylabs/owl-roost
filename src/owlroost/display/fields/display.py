@@ -1,4 +1,4 @@
-# src/owlroost/display/fields/design.py
+# src/owlroost/display/fields/display.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -46,10 +46,10 @@ ABBREVIATIONS = {
         "maxBequest": "mxBeq",
     },
     "rates_selection.method": {
-        "historical average": "histAvg",
+        "historical_average": "histAvg",
         "historical": "hist",
         "bootstrap_sor": "bSOR",
-        "histolognormal": "hLogNorm",
+        "historical_lognormal": "hLogNorm",
     },
 }
 
@@ -104,11 +104,6 @@ OG_ONTOLOGY = dict(
     materialization_level="run",
     node_type=CatalogNodeType.VARIABLE,
     defined_in=normalize_module_path(__file__),
-    derived_from=[
-        "optimization_parameters.objective",
-        "solver_options.bequest",
-        "solver_options.netSpending",
-    ],
 )
 
 
@@ -138,7 +133,7 @@ def register_display_fields(
             profiles={
                 "table": DisplayProfile(
                     label="Goal",
-                    width=12,
+                    width="auto",
                 ),
                 "pivot": DisplayProfile(
                     label="Optimization Goal",
@@ -146,6 +141,40 @@ def register_display_fields(
                 ),
             },
             **OG_ONTOLOGY,
+            derived_from=[
+                "optimization_parameters.objective",
+                "solver_options.bequest",
+                "solver_options.net_spending",
+            ],
+        )
+    )
+
+    # =====================================================
+    # Compact Rates
+    # =====================================================
+
+    reg.register_display_field(
+        DisplayField.field(
+            "display.compact_rates",
+            display_fn=display_compact_rates,
+            description=("Combined rates_method and relavant params for brevity."),
+            profiles={
+                "table": DisplayProfile(
+                    label="Rate Model",
+                    width="auto",
+                ),
+                "pivot": DisplayProfile(
+                    label="Compact rate model and params",
+                    width="auto",
+                ),
+            },
+            **OG_ONTOLOGY,
+            derived_from=[
+                "rates_selection.method",
+                "rates_selection.from",
+                "rates_selection.to",
+                "rates_selection.values",
+            ],
         )
     )
 
@@ -540,3 +569,107 @@ def current_ages_display(
 
     except Exception:
         return None
+
+
+def format_rate(
+    value,
+):
+    value = float(value)
+
+    if value.is_integer():
+        return str(
+            int(value),
+        )
+
+    return f"{value:.1f}"
+
+
+def display_compact_rates(
+    row,
+):
+    """
+    Compact rates display.
+
+    Examples
+    --------
+    hist(1928-2025)
+    histAvg(1928-2025)
+    bSOR(1960-2020)
+    hLogNorm(1928-2025)
+
+    user(7,5,2)
+
+    optimistic
+    conservative
+    default
+    """
+
+    rates = row.get(
+        "_inputs",
+        {},
+    ).get(
+        "rates_selection",
+        {},
+    )
+
+    method = rates.get(
+        "method",
+    )
+
+    if not method:
+        return None
+
+    short = make_abbreviation_display(
+        "rates_selection.method",
+    )(row)
+
+    # -----------------------------------------------------
+    # Historical window methods
+    # -----------------------------------------------------
+
+    if method in {
+        "bootstrap_sor",
+        "historical",
+        "historical_average",
+        "historical_lognormal",
+    }:
+        start = rates.get("from")
+        end = rates.get("to")
+
+        if start is not None and end is not None:
+            return f"{short}[{start}-{end}]"
+
+        return short
+
+    # -----------------------------------------------------
+    # User-specified rates
+    # -----------------------------------------------------
+
+    if method == "user":
+        values = rates.get(
+            "values",
+        )
+
+        if values:
+            values_str = ",".join(format_rate(v) for v in values)
+
+            return f"{short}[{values_str}]"
+
+        return short
+
+    # -----------------------------------------------------
+    # Standalone methods
+    # -----------------------------------------------------
+
+    if method in {
+        "optimistic",
+        "conservative",
+        "default",
+    }:
+        return short
+
+    # -----------------------------------------------------
+    # Fallback
+    # -----------------------------------------------------
+
+    return short

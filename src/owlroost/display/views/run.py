@@ -15,8 +15,13 @@ and architectural role.
 
 from __future__ import annotations
 
+from owlroost.core.utils import normalize_module_path
 from owlroost.display.specs import (
     DisplayView,
+)
+
+SHARED_VIEW_ONTOLOGY = dict(
+    defined_in=normalize_module_path(__file__),
 )
 
 
@@ -52,6 +57,7 @@ def register_display_views(
                 ("description", {"modes": ["pivot"]}),
             ],
             description=(""),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )
 
@@ -73,6 +79,7 @@ def register_display_views(
                 ("description", {"modes": ["pivot"]}),
             ],
             description=(""),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )
 
@@ -101,6 +108,7 @@ def register_display_views(
                 ("description", {"modes": ["pivot"]}),
             ],
             description=(""),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )
 
@@ -147,6 +155,7 @@ def register_display_views(
                 ),
             ],
             description=(""),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )
 
@@ -190,5 +199,6 @@ def register_display_views(
                 "run_timing.trial_latency_skew",
             ],
             description=("Run-level execution, throughput, and timing diagnostics."),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )

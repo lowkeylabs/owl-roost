@@ -24,6 +24,7 @@ from owlroost.catalog.comparison.supersession import (
 from owlroost.catalog.loaders import load_catalog_rows
 from owlroost.cli.utils import (
     parse_id_selection,
+    render_available_views,
     render_table,
     resolve_renderer,
     select_rows_by_id,
@@ -308,6 +309,24 @@ def cmd_results(
         display_registry=display_registry,
     )
     catalog_index = {row["field_name"]: row for row in catalog_rows}
+
+    # =====================================================
+    # Check requested view
+    # =====================================================
+
+    if not view or not display_registry.has_view_for_level(
+        level,
+        view,
+    ):
+        if view:
+            click.echo(f"Display view not found: {level}/{view}")
+
+        render_available_views(
+            display_registry,
+            level=level,
+        )
+
+        return
 
     # =====================================================
     # Discover + Load Runs

@@ -15,6 +15,8 @@ and architectural role.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from owlroost.display.specs import (
     DisplayDashboard,
     DisplayField,
@@ -667,3 +669,49 @@ class DisplayRegistry:
             level,
             name,
         )
+
+    def available_views(
+        self,
+        level,
+    ):
+        rows = []
+
+        for (
+            view_level,
+            view_name,
+        ), view in self._views.items():
+            if view_level not in (
+                level,
+                "row",
+            ):
+                continue
+
+            source = "?"
+
+            if view.defined_in:
+                source = Path(
+                    view.defined_in,
+                ).name
+
+            rows.append(
+                (
+                    view_name,
+                    source,
+                )
+            )
+
+        return sorted(
+            rows,
+        )
+
+    def has_view_for_level(
+        self,
+        level: str,
+        name: str,
+    ) -> bool:
+        """
+        Return True if view is available
+        for level, including row fallback.
+        """
+
+        return (level, name) in self._views or ("row", name) in self._views

@@ -22,16 +22,19 @@ from pathlib import Path
 
 import click
 
-from owlroost.catalog.loaders import load_catalog_rows
+from owlroost.catalog.context import build_catalog_context
+from owlroost.cli.help import (
+    process_help_requests,
+)
 from owlroost.cli.utils import (
     parse_override_request,
+    render_available_views,
     render_table,
     resolve_renderer,
     select_case_rows,
     split_build_args,
 )
 from owlroost.core.run_owl_executor import execute_runs
-from owlroost.display.bootstrap import build_display_registry
 from owlroost.display.discovery import find_runs
 from owlroost.display.explain import (
     parse_explain_request,
@@ -40,12 +43,9 @@ from owlroost.display.loaders import load_case_rows
 from owlroost.display.materializers.compare import materialize_compare_table
 from owlroost.display.materializers.materialize import materialize_view
 from owlroost.display.operations.filtering import apply_filters
-from owlroost.display.operations.help import render_field_help
 from owlroost.display.operations.row_ops import apply_top, attach_row_ids
 from owlroost.display.operations.sorting import apply_canonical_sort, apply_sort
 from owlroost.display.operations.table_ops import inject_id_column
-from owlroost.metrics.bootstrap import build_metrics_registry
-from owlroost.schema.bootstrap import build_schema_registry
 from owlroost.schema.sweeps import expand_cli_overrides
 
 DEFAULT_LEVEL = "case"
@@ -287,7 +287,7 @@ def run_hydra_build(
 )
 @click.option(
     "--top",
-    type=int,
+    type=str,
     help="Limit number of rows.",
 )
 @click.option(
@@ -358,18 +358,13 @@ def cmd_build(
     #
     #        build_only = True
 
-    schema_registry = build_schema_registry()
-    metrics_registry = build_metrics_registry()
-    display_registry = build_display_registry(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-    )
-    catalog_rows = load_catalog_rows(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-        display_registry=display_registry,
-    )
-    catalog_index = {row["field_name"]: row for row in catalog_rows}
+    (
+        schema_registry,
+        metrics_registry,
+        display_registry,
+        catalog_rows,
+        catalog_index,
+    ) = build_catalog_context()
 
     # =====================================================
     # Parse explain request
@@ -399,86 +394,43 @@ def cmd_build(
         )
 
     # =====================================================
+    # Check requested view
+    # =====================================================
+
+    level = DEFAULT_LEVEL
+
+    if not view or not display_registry.has_view_for_level(
+        level,
+        view,
+    ):
+        if view:
+            click.echo(f"Display view not found: {level}/{view}")
+
+        render_available_views(
+            display_registry,
+            level=level,
+        )
+
+        return
+
+    # =====================================================
     # Context-sensitive CLI help
     # =====================================================
 
     rows = load_case_rows(".", metrics_registry=metrics_registry)
     rows = attach_row_ids(rows)
 
-    if "help" in (filters or ()):
-        render_field_help(
-            rows=rows,
-            registry=display_registry,
-            level="case",
-            view_name=view,
-            mode="view",
-            title="Available filter fields",
-            examples=[
-                "--filter id=in:1,2,3",
-                "--filter display.total_savings>2000000",
-                "--filter optimization_parameters.objective=maxBequest",
-                "--filter rates_selection.method=user",
-            ],
-        )
-
-        return
-
-    if "help-all" in (filters or ()):
-        render_field_help(
-            rows=rows,
-            registry=display_registry,
-            level="case",
-            view_name=view,
-            mode="all",
-            title="All queryable fields",
-        )
-
-        return
-
-    if sort == "help":
-        render_field_help(
-            rows=rows,
-            registry=display_registry,
-            level="case",
-            view_name=view,
-            mode="view",
-            title="Available filter fields",
-            examples=[
-                "--sort display.total_savings",
-                "--sort -display.total_savings",
-                "--sort display.fixed_income",
-            ],
-        )
-
-        return
-
-    if sort == "help-all":
-        render_field_help(
-            rows=rows,
-            registry=display_registry,
-            level="case",
-            view_name=view,
-            mode="all",
-            title="Available filter fields",
-            examples=[
-                "--sort display.total_savings",
-                "--sort -display.total_savings",
-                "--sort display.fixed_income",
-            ],
-        )
-
-        return
-
-    if str(top).lower() == "help":
-        click.echo()
-        click.echo("Limit displayed rows.")
-        click.echo()
-        click.echo("Examples:")
-        click.echo()
-        click.echo("  --top 5")
-        click.echo("  --top 10")
-        click.echo()
-
+    if process_help_requests(
+        selectors=selectors,
+        view=view,
+        explain=explain,
+        filters=filters,
+        sort=sort,
+        top=top,
+        rows=rows,
+        display_registry=display_registry,
+        level=level,
+    ):
         return
 
     # ----------------------------------------

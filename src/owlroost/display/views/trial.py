@@ -15,8 +15,13 @@ and architectural role.
 
 from __future__ import annotations
 
+from owlroost.core.utils import normalize_module_path
 from owlroost.display.specs import (
     DisplayView,
+)
+
+SHARED_VIEW_ONTOLOGY = dict(
+    defined_in=normalize_module_path(__file__),
 )
 
 
@@ -54,5 +59,6 @@ def register_display_views(
                 "financial.bequest.total.today",
             ],
             description=(""),
+            **SHARED_VIEW_ONTOLOGY,
         )
     )

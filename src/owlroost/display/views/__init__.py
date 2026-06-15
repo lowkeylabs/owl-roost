@@ -79,6 +79,9 @@ def discover_view_modules() -> list[ModuleType]:
         if module_info.name.startswith("_"):
             continue
 
+        if module_info.name == "00_examples":
+            continue
+
         module = importlib.import_module(f"{__name__}.{module_info.name}")
 
         modules.append(module)
