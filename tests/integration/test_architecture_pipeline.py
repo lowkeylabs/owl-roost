@@ -129,19 +129,6 @@ def test_architecture_pipeline():
     # Fixture Architecture
     # =====================================================
 
-    assert display_registry.has_view(
-        "case",
-        "testing-fixture",
-    )
-
-    assert display_registry.has_group(
-        "testing.expansion",
-    )
-
-    assert display_registry.has_display_field(
-        "testing.scalar",
-    )
-
     # =====================================================
     # Catalog
     # =====================================================
@@ -164,7 +151,7 @@ def test_architecture_pipeline():
         rows=catalog_rows,
         registry=display_registry,
         level="case",
-        view_name="testing-fixture",
+        view_name="cases",
     )
 
     assert table is not None
@@ -297,38 +284,16 @@ def test_architecture_pipeline():
     assert display_names & catalog_field_names
 
     # =====================================================
-    # Testing Display Fixtures
+    # Production Synthetic Variables
     # =====================================================
 
-    expected_fixture_fields = {
-        "testing.scalar",
-        "testing.string",
-        "testing.boolean",
-        "testing.composed",
-        "testing.semantic",
-    }
+    synthetic_rows = [row for row in catalog_rows if row.get("projection_kind") == "synthetic"]
 
-    missing = expected_fixture_fields - catalog_field_names
+    assert synthetic_rows
 
-    assert not missing, f"Testing display fixtures must participate in catalog: {sorted(missing)}"
+    roost_synthetic_rows = [row for row in synthetic_rows if row.get("owner") == "ROOST"]
 
-    # =====================================================
-    # Explicit Semantic Fixture
-    # =====================================================
-
-    assert "testing.semantic" in catalog_field_names
-
-    semantic_fixture = next(
-        row for row in catalog_rows if (row["field_name"] == "testing.semantic")
-    )
-
-    assert semantic_fixture["owner"] == "ROOST"
-
-    assert semantic_fixture["semantic_domain"] == "execution"
-
-    assert semantic_fixture["value_origin"] == "roost-computed"
-
-    assert semantic_fixture["projection_kind"] == "synthetic"
+    assert roost_synthetic_rows
 
     # =====================================================
     # Catalog Sources

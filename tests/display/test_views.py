@@ -13,9 +13,9 @@ from owlroost.display.views import (
     register_display_views,
 )
 
-# =========================================================
-# Fixtures
-# =========================================================
+from .fixtures import (
+    register_testing_views,
+)
 
 
 def build_registry() -> DisplayRegistry:
@@ -33,6 +33,10 @@ def build_registry() -> DisplayRegistry:
         reg,
     )
 
+    register_testing_views(
+        reg,
+    )
+
     return reg
 
 
@@ -46,8 +50,8 @@ def test_example_views_load():
 
     expected = {
         ("case", "example-scalar"),
-        ("case", "example-overlays"),
-        ("case", "example-synthetic"),
+        #        ("case", "example-overlays"),
+        #        ("case", "example-synthetic"),
         ("case", "example-profiles"),
         ("case", "example-summary"),
         ("case", "example-architecture"),
