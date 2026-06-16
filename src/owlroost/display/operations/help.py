@@ -162,9 +162,7 @@ def render_field_help(
                 sf,
             )
 
-    for field in sorted(
-        fields,
-    ):
+    for field in fields:
         click.echo(f"  {field}")
 
     if examples:
@@ -174,5 +172,52 @@ def render_field_help(
 
         for ex in examples:
             click.echo(f"  {ex}")
+
+    click.echo()
+
+
+def render_override_help(
+    overrides,
+    help_requests,
+    schema_registry,
+):
+    """
+    Render override help.
+    """
+
+    import click
+
+    if overrides or help_requests:
+        click.echo()
+        click.echo(f"overrides: {overrides}")
+        click.echo(f"help_requests:{help_requests}")
+
+    click.echo()
+    click.echo("Available overrides:")
+    click.echo()
+
+    click.echo("Overrides modify schema values before execution.")
+
+    click.echo()
+
+    click.echo("Examples:")
+
+    click.echo()
+
+    click.echo("  solver_options.bequest=0")
+
+    click.echo("  rates_selection.method=user")
+
+    click.echo("  roost_settings.trials_per_run=100")
+
+    click.echo()
+
+    click.echo("Use:")
+
+    click.echo()
+
+    click.echo("  roost vars")
+
+    click.echo("to browse all available overrideable fields.")
 
     click.echo()

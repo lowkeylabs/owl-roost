@@ -155,12 +155,12 @@ def register_display_fields(
             profiles={
                 "table": DisplayProfile(
                     label="ID",
-                    width=12,
+                    width="auto",
                     content_align="center",
                 ),
                 "pivot": DisplayProfile(
                     label="ID",
-                    width=12,
+                    width="auto",
                     content_align="center",
                 ),
             },

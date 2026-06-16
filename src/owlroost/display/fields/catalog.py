@@ -69,7 +69,7 @@ def register_display_fields(
             profiles={
                 "table": DisplayProfile(
                     label="Field",
-                    width=40,
+                    width="auto",
                 ),
             },
             **CATALOG_ONTOLOGY,

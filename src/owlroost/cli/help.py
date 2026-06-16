@@ -37,6 +37,7 @@ from owlroost.cli.utils import (
 )
 from owlroost.display.operations.help import (
     render_field_help,
+    render_override_help,
 )
 
 # =========================================================
@@ -154,6 +155,8 @@ def render_explain_help():
 def process_help_requests(
     *,
     selectors,
+    overrides,
+    help_requests,
     view,
     explain,
     filters,
@@ -161,6 +164,7 @@ def process_help_requests(
     top,
     rows,
     display_registry,
+    schema_registry,
     level,
 ):
     """
@@ -178,13 +182,25 @@ def process_help_requests(
     """
 
     # =====================================================
-    # Selector help
+    # Positional CLI help
+    #
+    # Examples:
+    #
+    #   roost build .
+    #       -> selector help
+    #
+    #   roost build 0 .
+    #       -> override help
+    #
+    #   roost build 0,5,7 .
+    #       -> override help
     # =====================================================
 
-    if wants_help(
-        selectors,
-    ):
-        render_selector_help()
+    if help_requests:
+        if selectors:
+            render_override_help(overrides, help_requests, schema_registry)
+        else:
+            render_selector_help()
 
         return True
 
@@ -230,8 +246,8 @@ def process_help_requests(
             examples=[
                 "--filter id=in:1,2,3",
                 "--filter display.total_savings>2000000",
-                ("--filter optimization_parameters.objective=maxBequest"),
-                ("--filter rates_selection.method=user"),
+                "--filter optimization_parameters.objective=maxBequest",
+                "--filter rates_selection.method=user",
             ],
         )
 

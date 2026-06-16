@@ -20,20 +20,21 @@ from pathlib import Path
 
 import click
 
+from owlroost.catalog.context import build_catalog_context
+from owlroost.cli.help import (
+    process_help_requests,
+)
 from owlroost.cli.utils import (
     render_available_views,
     render_table,
     resolve_renderer,
 )
 from owlroost.core.run_owl_executor import execute_runs
-from owlroost.display.bootstrap import build_display_registry
 from owlroost.display.loaders import load_run_rows
 from owlroost.display.materializers.materialize import materialize_view
 from owlroost.display.operations.filtering import apply_filters
 from owlroost.display.operations.row_ops import apply_top, attach_row_ids
 from owlroost.display.operations.sorting import apply_canonical_sort, apply_sort
-from owlroost.metrics.bootstrap import build_metrics_registry
-from owlroost.schema.bootstrap import build_schema_registry
 
 # =========================================================
 # CLI
@@ -137,14 +138,13 @@ def cmd_run(
     # Build Registries
     # =====================================================
 
-    schema_registry = build_schema_registry()
-
-    metrics_registry = build_metrics_registry()
-
-    display_registry = build_display_registry(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-    )
+    (
+        schema_registry,
+        metrics_registry,
+        display_registry,
+        catalog_rows,
+        catalog_index,
+    ) = build_catalog_context()
 
     # =====================================================
     # Check requested view
@@ -152,19 +152,20 @@ def cmd_run(
 
     level = "run"
 
-    if not view or not display_registry.has_view_for_level(
-        level,
-        view,
-    ):
-        if view:
-            click.echo(f"Display view not found: {level}/{view}")
+    if 0:
+        if not view or not display_registry.has_view_for_level(
+            level,
+            view,
+        ):
+            if view:
+                click.echo(f"Display view not found: {level}/{view}")
 
-        render_available_views(
-            display_registry,
-            level=level,
-        )
+            render_available_views(
+                display_registry,
+                level=level,
+            )
 
-        return
+            return
 
     # =====================================================
     # Discover + Load Runs
@@ -174,6 +175,22 @@ def cmd_run(
         metrics_registry=metrics_registry,
         results_root=str(root),
     )
+
+    if process_help_requests(
+        selectors=selectors,
+        overrides=None,
+        help_requests=None,
+        view=view,
+        explain=None,
+        filters=filters,
+        sort=sort,
+        top=top,
+        rows=rows,
+        display_registry=display_registry,
+        schema_registry=schema_registry,
+        level=level,
+    ):
+        return
 
     if not rows:
         click.echo("No runs found.")

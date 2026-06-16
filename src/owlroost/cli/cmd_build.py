@@ -267,7 +267,7 @@ def run_hydra_build(
 @click.option(
     "--explain",
     type=str,
-    help=("Explanation facets. Comma-separated list from: variables,values,sources,debug,all"),
+    help=("Explanation facets. Use '.' for list."),
 )
 @click.option(
     "--filter",
@@ -335,7 +335,8 @@ def cmd_build(
     if view is None:
         view = ctx.info_name or DEFAULT_VIEW
 
-    selectors, overrides = split_build_args(args)
+    selectors, overrides, help_requests = split_build_args(args)
+
     is_cases_command = _invoked_as == "cases"
 
     direct_case_paths = resolve_direct_case_paths(
@@ -374,7 +375,7 @@ def cmd_build(
         explain,
     )
 
-    if explain_errors:
+    if 0 and explain_errors:
         raise click.BadParameter(
             "\n".join(
                 explain_errors,
@@ -386,7 +387,7 @@ def cmd_build(
         schema_registry,
     )
 
-    if override_errors:
+    if 0 and override_errors:
         raise click.BadParameter(
             "\n".join(
                 override_errors,
@@ -399,19 +400,20 @@ def cmd_build(
 
     level = DEFAULT_LEVEL
 
-    if not view or not display_registry.has_view_for_level(
-        level,
-        view,
-    ):
-        if view:
-            click.echo(f"Display view not found: {level}/{view}")
+    if 0:
+        if not view or not display_registry.has_view_for_level(
+            level,
+            view,
+        ):
+            if view:
+                click.echo(f"Display view not found: {level}/{view}")
 
-        render_available_views(
-            display_registry,
-            level=level,
-        )
+            render_available_views(
+                display_registry,
+                level=level,
+            )
 
-        return
+            return
 
     # =====================================================
     # Context-sensitive CLI help
@@ -422,6 +424,8 @@ def cmd_build(
 
     if process_help_requests(
         selectors=selectors,
+        overrides=overrides,
+        help_requests=help_requests,
         view=view,
         explain=explain,
         filters=filters,
@@ -429,6 +433,7 @@ def cmd_build(
         top=top,
         rows=rows,
         display_registry=display_registry,
+        schema_registry=schema_registry,
         level=level,
     ):
         return

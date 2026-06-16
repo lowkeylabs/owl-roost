@@ -31,18 +31,48 @@ GPL-compatible license.
 
 # Core Concepts
 
-ROOST introduces eight key concepts in extending the work of OWL.
+ROOST introduces nine key concepts in extending the work of OWL.
+
+* **Studies** organize reproducible research packages that combine cases, experiments, sessions, results, reports, and documentation into a shareable analytical unit.
 
 * **Decision options** define *what question is being asked*
 * **Choice templates** define *policy alternatives*
+
 * **Cases** define *initial conditions and constraints*
+
 * **Experiments** define *scientific groupings and research objectives*
 * **Sessions** define *execution provenance and generated outputs*
 * **Runs** define *policy evaluations under uncertainty*
 * **Trials** define *individual stochastic realizations*
 * **Results** provide *evidence for comparison and insight*
 
+```text
+Study
+    ├── Cases
+    ├── Experiments
+    │       └── Related Runs
+    ├── Sessions
+    │       └── Executed Runs
+    ├── Results
+    ├── Reports
+    └── Documentation
+```
 Cases and runs are shared between OWL and ROOST. They are represented by exactly the same files and outputs.
+
+---
+
+# Relationship to OWL
+
+* **OWL** computes optimal strategies for a given case
+* **ROOST** evaluates, compares, and studies retirement decision policies under uncertainty
+
+ROOST builds on OWL’s optimization engine by providing the conceptual structure, stochastic simulation framework, scientific organization model, and tooling needed to explore retirement decisions as they are actually faced:
+
+* Sequentially
+* Under uncertainty
+* Across many plausible futures
+* With multiple competing policy alternatives under consideration
+* With reproducible scientific experimentation and statistical evaluation
 
 ---
 
@@ -885,36 +915,6 @@ ROOST instead helps answer:
 
 ---
 
-# Future Directions
-
-ROOST is evolving toward support for:
-
-* Cross-household generalization studies
-* Merge-compatible run analysis
-* Structural equivalence analysis
-* Sampling strategy evaluation
-* Statistical estimator comparison
-* Experiment overlays and logical grouping systems
-* Reproducible scientific experiment management
-* Computational complexity and runtime-behavior analysis
-* Operational deduplication and cleanup workflows
-* Advanced reporting and comparative visualization workflows
-
----
-
-# Relationship to OWL
-
-* **OWL** computes optimal strategies for a given case
-* **ROOST** evaluates, compares, and studies retirement decision policies under uncertainty
-
-ROOST builds on OWL’s optimization engine by providing the conceptual structure, stochastic simulation framework, scientific organization model, and tooling needed to explore retirement decisions as they are actually faced:
-
-* Sequentially
-* Under uncertainty
-* Across many plausible futures
-* With multiple competing policy alternatives under consideration
-* With reproducible scientific experimentation and statistical evaluation
-
 ## Studies and Study Templates
 
 ROOST is evolving toward a **methodology-oriented analytical architecture** in which studies represent reusable analytical frameworks layered on top of the canonical operational execution hierarchy.
@@ -989,6 +989,62 @@ Studies are:
 * Defined independently from filesystem hierarchy
 
 Studies operate as analytical overlays on top of sessions, runs, and trials.
+
+---
+
+## Studies as Reproducible Research Packages
+
+A study is the primary unit of sharing, reproduction, publication, and education within ROOST.
+
+Studies may contain:
+
+* Cases
+* Household Financial Profiles (HFPs)
+* Experiments
+* Sessions
+* Results
+* Reports
+* Documentation
+* Visualizations
+* Publication artifacts
+
+For example:
+
+```text
+studies/
+└── social-security-age/
+    ├── study.toml
+    ├── cases/
+    ├── sessions/
+    ├── results/
+    ├── reports/
+    └── paper.qmd
+```
+
+Studies are intentionally broader than experiments.
+
+An experiment defines a scientific manipulation or comparison.
+
+A study defines the broader analytical context in which one or more experiments are interpreted, documented, reproduced, and communicated.
+
+Examples include:
+
+* Social Security timing studies
+* Roth conversion studies
+* Runtime scaling studies
+* Sampling convergence studies
+* OWL methodology tutorials
+* JOSS publication packages
+
+Long-term, studies are expected to become the primary unit of sharing and reproducible analytical workflows within ROOST while preserving the existing operational hierarchy:
+
+Case → Session → Run → Trial
+
+and the existing scientific interpretation layer:
+
+Experiment → Related Runs
+
+Studies therefore complement rather than replace experiments.
 
 ---
 
@@ -1137,86 +1193,46 @@ without altering filesystem provenance structure.
 
 # Future Direction
 
-ROOST is likely to evolve toward a study-centered analytical workflow in which:
+The concepts described in this document represent the intended long-term conceptual architecture of ROOST.
 
-* Study templates become reusable analytical methodologies
-* Studies become the primary scientific organization layer
-* Sessions remain operational execution containers
-* Runs remain the primary scientific comparison unit
-* Trials remain primitive stochastic observations
+Many concepts already exist operationally, including:
 
-This direction supports both:
+* Cases
+* Sessions
+* Runs
+* Trials
+* Experiments
+* Variable ontologies
+* Registry layering
+* Provenance tracking
 
-* Household-specific retirement analysis
-  and
-* Cross-household scientific generalization
+Other concepts are currently architectural direction rather than implemented functionality, including:
 
-while also supporting:
+* Study definitions
+* Study templates
+* Automated study instantiation
+* Study-oriented reporting workflows
+* Publication-oriented research packages
+* Automated comparison and interpretation workflows
 
-* Operational runtime studies
-* Computational scaling analysis
-* Sampling and convergence evaluation
-* Statistical methodology exploration
+Long-term development is expected to move ROOST toward a study-centered analytical workflow in which studies become the primary unit of:
 
-within a unified conceptual architecture.
+* Reproducibility
+* Scientific communication
+* Methodology sharing
+* Education
+* Publication
+* Cross-household analytical research
 
-## Reproducible Study Workflows
-
-ROOST is evolving toward a workflow-oriented analytical architecture in which studies and study templates operationalize reproducible analytical methodologies layered on top of the canonical execution hierarchy.
-
-Conceptually:
+while preserving the canonical operational hierarchy:
 
 ```text
-Study Template
-    ↓
-Study Instantiation
-    ↓
-Session Materialization
-    ↓
-Run and Trial Execution
-    ↓
-QA/QC Validation
-    ↓
-Scientific Interpretation and Reporting
+Case → Session → Run → Trial
+```
+and the existing scientific organization model:
+
+```text
+Experiment → Related Runs
 ```
 
-Study templates are intended to define reusable analytical workflows rather than merely reusable reports.
-
-A study template may define:
-
-* Decision, sampling, and execution sweeps
-* Session generation strategies
-* Runtime execution defaults
-* QA/QC validation requirements
-* Comparison methodologies
-* Aggregation semantics
-* Starter visualizations and reports
-* Publication-oriented reporting scaffolds
-
-A study instantiation may therefore generate:
-
-* One or more execution sessions
-* Session orchestration notebooks (`study-run.qmd`)
-* QA/QC validation notebooks (`study-qaqc.qmd`)
-* Starter analytical reports (`study-start.qmd`)
-* Derived dashboards, figures, and publication artifacts
-
-This architecture intentionally separates:
-
-| Layer              | Purpose                                     |
-| ------------------ | ------------------------------------------- |
-| `results/`         | Immutable operational execution evidence    |
-| `studies/`         | Curated analytical interpretation workflows |
-| `templates/study/` | Reusable analytical methodologies           |
-
-Studies are expected to support workflows ranging from:
-
-* Household-specific retirement guidance
-  to
-* Cross-household scientific generalization
-  to
-* Runtime and computational scaling analysis
-
-within a unified reproducible analytical framework.
-
-Long-term architectural direction is expected to shift scientific organization from experiment-oriented overlays toward study-oriented analytical methodologies layered over operational execution provenance.
+Studies therefore extend rather than replace the current architecture, providing a higher-level analytical framework for organizing, reproducing, interpreting, and communicating retirement research.

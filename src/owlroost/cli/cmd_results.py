@@ -21,7 +21,10 @@ from owlroost.catalog.comparison.supersession import (
     collect_superseded_rows,
     find_superseded_rows,
 )
-from owlroost.catalog.loaders import load_catalog_rows
+from owlroost.catalog.context import build_catalog_context
+from owlroost.cli.help import (
+    process_help_requests,
+)
 from owlroost.cli.utils import (
     parse_id_selection,
     render_available_views,
@@ -30,7 +33,6 @@ from owlroost.cli.utils import (
     select_rows_by_id,
     split_build_args,
 )
-from owlroost.display.bootstrap import build_display_registry
 from owlroost.display.explain import (
     parse_explain_request,
 )
@@ -43,10 +45,8 @@ from owlroost.display.operations.row_ops import apply_top, attach_row_ids
 from owlroost.display.operations.sorting import apply_canonical_sort, apply_sort
 from owlroost.display.operations.table_ops import inject_id_column
 from owlroost.display.projection import project_rows
-from owlroost.metrics.bootstrap import build_metrics_registry
 from owlroost.operations.delete import collect_delete_targets, delete_paths
 from owlroost.operations.promote import collect_promote_targets, promote_runs
-from owlroost.schema.bootstrap import build_schema_registry
 
 # =========================================================
 # Helpers
@@ -275,7 +275,7 @@ def cmd_results(
         explain,
     )
 
-    if explain_errors:
+    if 0 and explain_errors:
         raise click.BadParameter(
             "\n".join(
                 explain_errors,
@@ -286,7 +286,7 @@ def cmd_results(
     # Parse CLI args
     # =====================================================
 
-    selectors, overrides = split_build_args(
+    selectors, overrides, help_requests = split_build_args(
         args,
     )
 
@@ -297,36 +297,32 @@ def cmd_results(
     # Build Registries
     # =====================================================
 
-    schema_registry = build_schema_registry()
-    metrics_registry = build_metrics_registry()
-    display_registry = build_display_registry(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-    )
-    catalog_rows = load_catalog_rows(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-        display_registry=display_registry,
-    )
-    catalog_index = {row["field_name"]: row for row in catalog_rows}
+    (
+        schema_registry,
+        metrics_registry,
+        display_registry,
+        catalog_rows,
+        catalog_index,
+    ) = build_catalog_context()
 
     # =====================================================
     # Check requested view
     # =====================================================
 
-    if not view or not display_registry.has_view_for_level(
-        level,
-        view,
-    ):
-        if view:
-            click.echo(f"Display view not found: {level}/{view}")
+    if 0:
+        if not view or not display_registry.has_view_for_level(
+            level,
+            view,
+        ):
+            if view:
+                click.echo(f"Display view not found: {level}/{view}")
 
-        render_available_views(
-            display_registry,
-            level=level,
-        )
+            render_available_views(
+                display_registry,
+                level=level,
+            )
 
-        return
+            return
 
     # =====================================================
     # Discover + Load Runs
@@ -343,6 +339,26 @@ def cmd_results(
 
     if not rows:
         click.echo("No runs found.")
+        return
+
+    # =====================================================
+    # Context-sensitive CLI help
+    # =====================================================
+
+    if process_help_requests(
+        selectors=selectors,
+        overrides=overrides,
+        help_requests=help_requests,
+        view=view,
+        explain=explain,
+        filters=filters,
+        sort=sort,
+        top=top,
+        rows=rows,
+        display_registry=display_registry,
+        schema_registry=schema_registry,
+        level=level,
+    ):
         return
 
     # =====================================================

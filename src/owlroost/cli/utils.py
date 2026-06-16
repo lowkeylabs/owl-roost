@@ -204,32 +204,32 @@ def split_catalog_args(
 def split_build_args(
     args,
 ):
-    """
-    Split mixed CLI args into:
-
-    - selectors
-    - hydra overrides
-
-    Selector examples:
-        0
-        0,1-3,7
-
-    Override examples:
-        solver_options.bequest=0
-        rates_selection.method=bootstrap_sor
-    """
-
     selectors = []
     overrides = []
+    help_requests = []
 
     for arg in args:
-        if "=" in arg:
+        if arg.endswith("=."):
+            help_requests.append(("override", arg[:-2]))
+
+        elif arg in (
+            ".",
+            "help",
+            "help-all",
+        ):
+            help_requests.append(arg)
+
+        elif "=" in arg:
             overrides.append(arg)
 
         else:
             selectors.append(arg)
 
-    return selectors, overrides
+    return (
+        selectors,
+        overrides,
+        help_requests,
+    )
 
 
 def overrides_request_trials(

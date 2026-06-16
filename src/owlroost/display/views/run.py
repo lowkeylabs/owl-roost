@@ -94,7 +94,7 @@ def register_display_views(
                 "case_name",
                 "display.compact_id",
                 "display.optimization_goal",
-                "rates_selection.method",
+                "display.compact_rates",
                 "display.completion_fraction",
                 # "fixed_income.social_security_ages",
                 # "solver_options.withSSAges",
