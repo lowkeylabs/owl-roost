@@ -21,20 +21,12 @@ from owlroost.study.specs import (
 )
 
 
-def has_pre_tax_assets(
+def has_pretax_savings(
     row,
 ):
     savings = row.get("_inputs", {}).get("savings_assets", {})
     pretax = savings.get("tax_deferred_savings_balances", [])
     return sum(pretax) > 0
-
-
-def has_social_security(
-    row,
-):
-    inputs = row.get("_inputs", {}).get("fixed_income", {})
-    pias = inputs.get("social_security_pia_amounts", {})
-    return any(pia > 0 for pia in pias)
 
 
 def register_levers(
@@ -59,6 +51,6 @@ def register_levers(
                     label="Lever - has pre-taxable savings",
                 ),
             },
-            applicable_fn=(has_pre_tax_assets),
+            applicable_fn=(has_pretax_savings),
         )
     )
