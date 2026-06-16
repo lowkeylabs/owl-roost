@@ -400,20 +400,19 @@ def cmd_build(
 
     level = DEFAULT_LEVEL
 
-    if 0:
-        if not view or not display_registry.has_view_for_level(
-            level,
-            view,
-        ):
-            if view:
-                click.echo(f"Display view not found: {level}/{view}")
+    if not view or not display_registry.has_view_for_level(
+        level,
+        view,
+    ):
+        if view:
+            click.echo(f"Display view not found: {level}/{view}")
 
-            render_available_views(
-                display_registry,
-                level=level,
-            )
+        render_available_views(
+            display_registry,
+            level=level,
+        )
 
-            return
+        return
 
     # =====================================================
     # Context-sensitive CLI help
