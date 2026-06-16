@@ -37,9 +37,6 @@ def register_levers(
             name="has_ss_pia",
             title=("Has Social Security PIA"),
             description=("Case contains Social Security income."),
-            decision_names=[
-                "social_security",
-            ],
             applicable_fn=(has_social_security),
             profiles={
                 "table": DisplayProfile(

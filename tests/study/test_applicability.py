@@ -5,7 +5,7 @@ from owlroost.study.bootstrap import (
 )
 
 
-def test_social_security_applicable():
+def test_social_security_decision_applicable():
     reg = build_study_registry()
 
     row = {
@@ -29,7 +29,7 @@ def test_social_security_applicable():
     assert "social_security" in names
 
 
-def test_social_security_not_applicable():
+def test_social_security_decision_not_applicable():
     reg = build_study_registry()
 
     row = {
@@ -53,7 +53,7 @@ def test_social_security_not_applicable():
     assert "social_security" not in names
 
 
-def test_roth_conversion_applicable():
+def test_roth_conversion_decision_applicable():
     reg = build_study_registry()
 
     row = {
@@ -76,7 +76,7 @@ def test_roth_conversion_applicable():
     assert "roth_conversion" in names
 
 
-def test_roth_conversion_not_applicable():
+def test_roth_conversion_decision_not_applicable():
     reg = build_study_registry()
 
     row = {

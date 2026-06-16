@@ -51,7 +51,7 @@ The study subsystem therefore sits above the execution layer and helps bridge re
 
 # Decisions
 
-A decision defines a choice space.
+A decision defines a question that may be investigated.
 
 Examples include:
 
@@ -65,9 +65,22 @@ Examples include:
 
 A decision answers:
 
-```text
-What alternatives could be explored?
-```
+    What question should be investigated?
+
+Examples:
+
+    Social Security Timing
+        When should Social Security be claimed?
+
+    Roth Conversion
+        How should tax-deferred assets be converted?
+
+    Worker Scaling
+        How should execution concurrency be configured?
+
+A decision does not define a specific methodology or experiment.
+
+Instead, it defines a family of possible methodologies that may be materialized into experiments.
 
 Conceptually:
 
@@ -81,9 +94,9 @@ Experiments
 Sessions
 ```
 
-A decision does not define a specific experiment.
-
-Instead, it defines a family of possible experiments.
+A decision may be investigated through
+multiple choice templates, each of which
+may materialize one or more experiments.
 
 For example:
 
@@ -97,50 +110,89 @@ Possible Experiments:
     Couple sweep
     Single-person sweep
 ```
+---
+# Choice Templates
+
+A choice template defines a methodology for investigating a decision.
+
+A single decision may support multiple choice templates.
+
+Examples:
+
+    Decision
+        Social Security Timing
+
+    Choice Templates
+        yearly_sweep
+        monthly_sweep
+        owl_optimizer
+
+A choice template answers:
+
+    How should this question be explored?
+
+Choice templates may define:
+
+* Required levers
+* Suggested override patterns
+* Experimental starting points
+* Recommended methodologies
+
+Examples:
+
+    yearly_sweep
+
+        roost_sweeps.ss_age_pair=
+            62,63,64,65,66,67,68,69,70
+
+    worker_scaling
+
+        roost_settings.workers_per_run=
+            2,4,6,8,12,16
+
+Choice templates are reusable analytical recipes.
+
+They are not execution artifacts.
 
 ---
 
 # Levers
 
-A decision may or may not be meaningful for a particular case.
+A lever represents a case-dependent applicability test.
 
-ROOST therefore introduces the concept of a lever.
-
-A lever represents a structural decision opportunity that exists within a case.
+Levers determine whether a particular choice template is applicable to a specific case.
 
 Examples:
 
-```python
-has_ss_lever
-has_conversion_lever
-has_retirement_lever
-has_allocation_lever
-```
+    has_social_security
+
+    has_pretax_savings
+
+    has_retirement_timing
 
 A lever answers:
 
-```text
-Is this decision applicable
-to this case?
-```
+    Is this methodology applicable to this case?
 
 Examples:
 
-* Social Security timing is meaningful only when Social Security income exists.
-* Roth conversion analysis is meaningful only when tax-deferred assets exist.
-* Retirement timing is meaningful only when retirement has not already occurred.
+* Social Security analysis requires Social Security income.
+* Roth conversion analysis requires tax-deferred assets.
+* Retirement timing analysis requires retirement to remain a future event.
 
 Conceptually:
 
-```text
-Case
-    ↓
-Lever Detection
-    ↓
-Applicable Decisions
-```
+    Case
+        ↓
+    Lever Evaluation
+        ↓
+    Applicable Choice Templates
+        ↓
+    Applicable Decisions
 
-Levers therefore determine which decisions should be presented to a user.
+A choice template is applicable when all of its required levers evaluate true.
+
+A decision is applicable when at least one of its choice templates is applicable.
 
 ---
 
@@ -199,20 +251,36 @@ No hard-coded lever lists should exist.
 
 Registration ownership belongs to individual modules.
 
+
+Ownership
+
+```text
+
+DecisionSpec
+    registered by decisions/
+
+ChoiceTemplateSpec
+    registered by choice_templates/
+
+LeverSpec
+    registered by levers/
+
+```
+
+Relationships flow downward only.
+
+Levers are unaware of decisions.
+
+Decisions are unaware of levers.
+
+
 Conceptually:
 
 ```text
 study/
     decisions/
-        social_security.py
-        roth_conversion.py
-        retirement_age.py
-        worker_scaling.py
-
+    choice_templates/
     levers/
-        social_security.py
-        conversion.py
-        retirement.py
 ```
 
 Each module registers itself through the appropriate registry.
@@ -232,6 +300,10 @@ study/
     specs.py
 
     decisions/
+        __init__.py
+        ...
+
+    choice_templates/
         __init__.py
         ...
 
@@ -263,9 +335,11 @@ Study
 
 A study organizes analytical work.
 
-A decision defines a choice space.
+A decision defines a question.
 
-A lever determines whether the decision applies to a particular case.
+A choice template defines a methodology.
+
+A lever determines whether that methodology applies to a particular case.
 
 The study subsystem therefore focuses on decisions and levers rather than attempting to formalize studies prematurely.
 
@@ -273,9 +347,56 @@ Future versions of ROOST may introduce study templates, study definitions, or st
 
 ---
 
+# Architectural Relationships
+
+The study subsystem intentionally maintains a one-way dependency graph:
+
+    Decision
+        ↓
+    Choice Template
+        ↓
+    Lever
+
+Decisions do not reference levers directly.
+
+Levers do not reference decisions.
+
+Choice templates connect decisions to applicability requirements.
+
+This separation allows multiple methodologies to investigate the same decision while maintaining independent applicability constraints.
+
+---
+
+# Architectural Invariant
+
+Choice templates own applicability.
+
+Decisions do not own applicability.
+
+A decision is applicable when at least one
+choice template is applicable.
+
+
 # Long-Term Direction
 
 The study subsystem is expected to become the primary analytical guidance layer within ROOST.
+
+Choice templates bridge the study subsystem
+and the execution subsystem.
+
+```text
+Decision
+    ↓
+Choice Template
+    ↓
+Experiment
+    ↓
+Session
+    ↓
+Run
+    ↓
+Trial
+```
 
 Future capabilities may include:
 

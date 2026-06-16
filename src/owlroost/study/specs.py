@@ -23,11 +23,15 @@ class DecisionSpec:
     """
     Defines a decision space.
 
-    A decision represents a question that
-    may be asked for a particular case.
+    A decision represents a question
+    that may be investigated.
 
-    Applicability is determined by the
-    required lever set.
+    Decisions are intentionally
+    independent of case applicability.
+
+    Applicability is determined by
+    the available choice templates
+    and their required levers.
     """
 
     name: str
@@ -38,7 +42,50 @@ class DecisionSpec:
 
     description: str
 
+    profiles: dict[
+        str,
+        DisplayProfile,
+    ] = field(
+        default_factory=dict,
+    )
+
+
+@dataclass(slots=True)
+class ChoiceTemplateSpec:
+    """
+    Defines a methodology for
+    investigating a decision.
+
+    A choice template specifies:
+
+    * Which decision it supports
+    * Which levers are required
+    * Which override patterns are
+      typically used
+
+    Choice templates may later
+    materialize experiments,
+    sessions, reports, or study
+    artifacts.
+    """
+
+    name: str
+
+    decision_name: str
+
+    title: str
+
+    description: str
+
     required_levers: list[str] = field(
+        default_factory=list,
+    )
+
+    overrides: list[str] = field(
+        default_factory=list,
+    )
+
+    tags: list[str] = field(
         default_factory=list,
     )
 
@@ -53,8 +100,11 @@ class DecisionSpec:
 @dataclass(slots=True)
 class LeverSpec:
     """
-    Defines case applicability
-    for one or more decisions.
+    Defines case applicability.
+
+    Levers evaluate case structure
+    and determine whether a choice
+    template may be applied.
     """
 
     name: str
@@ -62,8 +112,6 @@ class LeverSpec:
     title: str
 
     description: str
-
-    decision_names: list[str]
 
     applicable_fn: Callable
 

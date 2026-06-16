@@ -29,10 +29,7 @@ def register_decisions(
             name="roth_conversion",
             title="Roth Conversion Strategy",
             category="retirement",
-            description=("Evaluate Roth conversion policies."),
-            required_levers=[
-                "has_pretax_savings",
-            ],
+            description=("How should tax-deferred assets be converted into tax-free assets?"),
             profiles={
                 "table": DisplayProfile(
                     label="Decision\nRoth",

@@ -12,11 +12,9 @@ def test_social_security_decision():
         "social_security",
     )
 
-    assert decision.name == "social_security"
+    assert decision.name == ("social_security")
 
-    assert decision.required_levers == [
-        "has_ss_pia",
-    ]
+    assert decision.title == "Social Security Timing"
 
 
 def test_roth_conversion_decision():
@@ -26,8 +24,6 @@ def test_roth_conversion_decision():
         "roth_conversion",
     )
 
-    assert decision.name == "roth_conversion"
+    assert decision.name == ("roth_conversion")
 
-    assert decision.required_levers == [
-        "has_pretax_savings",
-    ]
+    assert decision.title == "Roth Conversion Strategy"

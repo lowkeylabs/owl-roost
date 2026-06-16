@@ -37,9 +37,6 @@ def register_levers(
             name="has_pretax_savings",
             title=("Lever - has pre-tax savings"),
             description=("Case contains tax deferred assets."),
-            decision_names=[
-                "roth_conversion",
-            ],
             profiles={
                 "table": DisplayProfile(
                     label="Has\nPretax\nSavings",

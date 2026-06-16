@@ -5,21 +5,25 @@ from owlroost.study.bootstrap import (
 )
 
 
-def test_social_security_decision():
+def test_social_security_choice_template():
     reg = build_study_registry()
 
-    decision = reg.get_decision(
-        "social_security",
+    template = reg.get_choice_template(
+        "ss_yearly_sweep",
     )
 
-    assert "has_ss_pia" in decision.required_levers
+    assert template.decision_name == ("social_security")
+
+    assert "has_ss_pia" in (template.required_levers)
 
 
-def test_roth_conversion_decision():
+def test_roth_conversion_choice_template():
     reg = build_study_registry()
 
-    decision = reg.get_decision(
-        "roth_conversion",
+    template = reg.get_choice_template(
+        "roth_bracket_fill",
     )
 
-    assert "has_pretax_savings" in decision.required_levers
+    assert template.decision_name == ("roth_conversion")
+
+    assert "has_pretax_savings" in (template.required_levers)

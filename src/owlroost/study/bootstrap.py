@@ -15,6 +15,9 @@ and architectural role.
 
 from __future__ import annotations
 
+from owlroost.study.choice_templates import (
+    register_all_choice_templates,
+)
 from owlroost.study.decisions import (
     register_all_decisions,
 )
@@ -30,6 +33,10 @@ def build_study_registry():
     reg = StudyRegistry()
 
     register_all_decisions(
+        reg,
+    )
+
+    register_all_choice_templates(
         reg,
     )
 

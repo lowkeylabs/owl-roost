@@ -29,10 +29,7 @@ def register_decisions(
             name="social_security",
             title="Social Security Timing",
             category="retirement",
-            description=("Determine optimal Social Security claiming ages."),
-            required_levers=[
-                "has_ss_pia",
-            ],
+            description=("When should Social Security benefits be claimed?"),
             profiles={
                 "table": DisplayProfile(
                     label="Decision\nSS Timing",
@@ -41,7 +38,7 @@ def register_decisions(
                     content_align="center",
                 ),
                 "pivot": DisplayProfile(
-                    label="decision ss timing",
+                    label="Decision - Social Security timing",
                     width="auto",
                     label_align="center",
                     content_align="center",
