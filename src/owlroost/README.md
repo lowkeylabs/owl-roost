@@ -1,90 +1,104 @@
+# ROOST Architecture
 
-# OWL-ROOST Architecture
+This directory contains the current implementation of ROOST.
 
-This directory contains the current implementation of OWL-ROOST.
+The architecture described in this document represents the current implementation of ROOST.
 
-The roost system is a **clean, schema-driven, layered, test-first design** with the goals of:
+The top-level README describes the
+conceptual model, scientific philosophy,
+and long-term direction of the project.
 
-- eliminating unnecessary module couplings
-- unifying inputs, outputs, and derived values under a single semantic model
-- separating semantic meaning from presentation
-- simplifying reasoning about experiments, runs, and trials
-- enabling transparent analytics, display, and reporting
-- supporting reproducible and testable experiment pipelines
+This document describes how those concepts
+are realized within the current codebase,
+including subsystem boundaries, data flow,
+registry integration, execution structure,
+and implementation responsibilities.
 
+Subsystem-specific details are documented
+within their respective README files.
 
 # Core Principles
 
-## 1. Schema is the semantic foundation
+## Catalog integrates semantic registries
 
-Everything in the system—inputs, outputs, derived values, runtime values—is represented as **schema fields**.
+ROOST separates semantic concerns across
+multiple specialized registries.
 
-There is no distinction between:
+Examples include:
 
-- "input fields"
-- "metrics"
-- "computed values"
-- "runtime outputs"
+    schema
+    metrics
+    display
+    study
 
-All are:
+Each registry owns a distinct semantic
+domain.
 
-> **Fields defined in a unified schema registry**
+The catalog subsystem integrates metadata,
+relationships, provenance, lineage, and
+introspection across these registries.
 
-The schema registry defines:
+Conceptually:
 
-- field identity
-- types
-- provenance
-- extraction paths
-- compute functions
-- defaults
-- semantic metadata
+```
+Schema
+Metrics
+Study
+     ↓
+  Catalog
+     ↓
+  Display
+     ↓
+  Renderers
+```
 
-The schema layer does **not** own rendering or presentation behavior.
+The catalog does not replace registry
+ownership.
+
+Instead it provides a unified semantic
+identity graph spanning the system.
+
+## Display is layered on top of semantic entities.
+
+Display consumes semantic entities from:
+
+    schema
+    metrics
+    study
+    catalog
+
+and projects them into human-oriented
+analytical presentations.
+
+Conceptually:
+
+```
+Schema
+Metrics
+Study
+     ↓
+  Catalog
+     ↓
+  Display
+     ↓
+  Renderers
+```
+
+Display owns presentation behavior.
+
+Catalog remains the authoritative source
+for semantic identity, provenance,
+lineage, and explainability.
 
 
-## 2. Display is layered on top of schema
-
-Display behavior is intentionally separated from schema semantics.
-
-The display subsystem:
-
-- references schema fields
-- adds presentation metadata
-- organizes fields into reusable groups and views
-- materializes tables/pivots
-- renders output for CLI and reports
-
-This separation prevents:
-
-- coupling semantic meaning to rendering
-- renderer-specific logic leaking into schema
-- duplication of schema metadata
-
-Architecture:
-
-```text
-SchemaRegistry
-    ↓
-DisplayRegistry
-    ↓
-Groups / Views
-    ↓
-Materialization
-    ↓
-RoostTable
-    ↓
-Renderers
-````
-
-## 3. Layer-aware data model
+## Execution and Analysis Layers
 
 Roost operates across multiple semantic layers:
 
 ```text
 Case
   ↓
-Experiment
+Session
   ↓
 Run
   ↓
@@ -96,18 +110,46 @@ Each layer represents a different dataset abstraction:
 | Layer      | Row Represents            |
 | ---------- | ------------------------- |
 | case       | one TOML case file        |
-| experiment | one experiment directory  |
+| session    | one session directory     |
 | run        | one parameterized run     |
 | trial      | one stochastic simulation |
 
 Views are registered against a specific layer.
 
-## 4. Pure data pipeline
+We also introduce two additional layers.
+
+```text
+Experiment
+    ↓
+Related Runs
+```
+
+Experiments are logical scientific
+overlays and are independent of
+filesystem organization.
+
+
+## Pure data pipeline
 
 The system is a pipeline:
 
 ```text
-Case → Experiment → Run → Trial → Outputs → Aggregation → Display → Reporting
+Case
+    ↓
+Session Materialization
+    ↓
+Run Generation
+    ↓
+Trial Execution
+    ↓
+Metrics
+    ↓
+Aggregation
+    ↓
+Display
+    ↓
+Reporting
+
 ```
 
 Each stage:
@@ -116,13 +158,13 @@ Each stage:
 * produces structured data
 * does not depend on presentation concerns
 
-## 5. Functional core, thin orchestration
+## Functional core, thin orchestration
 
 * Core logic is pure and testable
 * Side effects (filesystem, CLI, Hydra, rendering) are isolated
 * CLI commands are orchestration layers only
 
-## 6. Test-driven development (TDD)
+## Test-driven development (TDD)
 
 All features are introduced via tests:
 
@@ -138,176 +180,240 @@ Legacy tests are used as behavioral references only.
 
 ```text
 owlroost/
-  schema/        ← semantic field system (foundation)
-  display/       ← views, groups, materialization, rendering
-  hydra/         ← Hydra-facing experiment generation
-  core/          ← execution + metrics extraction
-  cli/           ← command-line interface (thin wrappers)
-  tools/         ← validation and developer tooling
+    catalog/     ← semantic metadata and introspection
+    schema/      ← executable inputs
+    metrics/     ← modeled outputs and aggregation
+    display/     ← presentation overlays
+    study/       ← analytical guidance
+    hydra/       ← Hydra-facing experiment generation
+    core/        ← execution + metrics extraction
+    cli/         ← command-line interface (thin wrappers)
+    tools/       ← validation and developer tooling
+
 ```
 
-Additional modules may emerge as the v2 architecture stabilizes.
+Conceptually:
 
-# Semantic vs Presentation Layers
+    Schema
+    Metrics
+    Study
+         ↓
+      Catalog
+         ↓
+      Display
+         ↓
+      Renderers
 
-## Semantic Layer (`schema/`)
+Responsibilities are intentionally
+separated.
 
-Defines:
+Schema
+    executable inputs
 
-```text
-FieldSpec
-```
+Metrics
+    modeled outputs
 
-A schema field represents semantic meaning only.
+Study
+    analytical guidance
 
-Responsibilities:
+Catalog
+    identity, lineage,
+    provenance, explainability
 
-* identity
-* typing
-* extraction
-* defaults
-* provenance
-* compute functions
+Display
+    presentation and analytical views
 
-## Presentation Layer (`display/`)
+# Registry Layering
 
-Defines:
+ROOST currently distinguishes between major semantic registry domains:
 
-```text
-DisplayField
-DisplayProfile
-DisplayGroup
-DisplayView
-```
+| Registry            | Primary Responsibility                         |
+| ------------------- | ---------------------------------------------- |
+| `schema/`           | Executable configuration ontology              |
+| `metrics/`          | Modeled runtime output ontology                |
+| `study/`            | Executable configuration ontology              |
+| `catalog/`          | Identity, provenance, lineage, explainability  |
+| `display/`          | Presentation and analytical overlays           |
 
-Presentation is layered on top of schema fields.
+These registries intentionally represent different semantic domains rather than duplicated metadata systems.
 
-Responsibilities:
+# Registry Relationships
 
-* labels
-* formatting
-* alignment
-* explanations
-* visibility
-* aggregation presentation
-* table/pivot behavior
+Conceptually:
+
+    Schema
+    Metrics
+    Study
+         ↓
+      Catalog
+         ↓
+      Display
+         ↓
+      Reports
+      Dashboards
+      CLI Views
+
+Schema, metrics, and study define
+semantic entities.
+
+Catalog integrates semantic metadata.
+
+Display projects those entities into
+human-oriented analytical views.
+
 
 # Module Responsibilities
 
 ## schema/
 
-> The semantic foundation of roost.
+The schema registry defines the authoritative executable configuration ontology for ROOST and OWL integration.
 
-Defines the `SchemaRegistry`.
+Responsibilities include:
 
-### Responsibilities
+* OWL input variable discovery
+* Runtime configuration semantics
+* Runtime-default discovery
+* Hydra configuration generation
+* Hydra sweepability
+* Runtime materialization support
+* Compatibility and helper fields
+* Executable configuration validation
 
-* register fields
-* define semantic metadata
-* unify:
+The schema registry is intentionally exhaustive across the executable OWL input domain.
 
-  * TOML inputs
-  * runtime values
-  * OWL outputs
-  * derived/computed values
-* support:
+This is a critical architectural requirement.
 
-  * compute functions
-  * runtime defaults
-  * provenance tracking
+Complete schema coverage ensures that:
 
-### Key concepts
+* Hydra sweep generation remains complete
+* All executable configuration variables remain discoverable
+* Study templates can enumerate valid parameter spaces
+* Runtime materialization remains reproducible
+* Users are not forced to rely on ad hoc Hydra `+variable=value` syntax
 
-```text
-FieldSpec
-    semantic definition of a field
-```
-
-Example:
+The schema registry therefore functions as:
 
 ```text
-FieldSpec = {
-  name,
-  dtype,
-  source,
-  path,
-  compute_fn,
-  default,
-}
+the executable configuration ontology of ROOST
 ```
+
+rather than merely a documentation or validation system.
+
+Schema fields may originate from:
+
+* OWL Pydantic models
+* OWL runtime-discovered defaults
+* ROOST runtime extensions
+* Compatibility overlays
+* Helper and derived runtime variables
+
+See schema/README.md.
+
+
+## catalog/
+
+Provides semantic identity,
+provenance, lineage, introspection,
+and explainability infrastructure.
+
+Catalog integrates metadata across:
+
+    schema
+    metrics
+    display
+    study
+
+Catalog owns:
+
+    ontology dimensions
+    semantic relationships
+    lineage
+    provenance integration
+    explainability
+
+Catalog does not replace registry
+ownership.
+
+Schema, metrics, study, and display
+remain authoritative within their
+domains.
+
+Catalog integrates semantic identity,
+relationships, provenance, and
+introspection across registries.
+
+See catalog/README.md.
+
+## metrics/
+
+The metrics registry defines the authoritative ontology for modeled runtime outputs and statistical aggregation semantics.
+
+Responsibilities include:
+
+* Canonical output metric definitions
+* Statistical aggregation semantics
+* Metric typing and interpretation
+* Aggregation-level compatibility
+* Output-level provenance semantics
+* Runtime observation interpretation
+
+Metrics represent modeled evidence generated by runs and trials.
+
+Examples include:
+
+* Spending outcomes
+* Bequest distributions
+* Success probabilities
+* Runtime durations
+* Convergence metrics
+* Computational complexity metrics
+* Sampling stability measurements
+
+
+
+See metrics/README.md.
 
 ## display/
 
-> Presentation and dataset exploration system.
+The display registry defines the analytical projection and presentation layer used by reporting, CLI rendering, views, tables, and comparative analysis workflows.
 
-Defines the `DisplayRegistry`.
 
-### Responsibilities
+Display owns:
 
-* define display fields
-* define reusable display groups
-* define layer-aware views
-* support:
+    fields
+    profiles
+    groups
+    views
+    dashboards
 
-  * table mode
-  * pivot mode
-* materialize:
+Display consumes semantic entities from:
 
-  * RoostTable
-* render:
+    schema
+    metrics
+    catalog
 
-  * rich
-  * markdown
-  * latex
-  * html (future)
+See display/README.md.
 
-### Key concepts
+## study/
 
-```text
-DisplayField
-    presentation configuration for a schema field
+Provides analytical guidance above the
+execution architecture.
 
-DisplayProfile
-    mode-specific presentation behavior
+Study owns:
 
-DisplayGroup
-    reusable bundle of display fields
+    decisions
+    choice templates
+    levers
 
-DisplayView
-    ordered composition of groups + fields
-```
+Study helps users move from:
 
-### Display modes
+    What question should I investigate?
 
-Current display modes:
+to:
 
-* `table`
-* `pivot`
+    What experiments should I run?
 
-Important:
-
-> "pivot" refers only to row/column orientation,
-> not OLAP/database pivot semantics.
-
-### Display profiles
-
-A field may render differently depending on mode.
-
-Example:
-
-| Mode  | Label                     |
-| ----- | ------------------------- |
-| table | `P90`                     |
-| pivot | `90th Percentile Runtime` |
-
-Profiles may define:
-
-* labels
-* formatting
-* alignment
-* wrapping
-* explanations
-* visibility
+See study/README.md.
 
 ## hydra/
 
@@ -369,92 +475,83 @@ trial_result = {
 
 CLI commands should contain minimal logic.
 
-# Display Architecture
+# Execution Architecture
 
-## Views
+ROOST currently organizes execution
+through:
 
-Views are:
+    Case
+        ↓
+    Session
+        ↓
+    Run
+        ↓
+    Trial
 
-> ordered compositions of fields and groups
+Scientific interpretation remains
+logically distinct:
 
-Views are registered against a specific layer:
+    Experiment
+        ↓
+    Related Runs
 
-```text
-trial
-run
-experiment
-case
-```
+# Filesystem Provenance
 
-Examples:
+ROOST separates:
 
-```text
-run/default
-run/timing
-trial/audit
-case/build
-```
+    scientific organization
 
-## Groups
+from
 
-Groups are reusable display bundles.
+    operational organization
 
-A group may define:
+Operational provenance follows:
 
-* fields
-* aggregates
-* display hints
-* visibility rules
+    Case
+        ↓
+    Session
+        ↓
+    Run
+        ↓
+    Trial
 
-Groups support different behavior in:
+Filesystem paths are the canonical
+operational provenance identifiers.
 
-* table mode
-* pivot mode
+Experiments provide logical scientific
+organization and may span multiple:
 
-## Materialization
+    sessions
+    dates
+    cases
+    execution environments
 
-Materialization transforms:
 
-```text
-dataset + view + mode
-```
 
-into:
+# Operational Realization Layer
 
-```text
-RoostTable
-```
+ROOST separates semantic variable definition from runtime operational realization.
 
-This layer handles:
+Operational realization occurs during dataset loading and execution discovery.
 
-* aggregate expansion
-* field resolution
-* pivot orientation
-* profile selection
-* visibility filtering
+Canonical runtime dataset rows currently distinguish between:
 
-## Renderers
+| Dataset Component | Responsibility                              |
+| ----------------- | ------------------------------------------- |
+| `_inputs`         | Materialized executable configuration       |
+| `_metrics`        | Runtime results and aggregations            |
+| `_meta`           | Operational metadata and transient identity |
+| `_paths`          | Filesystem provenance and execution lineage |
 
-Renderers are intentionally dumb.
+This distinction allows ROOST to preserve separation between:
 
-Responsibilities:
+* Semantic ontologies
+* Runtime execution state
+* Modeled runtime evidence
+* Filesystem provenance
+* Analytical overlays
 
-* render `RoostTable`
-* no schema logic
-* no aggregation logic
-* no dataset logic
-
-Current renderers:
-
-* rich
-* markdown
-* latex
-
-Future:
-
-* html
-* dashboard
-* API serializers
+Filesystem paths remain the canonical operational provenance identifiers throughout the system.
 
 # Data Flow
 
@@ -477,6 +574,101 @@ RoostTable
    ↓
 renderers / reports / CLI
 ```
+
+# Semantic Projection vs Hierarchical Projection
+
+ROOST currently distinguishes between two different forms of projection.
+
+## Semantic Projection
+
+Semantic projection maps canonical semantic registries into analytical display overlays.
+
+Conceptually:
+
+```text
+schema ontology
+metrics ontology
+        ↓
+display ontology
+```
+
+This projection stage synthesizes renderer-facing analytical representations while preserving canonical semantic ownership in the underlying registries.
+
+## Hierarchical Projection
+
+Hierarchical projection maps runtime entities across operational aggregation levels.
+
+Examples include:
+
+```text
+trial → run
+run → session
+session → case
+```
+
+These projections aggregate operational observations and statistical evidence across the canonical execution hierarchy defined elsewhere in this document.
+
+The distinction between semantic projection and hierarchical projection is intentional and architecturally important.
+
+
+# Provenance and Introspection
+
+ROOST treats provenance as a first-class architectural concern.
+
+Provenance includes both:
+
+* Operational execution provenance
+  and
+* Semantic variable provenance
+
+Examples include:
+
+* Variable origin registry
+* Runtime storage location
+* Materialized execution paths
+* Aggregation lineage
+* Display override lineage
+* Hydra generation provenance
+* Runtime discovery provenance
+* Report and view usage
+
+ROOST is evolving toward a dedicated catalog and introspection architecture capable of tracing:
+
+Catalog provides provenance,
+lineage, introspection, and
+explainability infrastructure.
+
+Conceptually:
+
+```
+    semantic variable
+        ↓
+    runtime materialization
+        ↓
+    aggregation
+        ↓
+    display projection
+        ↓
+    report usage
+```
+
+The catalog subsystem records and
+exposes these relationships.
+
+across the entire analytical pipeline.
+
+This provenance architecture is foundational to:
+
+* Explainability
+* Reproducibility
+* Study generation
+* QA/QC validation
+* Structural comparison
+* Merge compatibility analysis
+* Runtime debugging
+* Reporting and publication workflows
+
+See catalog/README.md
 
 # Command Model
 
@@ -511,53 +703,17 @@ Focus on:
 * execution correctness
 * end-to-end golden tests
 
-## Legacy tests
 
-Located in:
+# Design Non-Goals
 
-```text
-tests_legacy/
-```
+ROOST is NOT intended to:
 
-Used for:
+* Optimize only for deterministic single-plan analysis
+* Restrict experiments to single-case analysis
 
-* behavioral reference only
-* not executed in CI
-
-# Legacy Code
-
-The v1 implementation is located in:
-
-```text
-src/owlroost_v1/
-```
-
-Rules:
-
-* do not import from it
-* do not modify it
-* use only as migration reference
-
-The directory will be removed after stabilization.
-
-# Development Workflow
-
-1. write failing test
-2. implement minimal code
-3. make test pass
-4. refactor
-5. repeat
-
-# End State
-
-* single clean codebase (`owlroost/`)
-* unified semantic field model
-* layered display architecture
-* reusable views/groups/profiles
-* minimal coupling between layers
-* reproducible and testable experiment pipeline
-* shared display engine for:
-
-  * CLI
-  * reports
-  * future APIs
+* Collapse experiments directly into filesystem structure
+* Conflate execution provenance with scientific interpretation
+* Treat sessions as primary scientific result entities
+* Treat all hierarchy levels as semantically identical
+* Treat transient operational IDs as stable scientific identifiers
+* Conflate runtime observations with structural run identity

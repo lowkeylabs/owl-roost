@@ -1,16 +1,20 @@
-# src/owlroost/display/fields/decisions.py
+# src/owlroost/display/fields/choice_templates.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Choice template display fields.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Dynamically materializes one display
+field per registered choice template.
+
+Each field indicates whether the
+choice template is applicable to
+the current case.
 """
 
 from __future__ import annotations
@@ -28,7 +32,7 @@ from owlroost.study.bootstrap import (
     build_study_registry,
 )
 
-LEVER_ONTOLOGY = dict(
+CHOICE_TEMPLATE_ONTOLOGY = dict(
     owner="ROOST",
     semantic_domain="decision",
     value_origin="roost-computed",
@@ -40,18 +44,19 @@ LEVER_ONTOLOGY = dict(
 )
 
 CHECK_MARK = "✓"
+
 NO_MARK = "·"
 
 
 def make_display_fn(
-    decision,
+    template,
     study_registry,
 ):
     def display_fn(
         row,
     ):
-        applicable = study_registry.decision_is_applicable(
-            decision.name,
+        applicable = study_registry.choice_template_is_applicable(
+            template.name,
             row,
         )
 
@@ -63,18 +68,18 @@ def make_display_fn(
 def register_display_fields(
     reg,
 ):
-    decision_registry = build_study_registry()
+    study_registry = build_study_registry()
 
-    for decision in decision_registry.all_decisions():
+    for template in study_registry.all_choice_templates():
         reg.register_display_field(
             DisplayField.field(
-                f"decision.{decision.name}",
+                (f"choice_template.{template.name}"),
                 display_fn=make_display_fn(
-                    decision,
-                    decision_registry,
+                    template,
+                    study_registry,
                 ),
-                description=(decision.description),
-                profiles=(decision.profiles),
-                **LEVER_ONTOLOGY,
+                description=(template.description),
+                profiles=(template.profiles),
+                **CHOICE_TEMPLATE_ONTOLOGY,
             )
         )

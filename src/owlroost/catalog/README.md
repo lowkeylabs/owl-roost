@@ -1,4 +1,4 @@
-# ROOST Catalog Architecture
+# Catalog Subsystem Architecture
 
 The `catalog/` subsystem provides the semantic metadata, provenance, lineage, introspection, and analytical navigation infrastructure for ROOST.
 
