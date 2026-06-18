@@ -295,11 +295,82 @@ def deep_merge_non_null(
     return result
 
 
+def snapshot_hfp(
+    *,
+    toml_dict: dict,
+    source_folder: Path,
+    destination_folder: Path,
+    destination_name: str,
+) -> tuple[
+    str | None,
+    dict,
+]:
+    """
+    Snapshot an HFP file into a
+    provenance boundary and return
+    an updated TOML dictionary.
+    """
+
+    toml_dict = deepcopy(
+        toml_dict,
+    )
+
+    hfp_section = toml_dict.setdefault(
+        "household_financial_profile",
+        {},
+    )
+
+    hfp_file = hfp_section.get(
+        "HFP_file_name",
+    )
+
+    if not hfp_file or hfp_file == "None":
+        return (
+            None,
+            toml_dict,
+        )
+
+    src = (source_folder / hfp_file).resolve()
+
+    if not src.exists():
+        raise FileNotFoundError(f"HFP file not found: {src}")
+
+    dst = destination_folder / destination_name
+
+    if not dst.exists():
+        shutil.copy2(
+            src,
+            dst,
+        )
+
+    hfp_section["HFP_file_name"] = destination_name
+
+    return (
+        destination_name,
+        toml_dict,
+    )
+
+
+def save_toml(
+    path: Path,
+    data: dict,
+):
+    with open(
+        path,
+        "w",
+        encoding="utf-8",
+    ) as fh:
+        toml.dump(
+            data,
+            fh,
+        )
+
+
 # ---------------------------------------------------------
 # Main
 # ---------------------------------------------------------
 def generate_trials(cfg: DictConfig):
-    case_file = resolve_case_file(cfg.case.file)
+    original_case_file = resolve_case_file(cfg.case.file)
 
     # Hydra-managed directories
     run_path = get_run_dir()
@@ -325,11 +396,35 @@ def generate_trials(cfg: DictConfig):
     # ----------------------------------------
     exp_case_path = exp_path / "session.toml"
     if not exp_case_path.exists():
-        shutil.copy2(case_file, exp_case_path)
+        shutil.copy2(original_case_file, exp_case_path)
 
     # ----------------------------------------
     # Load base TOML
+    # Copy to session.toml and
+    # Copy HFP file to session-hfp.xlsx (if exists)
     # ----------------------------------------
+    case_file = exp_case_path
+    case_dict = toml.load(case_file)
+
+    session_hfp_file, case_dict = snapshot_hfp(
+        toml_dict=case_dict,
+        source_folder=original_case_file.parent,
+        destination_folder=exp_path,
+        destination_name="session-hfp.xlsx",
+    )
+
+    save_toml(
+        case_file,
+        case_dict,
+    )
+
+    # ----------------------------------------
+    # Reload canonical session snapshot
+    # everything after this is working with the
+    # session copies of the TOML and HFP
+    # ----------------------------------------
+
+    case_file = exp_case_path
     case_dict = toml.load(case_file)
 
     # ----------------------------------------
@@ -419,17 +514,14 @@ def generate_trials(cfg: DictConfig):
     # ----------------------------------------
 
     elif hfp_file:
-        src = (case_file.parent / hfp_file).resolve()
+        run_hfp_file, run_dict = snapshot_hfp(
+            toml_dict=run_dict,
+            source_folder=exp_path,
+            destination_folder=run_path,
+            destination_name="run-hfp.xlsx",
+        )
 
-        if not src.exists():
-            raise FileNotFoundError(f"HFP file not found: {src}")
-
-        dst = run_path / src.name
-
-        if not dst.exists():
-            shutil.copy2(src, dst)
-
-        hfp_section["HFP_file_name"] = src.name
+        hfp_file = run_hfp_file
 
     # ----------------------------------------
     # Auto-materialize execution topology

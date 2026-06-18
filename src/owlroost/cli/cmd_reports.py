@@ -5,12 +5,25 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Reporting CLI.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Synchronizes report entrypoints into
+ROOST-generated results trees.
+
+Templates are user-owned.
+
+Results are ROOST-owned.
+
+The reporting layer binds user-owned
+templates onto the results provenance
+tree through generated:
+
+    index.qmd
+    _metadata.yml
+
+artifacts.
 """
 
 from __future__ import annotations
@@ -20,168 +33,67 @@ from pathlib import Path
 import click
 
 from owlroost.reports.reports import (
-    collect_report_diagnostics,
-    initialize_templates,
     sync_reports,
 )
 
 
-# =========================================================
-# CLI
-# =========================================================
 @click.command("reports")
-@click.option(
-    "--init",
-    "init_src",
-    type=click.Path(path_type=Path),
-    help="Initialize templates from source folder.",
-)
 @click.option(
     "--sync",
     is_flag=True,
-    help="Sync reporting artifacts.",
-)
-@click.option(
-    "--force",
-    is_flag=True,
-    help="Overwrite existing ./templates folder.",
+    help=("Synchronize report entrypoints into the results tree."),
 )
 @click.option(
     "--results-dir",
-    type=click.Path(path_type=Path),
+    type=click.Path(
+        path_type=Path,
+    ),
     default=Path("./results"),
+    show_default=True,
 )
 @click.option(
-    "--templates-dir",
-    type=click.Path(path_type=Path),
-    default=Path("./templates"),
+    "--results-template-dir",
+    type=click.Path(
+        path_type=Path,
+    ),
+    help=("Override results_template_dir defined in study.toml."),
 )
 def cmd_reports(
-    init_src,
-    sync,
-    force,
+    sync: bool,
     results_dir: Path,
-    templates_dir: Path,
+    results_template_dir: Path | None,
 ):
     """
-    Manage reporting layer.
+    Manage provenance reporting.
 
-    Modes:
-      --init <path> : initialize templates
-      --sync        : generate report artifacts
-      (none)        : diagnostics
+    Examples
+    --------
+
+        roost reports --sync
+
+        roost reports \
+            --sync \
+            --results-template-dir \
+            ./templates/results
     """
 
-    results_dir = Path(results_dir).resolve()
+    results_dir = results_dir.resolve()
 
-    templates_dir = Path(templates_dir).resolve()
+    if results_template_dir is not None:
+        results_template_dir = results_template_dir.resolve()
 
-    # =====================================================
-    # INIT
-    # =====================================================
-    if init_src is not None:
-        try:
-            result = initialize_templates(
-                source_dir=init_src,
-                destination_dir=templates_dir,
-                project_root=Path.cwd(),
-                force=force,
-            )
+    if not sync:
+        raise click.ClickException("Specify --sync.")
 
-        except Exception as exc:
-            raise click.ClickException(str(exc)) from exc
+    print(f"results_dir: {results_dir}")
+    print(f"results_template_dir: {results_template_dir}")
+    try:
+        sync_reports(
+            results_dir=results_dir,
+            results_template_dir=results_template_dir,
+        )
 
-        click.echo(f"Templates initialized: {result['templates_dir']}")
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
 
-        moved = result["moved_files"]
-
-        if moved:
-            click.echo()
-
-            for fname in moved:
-                click.echo(f"Moved {fname} → project root")
-
-        return
-
-    # =====================================================
-    # SYNC
-    # =====================================================
-    if sync:
-        if not results_dir.exists():
-            raise click.ClickException(f"Results directory not found: {results_dir}")
-
-        if not templates_dir.exists():
-            raise click.ClickException(f"Templates directory not found: {templates_dir}")
-
-        try:
-            sync_reports(
-                results_dir,
-                templates_dir,
-            )
-
-        except Exception as exc:
-            raise click.ClickException(str(exc)) from exc
-
-        click.echo("Report sync complete.")
-
-        return
-
-    # =====================================================
-    # DIAGNOSTICS
-    # =====================================================
-    if not results_dir.exists():
-        raise click.ClickException(f"Results directory not found: {results_dir}")
-
-    diagnostics = collect_report_diagnostics(
-        results_dir,
-        templates_dir,
-    )
-
-    template_status = diagnostics["template_status"]
-
-    counts = diagnostics["counts"]
-
-    # =====================================================
-    # Render diagnostics
-    # =====================================================
-    click.echo("Reporting Diagnostics\n")
-
-    # ----------------------------------------
-    # Template status
-    # ----------------------------------------
-    if not template_status["exists"]:
-        click.echo("Templates:   MISSING (./templates not found)")
-
-    elif template_status["missing_subdirs"]:
-        missing = ", ".join(template_status["missing_subdirs"])
-
-        click.echo(f"Templates:   INCOMPLETE (missing: {missing})")
-
-    else:
-        click.echo("Templates:   OK")
-
-    click.echo()
-
-    # ----------------------------------------
-    # Counts
-    # ----------------------------------------
-    def line(label, key):
-        c = counts[key]
-
-        click.echo(f"{label:<12} {c['total']:>6} (missing: {c['missing']})")
-
-    line("Cases:", "case")
-    line("Sessions:", "session")
-    line("Runs:", "run")
-    line("Trials:", "trial")
-
-    click.echo()
-
-    # ----------------------------------------
-    # Final status
-    # ----------------------------------------
-    if diagnostics["healthy"]:
-        click.echo("✔ Reporting system is fully in sync.")
-
-    else:
-        click.echo("⚠ Reporting system is NOT in sync.")
+    click.echo("Report sync complete.")

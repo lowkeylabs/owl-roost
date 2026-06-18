@@ -301,6 +301,17 @@ def run_hydra_build(
     is_flag=True,
     help="Generate sessions only; do not execute runs.",
 )
+@click.option(
+    "--case-folder",
+    default=".",
+    show_default=True,
+    type=click.Path(
+        exists=True,
+        file_okay=False,
+        path_type=Path,
+    ),
+    help=("Folder containing case*.toml and HFP_*.xlsx files."),
+)
 def cmd_build(
     ctx,
     args,
@@ -316,6 +327,7 @@ def cmd_build(
     top,
     progress,
     run,
+    case_folder,
 ):
     """
     Display available cases and build sessions.
@@ -418,7 +430,11 @@ def cmd_build(
     # Context-sensitive CLI help
     # =====================================================
 
-    rows = load_case_rows(".", metrics_registry=metrics_registry)
+    rows = load_case_rows(case_folder, metrics_registry=metrics_registry)
+    # if no cases and we're in ".", look in ./cases
+    if not rows:
+        case_folder = "./cases"
+        rows = load_case_rows(case_folder, metrics_registry=metrics_registry)
     rows = attach_row_ids(rows)
 
     if process_help_requests(

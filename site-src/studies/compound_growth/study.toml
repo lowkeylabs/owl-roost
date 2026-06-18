@@ -1,0 +1,19 @@
+title = "Compound Growth"
+
+roles = [
+    "reference",
+    "tutorial",
+    "validation",
+]
+
+domains = [
+    "design",
+]
+
+results_template_dir = "../../templates/results"
+
+
+description = """
+Demonstrates compound growth and
+time value of money.
+"""

@@ -1,0 +1,145 @@
+---
+title: Compound Growth
+author: ROOST
+---
+
+# Abstract
+
+This study investigates compound growth using a
+simplified financial model.
+
+The purpose of the study is to demonstrate the
+time value of money and validate expected model
+behavior under controlled assumptions.
+
+# Introduction
+
+Compound growth is one of the most important
+concepts in finance.
+
+A small initial investment can grow substantially
+when returns are reinvested over long periods of
+time.
+
+This study demonstrates compound growth using a
+minimal retirement-planning scenario.
+
+# Study Goals
+
+This study was designed to:
+
+* Demonstrate compound growth.
+* Illustrate the time value of money.
+* Validate expected model behavior.
+* Serve as a reference example for ROOST.
+
+# Cases
+
+The following cases are included in this study.
+
+```{python}
+# Placeholder:
+# ROOST may later auto-generate a case catalog.
+```
+
+# Methodology
+
+This study was executed using ROOST.
+
+The workflow consisted of:
+
+1. Defining one or more cases.
+2. Generating runs.
+3. Executing trials.
+4. Aggregating results.
+5. Producing study artifacts.
+
+## Assumptions
+
+Document the assumptions used by the study.
+
+Examples:
+
+* Initial balance
+* Rate assumptions
+* Spending assumptions
+* Tax assumptions
+* Longevity assumptions
+
+# Results
+
+## Summary
+
+Summarize the primary findings.
+
+## Tables
+
+Insert generated tables here.
+
+## Figures
+
+Insert generated figures here.
+
+# Discussion
+
+Discuss the implications of the results.
+
+Questions that may be considered:
+
+* Do results match expectations?
+* What behaviors were surprising?
+* What limitations exist?
+* How sensitive are outcomes to assumptions?
+
+# Validation Notes
+
+Describe how this study helps validate
+OWL and ROOST behavior.
+
+Examples:
+
+* Analytical sanity checks
+* Edge cases
+* Regression testing
+* Reproducibility checks
+
+# Educational Notes
+
+Describe the concepts illustrated by
+this study.
+
+Examples:
+
+* Time value of money
+* Compound growth
+* Inflation
+* Sequence risk
+* Tax drag
+
+# Future Work
+
+Potential extensions include:
+
+* Additional cases
+* Additional rate environments
+* Sensitivity analysis
+* Alternative methodologies
+
+# Reproducibility
+
+This study workspace contains:
+
+* Case definitions
+* Session provenance
+* Run provenance
+* Trial provenance
+* Generated artifacts
+
+When available, a study lock file may
+be used to identify the exact evidence
+supporting this paper.
+
+# Conclusion
+
+Summarize the primary findings and
+lessons learned from the study.

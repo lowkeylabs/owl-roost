@@ -33,7 +33,7 @@ def test_infrastructure(
     # HFP copied
     # -------------------------------------------------
 
-    assert (run0 / "HFP_alex+jamie.xlsx").exists()
+    assert (run0 / "run-hfp.xlsx").exists()
 
     # -------------------------------------------------
     # Trial hierarchy
@@ -76,4 +76,4 @@ def test_infrastructure(
 
     hfp_name = trial_dict["household_financial_profile"]["HFP_file_name"]
 
-    assert "HFP_alex+jamie.xlsx" in hfp_name
+    assert "../../run-hfp.xlsx" in hfp_name

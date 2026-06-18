@@ -32,7 +32,7 @@ apply_to_plan = true
 rate_seed=987_654_321
 
 [household_financial_profile]
-HFP_file_name = "hfp.csv"
+HFP_file_name = "HFP_test.xlsx"
 """
     )
 
@@ -40,7 +40,7 @@ HFP_file_name = "hfp.csv"
     # Fake HFP file
     # -----------------------------------------------------
 
-    (tmp_path / "hfp.csv").write_text("dummy")
+    (tmp_path / "HFP_test.xlsx").write_text("dummy")
 
     return case
 
@@ -171,29 +171,43 @@ def test_trial_toml_contains_seeds(
 # =========================================================
 
 
-def test_hfp_copied_once_and_rewritten(
+def test_hfp_snapshots_created_and_rewritten(
     hydra_cfg,
     tmp_path,
 ):
     generate_trials(hydra_cfg)
 
-    run_dir = tmp_path / "results/case/2026-01-01/00-00-00/run_0"
+    session_dir = tmp_path / "results/case/2026-01-01/00-00-00"
+
+    run_dir = session_dir / "run_0"
 
     # -----------------------------------------------------
-    # Copied once to run dir
+    # Session snapshot
     # -----------------------------------------------------
 
-    assert (run_dir / "hfp.csv").exists()
+    assert (session_dir / "session-hfp.xlsx").exists()
+
+    session_data = toml.load(session_dir / "session.toml")
+
+    assert session_data["household_financial_profile"]["HFP_file_name"] == "session-hfp.xlsx"
 
     # -----------------------------------------------------
-    # Relative rewrite inside trial
+    # Run snapshot
     # -----------------------------------------------------
 
-    trial0 = run_dir / "trials/0000/trial.toml"
+    assert (run_dir / "run-hfp.xlsx").exists()
 
-    data = toml.load(trial0)
+    run_data = toml.load(run_dir / "run.toml")
 
-    assert data["household_financial_profile"]["HFP_file_name"] == "../../hfp.csv"
+    assert run_data["household_financial_profile"]["HFP_file_name"] == "run-hfp.xlsx"
+
+    # -----------------------------------------------------
+    # Trial rewrite
+    # -----------------------------------------------------
+
+    trial_data = toml.load(run_dir / "trials/0000/trial.toml")
+
+    assert trial_data["household_financial_profile"]["HFP_file_name"] == "../../run-hfp.xlsx"
 
 
 # =========================================================
@@ -227,7 +241,7 @@ def test_trial_meta_yaml(
 # =========================================================
 
 
-def test_experiment_case_written_once(
+def test_session_snapshot_written(
     hydra_cfg,
     tmp_path,
 ):
@@ -235,7 +249,15 @@ def test_experiment_case_written_once(
 
     exp_dir = tmp_path / "results/case/2026-01-01/00-00-00"
 
-    assert (exp_dir / "session.toml").exists()
+    session_toml = exp_dir / "session.toml"
+
+    assert session_toml.exists()
+
+    data = toml.load(session_toml)
+
+    assert data["household_financial_profile"]["HFP_file_name"] == "session-hfp.xlsx"
+
+    assert (exp_dir / "session-hfp.xlsx").exists()
 
 
 # =========================================================
@@ -441,3 +463,26 @@ def test_explicit_workers_override_auto_mapping(
     out = materialize_execution_plan(deepcopy(run_dict))
 
     assert out["roost_settings"]["resolved_workers_per_run"] == 3
+
+
+def test_provenance_chain_is_self_contained(
+    hydra_cfg,
+    tmp_path,
+):
+    generate_trials(hydra_cfg)
+
+    session_dir = tmp_path / "results/case/2026-01-01/00-00-00"
+
+    run_dir = session_dir / "run_0"
+
+    session_data = toml.load(session_dir / "session.toml")
+
+    run_data = toml.load(run_dir / "run.toml")
+
+    trial_data = toml.load(run_dir / "trials/0000/trial.toml")
+
+    assert session_data["household_financial_profile"]["HFP_file_name"] == "session-hfp.xlsx"
+
+    assert run_data["household_financial_profile"]["HFP_file_name"] == "run-hfp.xlsx"
+
+    assert trial_data["household_financial_profile"]["HFP_file_name"] == "../../run-hfp.xlsx"

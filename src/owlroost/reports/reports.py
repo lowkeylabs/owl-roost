@@ -15,7 +15,7 @@ and architectural role.
 
 from __future__ import annotations
 
-import shutil
+from os.path import relpath
 from pathlib import Path
 
 import yaml
@@ -26,429 +26,189 @@ from owlroost.display.discovery import (
     find_sessions,
 )
 
+REQUIRED_LEVELS = [
+    "results",
+    "case",
+    "session",
+    "run",
+    "trial",
+]
 
-# =========================================================
-# Low-level helpers
-# =========================================================
+
 def write_metadata(
     path: Path,
-    data: dict,
+    *,
+    level: str,
+    template_dir: Path,
 ):
-    """
-    Write YAML metadata file.
-    """
+    data = {
+        "level": level,
+        "paths": {
+            "template_dir": str(
+                template_dir.resolve(),
+            ),
+        },
+    }
 
     path.parent.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    with open(path, "w") as f:
+    with open(
+        path,
+        "w",
+        encoding="utf-8",
+    ) as fh:
         yaml.safe_dump(
             data,
-            f,
+            fh,
             sort_keys=False,
         )
 
 
-def copy_template(
-    template_path: Path,
-    target_path: Path,
+def materialize_index_qmd(
+    *,
+    template_file: Path,
+    target_file: Path,
+    payload_dir: Path,
 ):
-    """
-    Copy template file if source exists.
-    """
+    text = template_file.read_text(
+        encoding="utf-8",
+    )
 
-    if not template_path.exists():
-        return
+    relative_payload_dir = relpath(
+        payload_dir,
+        start=target_file.parent,
+    )
 
-    target_path.parent.mkdir(
+    text = text.replace(
+        "__PAYLOAD_DIR__",
+        relative_payload_dir,
+    )
+
+    target_file.parent.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    shutil.copy2(
-        template_path,
-        target_path,
+    target_file.write_text(
+        text,
+        encoding="utf-8",
     )
 
 
-# =========================================================
-# Artifact management
-# =========================================================
 def ensure_report_artifacts(
+    *,
     target_dir: Path,
     level: str,
-    templates_root: Path,
-    meta_vars: dict,
+    results_template_dir: Path,
 ):
-    """
-    Ensure metadata + qmd artifacts exist.
-    """
-
-    target_dir = target_dir.resolve()
-
-    metadata = {
-        "level": level,
-        "paths": {
-            **{k: str(Path(v).resolve()) for k, v in meta_vars.items()},
-            "template_dir": str(templates_root.resolve()),
-        },
-    }
-
-    # ----------------------------------------
-    # Metadata
-    # ----------------------------------------
-    metadata_path = target_dir / "_metadata.yml"
+    template_dir = (results_template_dir / level).resolve()
 
     write_metadata(
-        metadata_path,
-        metadata,
+        target_dir / "_metadata.yml",
+        level=level,
+        template_dir=template_dir,
     )
 
-    # ----------------------------------------
-    # QMD
-    # ----------------------------------------
-    template_qmd = templates_root / "reports" / level / f"{level}.qmd"
-
-    target_qmd = target_dir / f"{level}.qmd"
-
-    copy_template(
-        template_qmd,
-        target_qmd,
+    materialize_index_qmd(
+        template_file=(template_dir / "_index.qmd"),
+        target_file=(target_dir / "index.qmd"),
+        payload_dir=template_dir,
     )
 
 
 def check_report_artifacts(
     target_dir: Path,
-    level: str,
 ):
-    """
-    Return list of missing artifacts.
-    """
-
     issues = []
 
     if not (target_dir / "_metadata.yml").exists():
         issues.append("missing _metadata.yml")
 
-    if not (target_dir / f"{level}.qmd").exists():
-        issues.append(f"missing {level}.qmd")
+    if not (target_dir / "index.qmd").exists():
+        issues.append("missing index.qmd")
 
     return issues
 
 
-# =========================================================
-# Template initialization
-# =========================================================
-def initialize_templates(
-    source_dir: Path,
-    destination_dir: Path,
-    project_root: Path,
-    force=False,
+def validate_template_tree(
+    results_template_dir: Path,
 ):
-    """
-    Initialize reporting template tree.
-    """
+    missing = []
 
-    source_dir = Path(source_dir).resolve()
+    for level in REQUIRED_LEVELS:
+        template_file = results_template_dir / level / "_index.qmd"
 
-    destination_dir = Path(destination_dir).resolve()
-
-    project_root = Path(project_root).resolve()
-
-    if not source_dir.exists():
-        raise FileNotFoundError(f"Source templates not found: {source_dir}")
-
-    if not source_dir.is_dir():
-        raise NotADirectoryError(f"Source must be a directory: {source_dir}")
-
-    required = [
-        "case",
-        "session",
-        "run",
-        "trial",
-    ]
-
-    missing = [d for d in required if not (source_dir / d).exists()]
+        if not template_file.exists():
+            missing.append(str(template_file))
 
     if missing:
-        raise RuntimeError(f"Template source missing required folders: {', '.join(missing)}")
-
-    # ----------------------------------------
-    # Replace destination
-    # ----------------------------------------
-    if destination_dir.exists():
-        if not force:
-            raise FileExistsError("Destination templates already exists")
-
-        shutil.rmtree(destination_dir)
-
-    shutil.copytree(
-        source_dir,
-        destination_dir,
-    )
-
-    # ----------------------------------------
-    # Promote root files
-    # ----------------------------------------
-    promote_files = [
-        "_quarto.yml",
-        "_variables.yml",
-    ]
-
-    moved = []
-
-    for fname in promote_files:
-        src_file = destination_dir / fname
-
-        dst_file = project_root / fname
-
-        if not src_file.exists():
-            continue
-
-        if dst_file.exists():
-            if not force:
-                continue
-
-            dst_file.unlink()
-
-        shutil.move(
-            str(src_file),
-            str(dst_file),
-        )
-
-        moved.append(fname)
-
-    return {
-        "templates_dir": destination_dir,
-        "moved_files": moved,
-    }
+        raise RuntimeError("Missing report templates:\n" + "\n".join(missing))
 
 
-# =========================================================
-# Template status
-# =========================================================
-def resolve_template_status(
-    templates_dir: Path,
-):
-    """
-    Check reporting template completeness.
-    """
-
-    required = [
-        "case",
-        "session",
-        "run",
-        "trial",
-    ]
-
-    status = {
-        "exists": templates_dir.exists(),
-        "missing_subdirs": [],
-    }
-
-    if status["exists"]:
-        for sub in required:
-            if not (templates_dir / sub).exists():
-                status["missing_subdirs"].append(sub)
-
-    return status
-
-
-# =========================================================
-# Sync
-# =========================================================
 def sync_reports(
     results_dir: Path,
-    templates_dir: Path,
+    results_template_dir: Path,
 ):
-    """
-    Generate report artifacts across
-    results tree.
-    """
-
     results_dir = Path(results_dir).resolve()
 
-    templates_dir = Path(templates_dir).resolve()
+    results_template_dir = Path(results_template_dir).resolve()
+
+    validate_template_tree(
+        results_template_dir,
+    )
+
+    # ------------------------------------
+    # Results root
+    # ------------------------------------
+    ensure_report_artifacts(
+        target_dir=results_dir,
+        level="results",
+        results_template_dir=(results_template_dir),
+    )
 
     case_seen = set()
 
-    for exp_dir in find_sessions(results_dir):
-        exp_dir = Path(exp_dir).resolve()
-
-        # results/<case>/<date>/<time>
-        case_dir = exp_dir.parent.parent
-
-        # ------------------------------------
-        # CASE
-        # ------------------------------------
-        if case_dir not in case_seen:
-            ensure_report_artifacts(
-                case_dir,
-                "case",
-                templates_dir,
-                {
-                    "case_dir": case_dir,
-                },
-            )
-
-            case_seen.add(case_dir)
-
-        # ------------------------------------
-        # session
-        # ------------------------------------
-        ensure_report_artifacts(
-            exp_dir,
-            "session",
-            templates_dir,
-            {
-                "session_dir": exp_dir,
-                "case_dir": case_dir,
-            },
-        )
-
-        # ------------------------------------
-        # RUNS
-        # ------------------------------------
-        for run_dir in find_runs(exp_dir):
-            run_dir = Path(run_dir).resolve()
-
-            ensure_report_artifacts(
-                run_dir,
-                "run",
-                templates_dir,
-                {
-                    "run_dir": run_dir,
-                    "session_dir": exp_dir,
-                    "case_dir": case_dir,
-                },
-            )
-
-            # --------------------------------
-            # FIRST TRIAL ONLY
-            # --------------------------------
-            trial_dir = find_first_trial(run_dir)
-
-            if trial_dir is not None:
-                ensure_report_artifacts(
-                    trial_dir,
-                    "trial",
-                    templates_dir,
-                    {
-                        "trial_dir": trial_dir,
-                        "run_dir": run_dir,
-                        "session_dir": exp_dir,
-                        "case_dir": case_dir,
-                    },
-                )
-
-
-# =========================================================
-# Diagnostics
-# =========================================================
-def collect_report_diagnostics(
-    results_dir: Path,
-    templates_dir: Path,
-):
-    """
-    Collect reporting synchronization status.
-    """
-
-    results_dir = Path(results_dir).resolve()
-
-    templates_dir = Path(templates_dir).resolve()
-
-    counts = {
-        "case": {
-            "total": 0,
-            "missing": 0,
-        },
-        "session": {
-            "total": 0,
-            "missing": 0,
-        },
-        "run": {
-            "total": 0,
-            "missing": 0,
-        },
-        "trial": {
-            "total": 0,
-            "missing": 0,
-        },
-    }
-
-    def check_and_count(
-        path: Path,
-        level: str,
+    for session_dir in find_sessions(
+        results_dir,
     ):
-        issues = check_report_artifacts(
-            path,
-            level,
-        )
+        session_dir = Path(session_dir).resolve()
 
-        counts[level]["total"] += 1
+        case_dir = session_dir.parent.parent
 
-        if issues:
-            counts[level]["missing"] += 1
-
-    case_seen = set()
-
-    for exp_dir in find_sessions(results_dir):
-        exp_dir = Path(exp_dir).resolve()
-
-        case_dir = exp_dir.parent.parent
-
-        # ------------------------------------
-        # CASE
-        # ------------------------------------
         if case_dir not in case_seen:
-            check_and_count(
-                case_dir,
-                "case",
+            ensure_report_artifacts(
+                target_dir=case_dir,
+                level="case",
+                results_template_dir=(results_template_dir),
             )
 
             case_seen.add(case_dir)
 
-        # ------------------------------------
-        # session
-        # ------------------------------------
-        check_and_count(
-            exp_dir,
-            "session",
+        ensure_report_artifacts(
+            target_dir=session_dir,
+            level="session",
+            results_template_dir=(results_template_dir),
         )
 
-        # ------------------------------------
-        # RUNS
-        # ------------------------------------
-        for run_dir in find_runs(exp_dir):
-            run_dir = Path(run_dir).resolve()
-
-            check_and_count(
-                run_dir,
-                "run",
+        for run_dir in find_runs(
+            session_dir,
+        ):
+            ensure_report_artifacts(
+                target_dir=run_dir,
+                level="run",
+                results_template_dir=(results_template_dir),
             )
 
-            # --------------------------------
-            # FIRST TRIAL ONLY
-            # --------------------------------
-            trial_dir = find_first_trial(run_dir)
+            trial_dir = find_first_trial(
+                run_dir,
+            )
 
-            if trial_dir is not None:
-                check_and_count(
-                    trial_dir,
-                    "trial",
+            if trial_dir:
+                ensure_report_artifacts(
+                    target_dir=trial_dir,
+                    level="trial",
+                    results_template_dir=(results_template_dir),
                 )
-
-    template_status = resolve_template_status(templates_dir)
-
-    total_missing = sum(v["missing"] for v in counts.values())
-
-    template_problem = not template_status["exists"] or len(template_status["missing_subdirs"]) > 0
-
-    return {
-        "template_status": template_status,
-        "counts": counts,
-        "total_missing": total_missing,
-        "healthy": (total_missing == 0 and not template_problem),
-    }
