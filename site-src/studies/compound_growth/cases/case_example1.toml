@@ -1,0 +1,58 @@
+case_name = "Compound Growth Example"
+description = "Jack is a millenial, born in 1996, and expects to live to 100."
+
+[basic_info]
+status = "single"
+names = [ "Jack",]
+date_of_birth = [ "1996-01-01",]
+life_expectancy = [ 100,]
+sexes = [ "M",]
+start_date = "2026-01-01"
+state = ""
+
+[savings_assets]
+taxable_savings_balances = [ 0.0,]
+tax_deferred_savings_balances = [ 0.0,]
+tax_free_savings_balances = [ 10.0,]
+hsa_savings_balances = [ 0.0,]
+
+[household_financial_profile]
+HFP_file_name = "None"
+
+[fixed_income]
+pension_monthly_amounts = [ 0,]
+pension_ages = [ 65,]
+pension_indexed = [ false,]
+pension_survivor_fraction = [ 0.0,]
+social_security_pia_amounts = [ 0,]
+social_security_ages = [ 67,]
+
+[rates_selection]
+heirs_rate_on_tax_deferred_estate = 30.0
+dividend_rate = 1.72
+obbba_expiration_year = 2032
+method = "default"
+from = 1928
+to = 2025
+reverse_sequence = false
+roll_sequence = 0
+
+[asset_allocation]
+interpolation_method = "linear"
+type = "individual"
+generic = [ [ [ 100.0, 0.0, 0.0, 0.0,], [ 100.0, 0.0, 0.0, 0.0,],],]
+
+[optimization_parameters]
+spending_profile = "flat"
+surviving_spouse_spending_percent = 60
+objective = "maxBequest"
+
+[solver_options]
+netSpending = 0.0
+withMedicare = "none"
+
+[results]
+default_plots = "today"
+worksheet_show_ages = false
+worksheet_hide_zero_columns = false
+worksheet_real_dollars = false

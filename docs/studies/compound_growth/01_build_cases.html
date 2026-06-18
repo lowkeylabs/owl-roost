@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>compound growth study – ROOST</title>
+<title>Build cases – ROOST</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -22,6 +22,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -112,8 +147,12 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
 
   <ul>
-  <li><a href="#cases-listing" id="toc-cases-listing" class="nav-link active" data-scroll-target="#cases-listing">Cases Listing</a></li>
-  <li><a href="#results-listing" id="toc-results-listing" class="nav-link" data-scroll-target="#results-listing">Results listing</a></li>
+  <li><a href="#abstract" id="toc-abstract" class="nav-link active" data-scroll-target="#abstract">Abstract</a>
+  <ul>
+  <li><a href="#create-new-case-file" id="toc-create-new-case-file" class="nav-link" data-scroll-target="#create-new-case-file">Create new case file</a></li>
+  <li><a href="#do-a-quick-run-to-fill-all-internal-buckets" id="toc-do-a-quick-run-to-fill-all-internal-buckets" class="nav-link" data-scroll-target="#do-a-quick-run-to-fill-all-internal-buckets">Do a quick run to fill all internal buckets</a></li>
+  <li><a href="#save-case-file" id="toc-save-case-file" class="nav-link" data-scroll-target="#save-case-file">Save case file</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -122,7 +161,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">compound growth study</h1>
+<h1 class="title">Build cases</h1>
 </div>
 
 
@@ -139,118 +178,71 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<!--
-Add code to load the study description from the study.toml file.  The description should
-be complete and full and look like the first paragraph of the study.
-
-The dataclass can be loaded from the study.toml file.
-
-A study has:
-- a description for the index.html
-- a list of cases
-- a list of case+overrides pairs, each will contribute to:
-- a list of runs for this study
-- a list of work products
-
-
--->
-<section id="cases-listing" class="level2">
-<h2 class="anchored" data-anchor-id="cases-listing">Cases Listing</h2>
-<p>Below is a list of cases used for this study.</p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Names</th>
-<th>Start Age(s)</th>
-<th>Expect Age(s)</th>
-<th>Net Worth</th>
-<th>Rate Model</th>
-<th>Goal</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Jack</td>
-<td>30</td>
-<td>100</td>
-<td>$10K</td>
-<td>default</td>
-<td>mxBeq/$0</td>
-</tr>
-</tbody>
-</table>
+<section id="abstract" class="level1">
+<h1>Abstract</h1>
+<p>This module builds the case(s) for this study.</p>
+<div id="837b72e3" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> io <span class="im">import</span> StringIO</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> shutil</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> owlplanner <span class="im">as</span> owl</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>CASE_FOLDER <span class="op">=</span> Path(<span class="st">"./cases"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>SAVE_FILE_NAME <span class="op">=</span> CASE_FOLDER <span class="op">/</span> <span class="st">"example1"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="create-new-case-file" class="level2">
+<h2 class="anchored" data-anchor-id="create-new-case-file">Create new case file</h2>
+<div id="22a3d0ba" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the plan</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>plan <span class="op">=</span> owl.Plan([<span class="st">'Jack'</span>], [<span class="st">'1996-01-01'</span>], [<span class="dv">100</span>],<span class="st">"Compound Growth Example"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>plan.setLogstreams(<span class="va">False</span>,logstreams<span class="op">=</span>[StringIO(),StringIO()])</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic information</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>plan.setDescription(<span class="st">"Jack is a millenial, born in 1996, and expects to live to 100."</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>plan.setSexes([<span class="st">"M"</span>])</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># balance information and asset allocation information</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>plan.setAccountBalances(</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    taxable<span class="op">=</span>[<span class="dv">0</span>],</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    taxDeferred<span class="op">=</span>[<span class="dv">0</span>],</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    taxFree<span class="op">=</span>[<span class="dv">10</span>],</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    startDate<span class="op">=</span><span class="st">'2026-01-01'</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>plan.setAllocationRatios(</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">'individual'</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    generic <span class="op">=</span> [</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        [ [ <span class="fl">100.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>,], [ <span class="fl">100.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>,],],</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Spending profiles</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co">#plan.setInterpolationMethod("linear")</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>plan.setSpendingProfile(<span class="st">"flat"</span>)</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#plan.setRates("user",values=[6.0,0,0,2.8])</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Rates</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>plan.setRates(<span class="st">"default"</span>)</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>plan.setDefaultPlots(value<span class="op">=</span><span class="st">"today"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
-<section id="results-listing" class="level2">
-<h2 class="anchored" data-anchor-id="results-listing">Results listing</h2>
-<p>Below is a table of run results generated for this study.</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Names</th>
-<th>ID</th>
-<th>Goal</th>
-<th>Rate Model</th>
-<th>Trials</th>
-<th>Spending Year0 Today median</th>
-<th>Spending Total Today median</th>
-<th>Bequest Total Today median</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Jack</td>
-<td>0/0/0</td>
-<td>mxBeq/$0</td>
-<td>default</td>
-<td>1/1</td>
-<td>$0</td>
-<td>$0</td>
-<td>$1.7M</td>
-</tr>
-<tr class="even">
-<td>Jack</td>
-<td>0/0/1</td>
-<td>mxBeq/$0</td>
-<td>conservative</td>
-<td>1/1</td>
-<td>$0</td>
-<td>$0</td>
-<td>$88K</td>
-</tr>
-<tr class="odd">
-<td>Jack</td>
-<td>0/0/2</td>
-<td>mxBeq/$0</td>
-<td>optimistic</td>
-<td>1/1</td>
-<td>$0</td>
-<td>$0</td>
-<td>$606K</td>
-</tr>
-<tr class="even">
-<td>Jack</td>
-<td>0/0/3</td>
-<td>mxBeq/$0</td>
-<td>trailing_30</td>
-<td>1/1</td>
-<td>$0</td>
-<td>$0</td>
-<td>$1.7M</td>
-</tr>
-</tbody>
-</table>
+<section id="do-a-quick-run-to-fill-all-internal-buckets" class="level2">
+<h2 class="anchored" data-anchor-id="do-a-quick-run-to-fill-all-internal-buckets">Do a quick run to fill all internal buckets</h2>
+<div id="b45b96d2" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Do a quick run, then save</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>options <span class="op">=</span> {<span class="st">'netSpending'</span>: <span class="fl">0.0</span>, <span class="st">'withMedicare'</span>: <span class="st">"none"</span>}</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>plan.solve(<span class="st">'maxBequest'</span>, options<span class="op">=</span>options)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="save-case-file" class="level2">
+<h2 class="anchored" data-anchor-id="save-case-file">Save case file</h2>
+<div id="812a4ae1" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> CASE_FOLDER.is_dir():</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    CASE_FOLDER.mkdir(parents<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    plan.saveConfig( <span class="bu">str</span>(SAVE_FILE_NAME) )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

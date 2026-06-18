@@ -33,14 +33,8 @@ This study was designed to:
 * Validate expected model behavior.
 * Serve as a reference example for ROOST.
 
-# Cases
+# Initial Case
 
-The following cases are included in this study.
-
-```{python}
-# Placeholder:
-# ROOST may later auto-generate a case catalog.
-```
 
 # Methodology
 
@@ -78,7 +72,6 @@ Insert generated tables here.
 
 ## Figures
 
-Insert generated figures here.
 
 # Discussion
 

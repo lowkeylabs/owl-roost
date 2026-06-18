@@ -78,7 +78,7 @@ def render_markdown_table(
         # -------------------------------------------------
 
         if all(c is None or c == "" for c in row):
-            lines.append("")
+            # lines.append("")
             continue
 
         # -------------------------------------------------

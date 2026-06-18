@@ -1,0 +1,58 @@
+---
+title: build results from cases
+---
+
+
+```{python}
+#| echo: false
+from pathlib import Path
+from owlroost.catalog.context import build_catalog_context
+from owlroost.display.loaders import load_case_rows
+from owlroost.display.materializers.compare import materialize_compare_table
+from owlroost.display.materializers.materialize import materialize_view
+from owlroost.display.renderers.markdown_table import render_markdown_table
+from owlroost.display.operations.table_ops import inject_id_column
+
+from owlroost.cli.cmd_build import run_direct_case_build
+from owlroost.reports.reports import sync_reports
+
+
+CASE_FOLDER = "./cases"
+(
+    schema_registry,
+    metrics_registry,
+    display_registry,
+    catalog_rows,
+    catalog_index,
+) = build_catalog_context()
+
+```
+
+```{python}
+RESULTS_FOLDER = Path("./results")
+```
+
+
+```{python}
+
+if not RESULTS_FOLDER.is_dir():
+    RESULTS_FOLDER.mkdir(parents=True)
+
+    cases = [
+        "cases/case_example1.toml",
+    ]
+    cases = [ Path(case) for case in cases ]
+    overrides = [
+        "rates_selection.method=default,conservative,optimistic,trailing_30",
+    ]
+
+    run_direct_case_build(cases,overrides,progress=None,run=True)
+
+
+    sync_reports(
+        results_dir=str(RESULTS_FOLDER),
+        results_template_dir="../../templates",
+    )
+
+
+```

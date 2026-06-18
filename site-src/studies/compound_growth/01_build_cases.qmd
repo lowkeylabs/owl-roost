@@ -1,0 +1,69 @@
+---
+title: Build cases
+---
+
+# Abstract
+
+This module builds the case(s) for this study.
+
+```{python}
+from io import StringIO
+from pathlib import Path
+import shutil
+import owlplanner as owl
+
+CASE_FOLDER = Path("./cases")
+SAVE_FILE_NAME = CASE_FOLDER / "example1"
+```
+
+## Create new case file
+
+```{python}
+
+# Create the plan
+plan = owl.Plan(['Jack'], ['1996-01-01'], [100],"Compound Growth Example")
+plan.setLogstreams(False,logstreams=[StringIO(),StringIO()])
+
+# Basic information
+plan.setDescription("Jack is a millenial, born in 1996, and expects to live to 100.")
+plan.setSexes(["M"])
+
+# balance information and asset allocation information
+plan.setAccountBalances(
+    taxable=[0],
+    taxDeferred=[0],
+    taxFree=[10],
+    startDate='2026-01-01',
+)
+plan.setAllocationRatios(
+    'individual',
+    generic = [
+        [ [ 100.0, 0.0, 0.0, 0.0,], [ 100.0, 0.0, 0.0, 0.0,],],
+    ]
+)
+
+# Spending profiles
+#plan.setInterpolationMethod("linear")
+plan.setSpendingProfile("flat")
+#plan.setRates("user",values=[6.0,0,0,2.8])
+
+# Rates
+plan.setRates("default")
+plan.setDefaultPlots(value="today")
+```
+
+## Do a quick run to fill all internal buckets
+
+```{python}
+# Do a quick run, then save
+options = {'netSpending': 0.0, 'withMedicare': "none"}
+plan.solve('maxBequest', options=options)
+```
+
+## Save case file
+
+```{python}
+if not CASE_FOLDER.is_dir():
+    CASE_FOLDER.mkdir(parents=True)
+    plan.saveConfig( str(SAVE_FILE_NAME) )
+```

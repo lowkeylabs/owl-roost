@@ -69,9 +69,11 @@ def register_display_views(
                 # =====================================
                 # Identity
                 # =====================================
-                "case_name",
+                ("case_name", {"modes": ["pivot"]}),
+                "basic_info.names",
                 "display.compact_id",
                 "display.optimization_goal",
+                "display.compact_rates",
                 "display.completion_fraction",
                 "financial.spending.year0.today__median",
                 "financial.spending.total.today__median",

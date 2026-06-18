@@ -1,6 +1,11 @@
 project:
   type: website
   output-dir: ../docs
+  render:
+    - "!results"
+    - "0*-*.qmd"
+    - "*.qmd"
+
 
 website:
   title: "ROOST"

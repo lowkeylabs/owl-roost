@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>compound growth study – ROOST</title>
+<title>build results from cases – ROOST</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -113,7 +113,7 @@ ul.task-list li input[type="checkbox"] {
 
   <ul>
   <li><a href="#cases-listing" id="toc-cases-listing" class="nav-link active" data-scroll-target="#cases-listing">Cases Listing</a></li>
-  <li><a href="#results-listing" id="toc-results-listing" class="nav-link" data-scroll-target="#results-listing">Results listing</a></li>
+  <li><a href="#case-details" id="toc-case-details" class="nav-link" data-scroll-target="#case-details">Case Details</a></li>
   </ul>
 </nav>
     </div>
@@ -122,7 +122,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">compound growth study</h1>
+<h1 class="title">build results from cases</h1>
 </div>
 
 
@@ -139,23 +139,8 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<!--
-Add code to load the study description from the study.toml file.  The description should
-be complete and full and look like the first paragraph of the study.
-
-The dataclass can be loaded from the study.toml file.
-
-A study has:
-- a description for the index.html
-- a list of cases
-- a list of case+overrides pairs, each will contribute to:
-- a list of runs for this study
-- a list of work products
-
-
--->
-<section id="cases-listing" class="level2">
-<h2 class="anchored" data-anchor-id="cases-listing">Cases Listing</h2>
+<section id="cases-listing" class="level1">
+<h1>Cases Listing</h1>
 <p>Below is a list of cases used for this study.</p>
 <table class="caption-top table">
 <thead>
@@ -177,75 +162,323 @@ A study has:
 <td>default</td>
 <td>mxBeq/$0</td>
 </tr>
+<tr class="even">
+<td>Jack</td>
+<td>30</td>
+<td>100</td>
+<td>$10K</td>
+<td>default</td>
+<td>mxBeq/$0</td>
+</tr>
 </tbody>
 </table>
 </section>
-<section id="results-listing" class="level2">
-<h2 class="anchored" data-anchor-id="results-listing">Results listing</h2>
-<p>Below is a table of run results generated for this study.</p>
+<section id="case-details" class="level1">
+<h1>Case Details</h1>
+<p>Below is a detailed listing of the first case file in the list.</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Names</th>
-<th>ID</th>
-<th>Goal</th>
-<th>Rate Model</th>
-<th>Trials</th>
-<th>Spending Year0 Today median</th>
-<th>Spending Total Today median</th>
-<th>Bequest Total Today median</th>
+<th>Field</th>
+<th>case_example1.toml</th>
+<th>case_test1.toml</th>
+<th>Explanation</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Jack</td>
-<td>0/0/0</td>
-<td>mxBeq/$0</td>
-<td>default</td>
-<td>1/1</td>
-<td>$0</td>
-<td>$0</td>
-<td>$1.7M</td>
+<td>case_name</td>
+<td>Compound Growth Example</td>
+<td>Compound Growth Example</td>
+<td>Name of the case/plan</td>
 </tr>
 <tr class="even">
-<td>Jack</td>
-<td>0/0/1</td>
-<td>mxBeq/$0</td>
-<td>conservative</td>
-<td>1/1</td>
-<td>$0</td>
-<td>$0</td>
-<td>$88K</td>
+<td><strong>BASIC_INFO</strong></td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr class="odd">
-<td>Jack</td>
-<td>0/0/2</td>
-<td>mxBeq/$0</td>
-<td>optimistic</td>
-<td>1/1</td>
-<td>$0</td>
-<td>$0</td>
-<td>$606K</td>
+<td>status</td>
+<td>single</td>
+<td>single</td>
+<td>Filing status. Valid values: “single”, “married”</td>
 </tr>
 <tr class="even">
-<td>Jack</td>
-<td>0/0/3</td>
-<td>mxBeq/$0</td>
-<td>trailing_30</td>
-<td>1/1</td>
-<td>$0</td>
-<td>$0</td>
-<td>$1.7M</td>
+<td>names</td>
+<td>[Jack]</td>
+<td>[Jack]</td>
+<td>Names of the individuals in the plan. Must contain 1 or 2 names. Length determines N_i</td>
+</tr>
+<tr class="odd">
+<td>date_of_birth</td>
+<td>[1996-01-01]</td>
+<td>[1996-01-01]</td>
+<td>Date of birth for each individual in ISO format (e.g., “1967-01-15”). Defaults to “1965-01-15” if not specified</td>
+</tr>
+<tr class="even">
+<td>life_expectancy</td>
+<td>[100]</td>
+<td>[100]</td>
+<td>Life expectancy in years for each individual</td>
+</tr>
+<tr class="odd">
+<td>sexes</td>
+<td>[M]</td>
+<td>[M]</td>
+<td><em>(Optional)</em> Biological sex for each individual. Valid values: “M” or “F”. Defaults to [“F”] for single and [“M”,“F”] for married when omitted. Recommended to set explicitly, especially when using longevity-risk sampling in stochastic spending</td>
+</tr>
+<tr class="even">
+<td>start_date</td>
+<td>2026-01-01</td>
+<td>2026-01-01</td>
+<td>Start date of the plan (e.g., “01-01”, “01/01”, “2026-01-01”). Only the month and day are used; the plan always starts in the current year. Defaults to “today” if not specified</td>
+</tr>
+<tr class="odd">
+<td>state</td>
+<td></td>
+<td></td>
+<td><em>(Optional)</em> Two-letter US state abbreviation for state income tax calculations (e.g., “MN”, “CA”). Omit or set to “” for federal-only (no state tax)</td>
+</tr>
+<tr class="even">
+<td><strong>SAVINGS_ASSETS</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>taxable_savings_balances</td>
+<td>[0]</td>
+<td>[0]</td>
+<td>Initial balance in taxable accounts for each individual (in thousands of dollars)</td>
+</tr>
+<tr class="even">
+<td>tax_deferred_savings_balances</td>
+<td>[0]</td>
+<td>[0]</td>
+<td>Initial balance in tax-deferred accounts (e.g., 401k, traditional IRA) for each individual (in thousands of dollars)</td>
+</tr>
+<tr class="odd">
+<td>tax_free_savings_balances</td>
+<td>[10]</td>
+<td>[10]</td>
+<td>Initial balance in tax-free accounts (e.g., Roth IRA, Roth 401k) for each individual (in thousands of dollars)</td>
+</tr>
+<tr class="even">
+<td>hsa_savings_balances</td>
+<td>[0]</td>
+<td>[0]</td>
+<td><em>(Optional)</em> Initial balance in Health Savings Accounts (HSA) for each individual (in thousands of dollars). Defaults to [0.0] (or [0.0, 0.0] for married). HSA contributions must stop at Medicare enrollment (~age 65); see HSA ctrb column in the HFP file</td>
+</tr>
+<tr class="odd">
+<td><strong>HOUSEHOLD_FINANCIAL_PROFILE</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>HFP_file_name</td>
+<td>None</td>
+<td>None</td>
+<td>Filename of the HFP workbook (typically .xlsx). Resolved relative to the directory of the case TOML when loading. Use “None” if the case has no HFP (wages and contributions are then zero unless set another way).</td>
+</tr>
+<tr class="odd">
+<td><strong>FIXED_INCOME</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>pension_monthly_amounts</td>
+<td>[0]</td>
+<td>[0]</td>
+<td>Monthly pension amount for each individual (in dollars). Use 0 if no pension</td>
+</tr>
+<tr class="odd">
+<td>pension_ages</td>
+<td>[65]</td>
+<td>[65]</td>
+<td>Age at which pension starts for each individual</td>
+</tr>
+<tr class="even">
+<td>pension_indexed</td>
+<td>[False]</td>
+<td>[False]</td>
+<td>Whether each pension is indexed for inflation</td>
+</tr>
+<tr class="odd">
+<td>pension_survivor_fraction</td>
+<td>[0]</td>
+<td>[0]</td>
+<td>Fraction of pension (0–1) continuing to surviving spouse. 0 = single-life. Typical: 0, 0.5, 0.75, 1.0</td>
+</tr>
+<tr class="even">
+<td>social_security_pia_amounts</td>
+<td>[0]</td>
+<td>[0]</td>
+<td>Primary Insurance Amount (PIA) for Social Security for each individual (in dollars)</td>
+</tr>
+<tr class="odd">
+<td>social_security_ages</td>
+<td>[67]</td>
+<td>[67]</td>
+<td>Age at which Social Security benefits start for each individual</td>
+</tr>
+<tr class="even">
+<td><strong>RATES_SELECTION</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>heirs_rate_on_tax_deferred_estate</td>
+<td>30</td>
+<td>30</td>
+<td>Tax rate (as percentage, e.g., 30.0 for 30%) that heirs will pay on inherited tax-deferred and HSA accounts. Non-spouse HSA beneficiaries must include the full inherited HSA balance as ordinary income (IRC §223(f)(8)(B))</td>
+</tr>
+<tr class="even">
+<td>dividend_rate</td>
+<td>1.72</td>
+<td>1.72</td>
+<td>Dividend rate as a percentage (e.g., 1.72 for 1.72%)</td>
+</tr>
+<tr class="odd">
+<td>obbba_expiration_year</td>
+<td>2032</td>
+<td>2032</td>
+<td>Year when the OBBBA (One Big Beautiful Bill Act) provisions expire. Default is 2032</td>
+</tr>
+<tr class="even">
+<td>method</td>
+<td>default</td>
+<td>default</td>
+<td>Method for determining rates. Valid values: “trailing-30”, “optimistic”, “conservative”, “user”, “historical”, “historical average”, “gaussian”, “histogaussian”, “lognormal”, “histolognormal”, “bootstrap_sor”, “var”, “garch_dcc”, “historical_copula”, “gmm”, “hmm”, “dataframe”</td>
+</tr>
+<tr class="odd">
+<td>from</td>
+<td>1928</td>
+<td>1928</td>
+<td>Starting year for historical data range (must be between 1928 and 2025). Default is 1928</td>
+</tr>
+<tr class="even">
+<td>to</td>
+<td>2025</td>
+<td>2025</td>
+<td>Ending year for historical data range (must be between 1928 and 2025, and greater than from). Default is 2025. garch_dcc requires at least 15 years of data (to - from ≥ 15)</td>
+</tr>
+<tr class="odd">
+<td>reverse_sequence</td>
+<td>false</td>
+<td>false</td>
+<td>If true, reverse the rate sequence along the time axis (e.g.&nbsp;last year first). Default is false. Ignored for fixed/constant rate methods. Used for both single-scenario and Historical Range runs.</td>
+</tr>
+<tr class="even">
+<td>roll_sequence</td>
+<td>0</td>
+<td>0</td>
+<td>Number of years to roll (shift) the rate sequence; positive shifts toward the end, values wrap. Default is 0. Ignored for fixed/constant rate methods. Used for both single-scenario and Historical Range runs.</td>
+</tr>
+<tr class="odd">
+<td><strong>ASSET_ALLOCATION</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>interpolation_method</td>
+<td>linear</td>
+<td>linear</td>
+<td>Method for gliding the allocation from initial to final values over time. “linear” = straight-line transition (equal steps each year). “s-curve” = smooth sigmoid (slow change at first, fast in the middle, slow again at the end), controlled by interpolation_center and interpolation_width.</td>
+</tr>
+<tr class="odd">
+<td>type</td>
+<td>individual</td>
+<td>individual</td>
+<td>How the allocation is defined. “individual” — each person has their own set of ratios applied identically to all their accounts. “account” — separate ratios for each account type (taxable, tax-deferred, tax-free, HSA), allowing more aggressive allocation in tax-free accounts. “spouses” — a single shared set of ratios applied across all accounts and both spouses simultaneously, reducing the number of parameters needed. <em>(Note: “spouses” is only available via the Python API, not the Streamlit UI.)</em></td>
+</tr>
+<tr class="even">
+<td>generic</td>
+<td>[100, 0, 0, 0]<br>[100, 0, 0, 0]</td>
+<td>[100, 0, 0, 0]<br>[100, 0, 0, 0]</td>
+<td>A single [initial, final] allocation pair shared by both spouses and applied uniformly across all their accounts. Structure: [[s0, b0, t0, c0], [sf, bf, tf, cf]]. Simpler to configure than “individual” when both spouses follow the same investment strategy.</td>
+</tr>
+<tr class="odd">
+<td><strong>OPTIMIZATION_PARAMETERS</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>spending_profile</td>
+<td>flat</td>
+<td>flat</td>
+<td>Type of spending profile. Valid values: “flat”, “smile”</td>
+</tr>
+<tr class="odd">
+<td>surviving_spouse_spending_percent</td>
+<td>60</td>
+<td>60</td>
+<td>Percentage of spending amount for the surviving spouse (0-100). Default is 60</td>
+</tr>
+<tr class="even">
+<td>objective</td>
+<td>maxBequest</td>
+<td>maxBequest</td>
+<td>Optimization objective. Valid values: “maxSpending”, “maxBequest”</td>
+</tr>
+<tr class="odd">
+<td><strong>SOLVER_OPTIONS</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>netSpending</td>
+<td>0</td>
+<td>0</td>
+<td>Target net spending amount in today’s dollars (in units). Used when objective = “maxBequest”.</td>
+</tr>
+<tr class="odd">
+<td>withMedicare</td>
+<td>none</td>
+<td>none</td>
+<td>Medicare Part B and Part D IRMAA handling. Valid values: “none”, “loop”, “optimize” (expert). When not “none”, Part B and Part D premiums (including IRMAA) are included; Part D can be disabled or given a base premium via the options below.</td>
+</tr>
+<tr class="even">
+<td><strong>RESULTS</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>default_plots</td>
+<td>today</td>
+<td>today</td>
+<td>Default plot display mode. Valid values: “nominal” (nominal dollars), “today” (today’s dollars)</td>
+</tr>
+<tr class="even">
+<td>worksheet_show_ages</td>
+<td>false</td>
+<td>false</td>
+<td>When true (default false), adds per-person <strong>age</strong> columns next to year in both the on-screen tables and the saved Excel workbook. Each value is the individual’s integer age on <strong>December 31</strong> of that row’s calendar year. The cell is blank for years after that person’s plan horizon.</td>
+</tr>
+<tr class="odd">
+<td>worksheet_hide_zero_columns</td>
+<td>false</td>
+<td>false</td>
+<td>When true (default false), the Streamlit <strong>Worksheets</strong> page omits numeric columns where every value is zero (within a small tolerance). The year and age columns are never removed. Applies to the <strong>on-screen display only</strong> — the saved Excel workbook always retains all columns.</td>
+</tr>
+<tr class="even">
+<td>worksheet_real_dollars</td>
+<td>false</td>
+<td>false</td>
+<td>When true (default false), all currency values in both the on-screen tables and the saved Excel workbook are divided by the cumulative inflation factor gamma_n, converting nominal dollars to today’s (real) dollars. The saved Excel filename gains a _real suffix to distinguish it from the nominal version.</td>
 </tr>
 </tbody>
 </table>
