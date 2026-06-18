@@ -611,14 +611,16 @@ def test_display_field_registration_merges_field_metadata():
     assert field.defined_in == "overlay.py"
 
 
-def test_display_field_registration_replaces_profile():
+def test_display_field_registration_merges_profile():
     """
-    Profiles are treated as atomic display
-    declarations.
+    Matching profile names participate in
+    overlay composition.
 
-    Re-registering a profile with the same
-    name replaces the entire profile rather
-    than merging profile attributes.
+    Explicitly specified incoming profile
+    attributes override existing values.
+
+    Unspecified attributes preserve the
+    previously registered profile values.
     """
 
     reg = DisplayRegistry()
@@ -653,11 +655,11 @@ def test_display_field_registration_replaces_profile():
 
     profile = field.profiles["table"]
 
-    assert profile.label is None
+    assert profile.label == "Original"
 
-    assert profile.content_align == "left"
+    assert profile.content_align == "center"
 
-    assert profile.label_align == "left"
+    assert profile.label_align == "center"
 
     assert profile.width == 25
 
@@ -666,9 +668,10 @@ def test_display_field_registration_preserves_other_profiles():
     """
     Profile dictionaries merge by profile name.
 
-    Replacing one profile should not remove
-    unrelated profiles already registered
-    on the field.
+    Matching profile names are merged
+    attribute-by-attribute.
+
+    Unrelated profiles are preserved.
     """
 
     reg = DisplayRegistry()
@@ -707,12 +710,14 @@ def test_display_field_registration_preserves_other_profiles():
         "pivot",
     }
 
-    # table profile replaced
-    assert field.profiles["table"].label is None
+    # table profile merged
+
+    assert field.profiles["table"].label == "Table"
 
     assert field.profiles["table"].width == 25
 
     # pivot profile preserved
+
     assert field.profiles["pivot"].label == "Pivot"
 
 

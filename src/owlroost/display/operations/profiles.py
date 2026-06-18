@@ -14,6 +14,10 @@ from __future__ import annotations
 # Profile Resolution
 # =========================================================
 
+# =========================================================
+# Profile Resolution
+# =========================================================
+
 
 def resolve_display_profile(
     display_field,
@@ -30,11 +34,15 @@ def resolve_display_profile(
     1. Explicit profile request
     2. Profile matching mode
     3. Sole available profile
+    4. Default profile
 
-    Raises
-    ------
-    KeyError
-        If no suitable profile exists.
+    Returns
+    -------
+    DisplayProfile
+
+    The returned profile is fully
+    materialized and contains all
+    renderer-facing defaults.
     """
 
     profiles = display_field.profiles
@@ -48,7 +56,7 @@ def resolve_display_profile(
 
     if profile is not None:
         try:
-            return profiles[profile]
+            selected = profiles[profile]
 
         except KeyError as err:
             raise KeyError(f"{display_field.field_name}: profile '{profile}' not found") from err
@@ -57,15 +65,15 @@ def resolve_display_profile(
     # Mode-Matched Profile
     # =====================================================
 
-    if mode is not None and mode in profiles:
-        return profiles[mode]
+    elif mode is not None and mode in profiles:
+        selected = profiles[mode]
 
     # =====================================================
     # Sole Profile
     # =====================================================
 
-    if len(profiles) == 1:
-        return next(
+    elif len(profiles) == 1:
+        selected = next(
             iter(
                 profiles.values(),
             )
@@ -75,15 +83,33 @@ def resolve_display_profile(
     # Default Profile
     # =====================================================
 
-    if "default" in profiles:
-        return profiles["default"]
+    elif "default" in profiles:
+        selected = profiles["default"]
 
     # =====================================================
     # Ambiguous
     # =====================================================
 
-    raise KeyError(
-        f"{display_field.field_name}: "
-        f"unable to resolve profile "
-        f"(mode={mode!r}, profiles={list(profiles)})"
+    else:
+        raise KeyError(
+            f"{display_field.field_name}: "
+            f"unable to resolve profile "
+            f"(mode={mode!r}, "
+            f"profiles={list(profiles)})"
+        )
+
+    # =====================================================
+    # Materialize Defaults
+    # =====================================================
+
+    return selected.__class__(
+        label=selected.label,
+        fmt=selected.fmt,
+        label_align=(selected.label_align if selected.label_align is not None else "left"),
+        content_align=(selected.content_align if selected.content_align is not None else "left"),
+        width=selected.width,
+        min_width=selected.min_width,
+        max_width=selected.max_width,
+        wrap=(selected.wrap if selected.wrap is not None else False),
+        visible=(selected.visible if selected.visible is not None else True),
     )

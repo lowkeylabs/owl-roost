@@ -138,17 +138,17 @@ class DisplayProfile:
 
     fmt: str | None = None
 
-    label_align: str = "left"
+    label_align: str | None = None
 
-    content_align: str = "left"
+    content_align: str | None = None
 
     width: int | Literal["auto"] | None = None
     min_width: int | None = None
     max_width: int | None = None
 
-    wrap: bool = False
+    wrap: bool | None = None
 
-    visible: bool = True
+    visible: bool | None = None
 
 
 # =========================================================

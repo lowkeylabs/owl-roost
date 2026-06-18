@@ -76,6 +76,49 @@ class DisplayRegistry:
     # Display Fields
     # =====================================================
 
+    def _merge_display_profile(
+        self,
+        existing,
+        incoming,
+    ):
+        """
+        Merge two DisplayProfiles.
+
+        Notes
+        -----
+        DisplayProfiles participate in
+        overlay composition.
+
+        Explicitly specified incoming
+        values replace existing values.
+
+        Unspecified (None) incoming
+        values preserve the existing
+        profile value.
+        """
+
+        return existing.__class__(
+            label=(incoming.label if incoming.label is not None else existing.label),
+            fmt=(incoming.fmt if incoming.fmt is not None else existing.fmt),
+            label_align=(
+                incoming.label_align if incoming.label_align is not None else existing.label_align
+            ),
+            content_align=(
+                incoming.content_align
+                if incoming.content_align is not None
+                else existing.content_align
+            ),
+            width=(incoming.width if incoming.width is not None else existing.width),
+            min_width=(
+                incoming.min_width if incoming.min_width is not None else existing.min_width
+            ),
+            max_width=(
+                incoming.max_width if incoming.max_width is not None else existing.max_width
+            ),
+            wrap=(incoming.wrap if incoming.wrap is not None else existing.wrap),
+            visible=(incoming.visible if incoming.visible is not None else existing.visible),
+        )
+
     def _merge_display_field(
         self,
         existing: DisplayField,
@@ -85,9 +128,17 @@ class DisplayRegistry:
             existing.profiles,
         )
 
-        profiles.update(
-            incoming.profiles,
-        )
+        for (
+            profile_name,
+            incoming_profile,
+        ) in incoming.profiles.items():
+            if profile_name in profiles:
+                profiles[profile_name] = self._merge_display_profile(
+                    profiles[profile_name],
+                    incoming_profile,
+                )
+            else:
+                profiles[profile_name] = incoming_profile
 
         return DisplayField(
             field_name=existing.field_name,
