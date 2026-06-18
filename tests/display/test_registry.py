@@ -574,6 +574,178 @@ def test_display_field_profiles():
     assert field.profiles["pivot"].label == "Parallel Trial Workers"
 
 
+def test_display_field_registration_merges_field_metadata():
+    """
+    Re-registering a DisplayField overlays
+    field metadata.
+
+    Unspecified attributes are preserved
+    from the previously registered field.
+    """
+
+    reg = DisplayRegistry()
+
+    reg.register_display_field(
+        DisplayField.field(
+            "x",
+            description="Original description",
+            notes="Original notes",
+        )
+    )
+
+    reg.register_display_field(
+        DisplayField.field(
+            "x",
+            defined_in="overlay.py",
+        )
+    )
+
+    field = reg.get_display_field(
+        "x",
+    )
+
+    assert field.description == "Original description"
+
+    assert field.notes == "Original notes"
+
+    assert field.defined_in == "overlay.py"
+
+
+def test_display_field_registration_replaces_profile():
+    """
+    Profiles are treated as atomic display
+    declarations.
+
+    Re-registering a profile with the same
+    name replaces the entire profile rather
+    than merging profile attributes.
+    """
+
+    reg = DisplayRegistry()
+
+    reg.register_display_field(
+        DisplayField.field(
+            "x",
+            profiles={
+                "table": DisplayProfile(
+                    label="Original",
+                    content_align="center",
+                    label_align="center",
+                ),
+            },
+        )
+    )
+
+    reg.register_display_field(
+        DisplayField.field(
+            "x",
+            profiles={
+                "table": DisplayProfile(
+                    width=25,
+                ),
+            },
+        )
+    )
+
+    field = reg.get_display_field(
+        "x",
+    )
+
+    profile = field.profiles["table"]
+
+    assert profile.label is None
+
+    assert profile.content_align == "left"
+
+    assert profile.label_align == "left"
+
+    assert profile.width == 25
+
+
+def test_display_field_registration_preserves_other_profiles():
+    """
+    Profile dictionaries merge by profile name.
+
+    Replacing one profile should not remove
+    unrelated profiles already registered
+    on the field.
+    """
+
+    reg = DisplayRegistry()
+
+    reg.register_display_field(
+        DisplayField.field(
+            "x",
+            profiles={
+                "table": DisplayProfile(
+                    label="Table",
+                ),
+                "pivot": DisplayProfile(
+                    label="Pivot",
+                ),
+            },
+        )
+    )
+
+    reg.register_display_field(
+        DisplayField.field(
+            "x",
+            profiles={
+                "table": DisplayProfile(
+                    width=25,
+                ),
+            },
+        )
+    )
+
+    field = reg.get_display_field(
+        "x",
+    )
+
+    assert set(field.profiles) == {
+        "table",
+        "pivot",
+    }
+
+    # table profile replaced
+    assert field.profiles["table"].label is None
+
+    assert field.profiles["table"].width == 25
+
+    # pivot profile preserved
+    assert field.profiles["pivot"].label == "Pivot"
+
+
+def test_display_field_registration_can_clear_notes():
+    """
+    Explicitly supplying an empty notes
+    string should clear previously
+    registered notes.
+    """
+
+    reg = DisplayRegistry()
+
+    reg.register_display_field(
+        DisplayField.field(
+            "x",
+            notes="Original notes",
+        )
+    )
+
+    reg.register_display_field(
+        DisplayField.field(
+            "x",
+            notes="",
+        )
+    )
+
+    field = reg.get_display_field(
+        "x",
+    )
+
+    assert field.notes == ""
+
+
 # =========================================================
 # Repr
 # =========================================================

@@ -76,19 +76,50 @@ class DisplayRegistry:
     # Display Fields
     # =====================================================
 
+    def _merge_display_field(
+        self,
+        existing: DisplayField,
+        incoming: DisplayField,
+    ) -> DisplayField:
+        profiles = dict(
+            existing.profiles,
+        )
+
+        profiles.update(
+            incoming.profiles,
+        )
+
+        return DisplayField(
+            field_name=existing.field_name,
+            path=(incoming.path if incoming.path != incoming.field_name else existing.path),
+            display_fn=(incoming.display_fn or existing.display_fn),
+            catalog_declaration=(incoming.catalog_declaration or existing.catalog_declaration),
+            profiles=profiles,
+            description=(
+                incoming.description if incoming.description is not None else existing.description
+            ),
+            defined_in=(
+                incoming.defined_in if incoming.defined_in is not None else existing.defined_in
+            ),
+            notes=(incoming.notes if incoming.notes is not None else existing.notes),
+        )
+
     def register_display_field(
         self,
         field: DisplayField,
     ):
-        """
-        Register DisplayField.
+        existing = self._display_fields.get(
+            field.field_name,
+        )
 
-        Existing fields are intentionally
-        overwritten to support display
-        customization and field refinement.
-        """
+        if existing is None:
+            self._display_fields[field.field_name] = field
+            return
 
-        self._display_fields[field.field_name] = field
+        self._display_fields[field.field_name] = self._merge_display_field(
+            existing,
+            field,
+        )
 
     def get_display_field(
         self,

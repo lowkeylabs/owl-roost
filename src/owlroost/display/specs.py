@@ -228,7 +228,7 @@ class DisplayField:
 
     defined_in: str | None = None
 
-    notes: str = ""
+    notes: str | None = None
 
     @staticmethod
     def default_profiles():
