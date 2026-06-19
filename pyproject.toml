@@ -47,7 +47,7 @@ dependencies = [
 "plotly>=6.5.0",
 
 # OWL is under active development; pin to commit for reproducibility
-"owlplanner @ git+https://github.com/mdlacasse/Owl.git@d812eb69c960f650a1e0cfcfd06d58a1fa3c7d1b",  # 2026-02-19
+"owlplanner @ git+https://github.com/mdlacasse/Owl.git@4e6bd0c69ac282aee031a1ce4a7c6e313c3adc9f",  # 2026-02-19
 
 #"owlplanner",
 #"owlplanner @ git+https://github.com/lowkeylabs/OwlPlanner.git@feature/config-compare",

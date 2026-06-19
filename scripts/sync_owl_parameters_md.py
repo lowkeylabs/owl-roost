@@ -14,7 +14,7 @@ PYPROJECT = ROOT / "pyproject.toml"
 
 TMP = ROOT / ".tmp_owl"
 
-SRC = TMP / "PARAMETERS.md"
+SRC = TMP / "info/PARAMETERS.md"
 
 DST = ROOT / "src" / "owlroost" / "schema" / "generated" / "PARAMETERS.md"
 

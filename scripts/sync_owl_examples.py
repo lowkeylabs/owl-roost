@@ -11,8 +11,9 @@ OWL_REPO = "https://github.com/mdlacasse/Owl.git"
 ROOT = Path(__file__).resolve().parents[1]
 PYPROJECT = ROOT / "pyproject.toml"
 TMP = ROOT / ".tmp_owl"
+
 SRC = TMP / "examples"
-DST = ROOT / "site-src" / "examples" / "owlplanner"
+DST = ROOT / "site-src" / "examples"
 
 
 def run(cmd: list[str], cwd: Path | None = None) -> None:

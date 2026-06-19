@@ -1,9 +1,3 @@
-# src/owlroost/schema/generated/owl_parameter_docs.py
-#
-# Copyright (c) 2026 John Leonard
-# SPDX-License-Identifier: GPL-3.0-or-later
-# See LICENSE file in repository root.
-
 """
 AUTO-GENERATED FILE.
 
@@ -289,6 +283,20 @@ OWL_PARAMETER_DOCS = {
         "units": "years",
         "notes": None,
     },
+    "liquidation_capgains_rate": {
+        "section": "units_of_measure",
+        "type": "float",
+        "description": "Assumed capital-gains tax rate (as percentage, e.g., 15.0 for 15%) applied to fixed-asset disposition (commission plus this rate on the gain) on the liquid balance sheet. Default is 15.0",
+        "units": "percent",
+        "notes": None,
+    },
+    "liquidation_tax_rate": {
+        "section": "units_of_measure",
+        "type": "float",
+        "description": "Assumed ordinary income tax rate (as percentage, e.g., 24.0 for 24%) applied to tax-deferred and HSA balances on the liquid balance sheet (tax owed if those accounts were liquidated). Default is 24.0",
+        "units": "percent",
+        "notes": None,
+    },
     "maxIter": {
         "section": "solver_options",
         "type": "integer",
@@ -298,8 +306,8 @@ OWL_PARAMETER_DOCS = {
     },
     "maxRothConversion": {
         "section": "solver_options",
-        "type": "float or string",
-        "description": 'Maximum annual Roth conversion amount (in units). Use "file" to take per-year limits from time lists; omit for no cap (except last year).',
+        "type": "float",
+        "description": "Maximum annual Roth conversion amount (in units); omit for no cap (except last year).",
         "units": "years",
         "notes": None,
     },
@@ -735,6 +743,13 @@ OWL_PARAMETER_DOCS = {
         "type": "string",
         "description": 'Units for amounts. Valid values: "1" (dollars), "k" (thousands), "M" (millions).',
         "units": "thousands_usd",
+        "notes": None,
+    },
+    "useRothConvOverrides": {
+        "section": "solver_options",
+        "type": "boolean",
+        "description": "When true, the Roth conv column of the HFP time lists pins per-year conversions: positive values pin the exact amount (bypassing maxRothConversion), negative values force 0, and 0 leaves the year unconstrained.",
+        "units": "years",
         "notes": None,
     },
     "values": {

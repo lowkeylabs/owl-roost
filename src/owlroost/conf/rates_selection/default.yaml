@@ -1,4 +1,6 @@
 heirs_rate_on_tax_deferred_estate: null
+liquidation_tax_rate: null
+liquidation_capgains_rate: null
 dividend_rate: null
 obbba_expiration_year: null
 method: null

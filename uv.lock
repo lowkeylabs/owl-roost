@@ -1829,8 +1829,8 @@ wheels = [
 
 [[package]]
 name = "owlplanner"
-version = "2026.6.12"
-source = { git = "https://github.com/mdlacasse/Owl.git?rev=d812eb69c960f650a1e0cfcfd06d58a1fa3c7d1b#d812eb69c960f650a1e0cfcfd06d58a1fa3c7d1b" }
+version = "2026.6.18"
+source = { git = "https://github.com/mdlacasse/Owl.git?rev=4e6bd0c69ac282aee031a1ce4a7c6e313c3adc9f#4e6bd0c69ac282aee031a1ce4a7c6e313c3adc9f" }
 dependencies = [
     { name = "click" },
     { name = "highspy" },
@@ -2672,7 +2672,7 @@ requires-dist = [
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "mosek", specifier = ">=11.1.9" },
-    { name = "owlplanner", git = "https://github.com/mdlacasse/Owl.git?rev=d812eb69c960f650a1e0cfcfd06d58a1fa3c7d1b" },
+    { name = "owlplanner", git = "https://github.com/mdlacasse/Owl.git?rev=4e6bd0c69ac282aee031a1ce4a7c6e313c3adc9f" },
     { name = "plotly", specifier = ">=6.5.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.7.0" },
     { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },

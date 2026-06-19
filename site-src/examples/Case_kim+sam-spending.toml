@@ -1,8 +1,8 @@
-case_name = "kim+sam-bequest"
+case_name = "kim+sam-spending"
 description = """
-Kim and Sam want to maximize the after-tax estate they leave to their heirs while maintaining a fixed $145k annual spending floor. Like the spending variant, they have HSAs and plan to downsize their home in 2038.
+Kim and Sam are a high-net-worth couple in their late fifties, optimizing for maximum lifetime spending. They've accumulated significant tax-deferred savings and have been contributing to HSAs while on high-deductible plans. They plan to downsize their home in 2038, with the sale proceeds helping fund their later years.
 
-This case demonstrates maxBequest optimization: the solver balances Roth conversions (to reduce future RMDs and heirs' tax burden) against the need to preserve liquidity for spending. Fixed assets and HSA qualified withdrawals add complexity to the tax-efficient withdrawal sequence.
+This case showcases maxSpending optimization with HSA accounts, fixed assets (primary residence sale with capital gains exclusion), and Roth conversion strategy. Owl drives the spending basis to $186,697/yr, running about $789k (today's dollars) of Roth conversions and ending with essentially nothing left to heirs—every dollar is consumed. It is the deliberate twin of Case_kim+sam-bequest, which holds the same couple to a $145k floor and instead maximizes the estate: there the optimizer converts far more (~$1.18M) and preserves about $1.99M after tax. Comparing the two shows how the objective alone reshapes withdrawal and conversion timing for an identical household.
 """
 
 [basic_info]
@@ -54,14 +54,14 @@ surviving_spouse_spending_percent = 60
 smile_dip = 15
 smile_increase = 12
 smile_delay = 0
-objective = "maxBequest"
+objective = "maxSpending"
 other_medical_expenses = 2.0
 
 [solver_options]
-netSpending = 145
 maxRothConversion = 100
 noRothConversions = "none"
 startRothConversions = 2026
+bequest = 0
 solver = "default"
 spendingSlack = 0
 withSCLoop = true
