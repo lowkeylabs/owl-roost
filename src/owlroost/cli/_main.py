@@ -17,12 +17,17 @@ from __future__ import annotations
 
 import click
 
+from ..core.info import (
+    get_installation_info,
+    get_installation_value,
+)
 from ..version import __version__
 from .cmd_build import cmd_build
 from .cmd_reports import cmd_reports
 from .cmd_results import cmd_results
 from .cmd_run import cmd_run
 from .cmd_vars import cmd_vars
+from .cmd_workspace import cmd_workspace
 
 
 @click.group(invoke_without_command=True)
@@ -57,9 +62,32 @@ def cli(
 
 @cli.command()
 @click.pass_context
-def info(ctx):
+@click.option(
+    "--path",
+    default=None,
+    type=click.Choice(
+        [
+            "makefile",
+            "templates",
+            "conf",
+        ]
+    ),
+)
+def info(ctx, path):
     """Show OWL-Station and OWL solver version information."""
-    click.echo(f"OWL-ROOST version: {__version__}")
+
+    if path:
+        click.echo(
+            get_installation_value(
+                path,
+            )
+        )
+        return
+
+    info = get_installation_info()
+
+    for key, value in info.items():
+        click.echo(f"{key}: {value}")
 
 
 #    solver = get_owl_solver_info()
@@ -77,3 +105,4 @@ cli.add_command(cmd_reports)
 cli.add_command(cmd_results)
 
 cli.add_command(cmd_vars, name="vars")
+cli.add_command(cmd_workspace)

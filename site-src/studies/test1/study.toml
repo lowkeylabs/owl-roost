@@ -1,0 +1,7 @@
+name = "test1"
+
+title = "test1 - human readable"
+
+description = """(add a longer description here)
+(this will be used in web site catalog)
+"""

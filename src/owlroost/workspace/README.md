@@ -32,6 +32,18 @@ Lever
 
 The workspace subsystem provides a physical environment in which analytical work is organized, executed, documented, and shared.
 
+The workspace subsystem owns the study
+definition (study.toml), workspace
+creation, workspace materialization,
+and workspace lifecycle management.
+
+The study subsystem owns retirement
+decision guidance and experiment
+construction.
+
+These responsibilities are intentionally
+separated.
+
 ---
 
 # Purpose

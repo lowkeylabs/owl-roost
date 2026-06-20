@@ -333,7 +333,7 @@ def snapshot_hfp(
     src = (source_folder / hfp_file).resolve()
 
     if not src.exists():
-        raise FileNotFoundError(f"HFP file not found: {src}")
+        raise FileNotFoundError(f"Source HFP file not found: {src}")
 
     dst = destination_folder / destination_name
 
@@ -396,36 +396,36 @@ def generate_trials(cfg: DictConfig):
     # ----------------------------------------
     exp_case_path = exp_path / "session.toml"
     if not exp_case_path.exists():
-        shutil.copy2(original_case_file, exp_case_path)
+        shutil.copy2(
+            original_case_file,
+            exp_case_path,
+        )
+
+        case_dict = toml.load(
+            exp_case_path,
+        )
+
+        session_hfp_file, case_dict = snapshot_hfp(
+            toml_dict=case_dict,
+            source_folder=original_case_file.parent,
+            destination_folder=exp_path,
+            destination_name="session-hfp.xlsx",
+        )
+
+        save_toml(
+            exp_case_path,
+            case_dict,
+        )
 
     # ----------------------------------------
-    # Load base TOML
-    # Copy to session.toml and
-    # Copy HFP file to session-hfp.xlsx (if exists)
+    # Load canonical session snapshot
     # ----------------------------------------
+
     case_file = exp_case_path
-    case_dict = toml.load(case_file)
 
-    session_hfp_file, case_dict = snapshot_hfp(
-        toml_dict=case_dict,
-        source_folder=original_case_file.parent,
-        destination_folder=exp_path,
-        destination_name="session-hfp.xlsx",
-    )
-
-    save_toml(
+    case_dict = toml.load(
         case_file,
-        case_dict,
     )
-
-    # ----------------------------------------
-    # Reload canonical session snapshot
-    # everything after this is working with the
-    # session copies of the TOML and HFP
-    # ----------------------------------------
-
-    case_file = exp_case_path
-    case_dict = toml.load(case_file)
 
     # ----------------------------------------
     # Hydra-composed configuration

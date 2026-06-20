@@ -439,3 +439,68 @@ def render_available_views(
         click.echo(f"  {name} ({source})")
 
     click.echo()
+
+
+def select_workspace_rows(
+    rows,
+    selections,
+):
+    """
+    Return workspace rows matching:
+
+        0
+        1-3
+        1,3,5
+
+    Selection is performed using
+    attached _row_id values.
+
+    Returns selected rows with
+    duplicates removed.
+    """
+
+    if not selections:
+        return rows
+
+    selected_rows = []
+
+    for selection in selections:
+        matches = select_rows_by_id(
+            rows,
+            [selection],
+        )
+
+        if not matches:
+            raise click.ClickException(f"No workspaces matched selection: {selection}")
+
+        selected_rows.extend(
+            matches,
+        )
+
+    # ----------------------------------------
+    # Remove duplicates
+    # ----------------------------------------
+
+    seen = set()
+
+    out = []
+
+    for row in selected_rows:
+        resolved = str(
+            Path(
+                row["_path"],
+            ).resolve()
+        )
+
+        if resolved in seen:
+            continue
+
+        seen.add(
+            resolved,
+        )
+
+        out.append(
+            row,
+        )
+
+    return out
