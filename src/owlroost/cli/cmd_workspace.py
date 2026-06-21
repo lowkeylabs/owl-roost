@@ -65,6 +65,7 @@ from owlroost.display.operations.table_ops import (
     inject_id_column,
 )
 from owlroost.workspace.loaders import (
+    load_workspace_row,
     load_workspace_rows,
 )
 from owlroost.workspace.operations import (
@@ -272,9 +273,18 @@ def cmd_workspace(
         root,
     )
 
+    if not rows:
+        rows = [load_workspace_row(".")]
+
+        if not rows:
+            print("No workspaces found in subfolders or this folder")
+            return
+
     rows = apply_canonical_sort(
         rows,
     )
+
+    print(rows)
 
     rows = apply_filters(
         rows,

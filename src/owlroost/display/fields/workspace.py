@@ -1,4 +1,21 @@
+# src/owlroost/display/fields/workspace.py
+#
+# Copyright (c) 2026 John Leonard
+# SPDX-License-Identifier: GPL-3.0-or-later
+# See LICENSE file in repository root.
+
+"""
+TODO: Document module.
+
+Notes
+-----
+Describe responsibilities, ownership,
+and architectural role.
+"""
+
 from __future__ import annotations
+
+from pathlib import Path
 
 from owlroost.catalog.ontology import (
     CatalogNodeType,
@@ -41,7 +58,33 @@ def register_display_fields(
                 "pivot": DisplayProfile(label="Workspace Name", width="auto"),
             },
             **SHARED_ONTOLOGY,
-            description="Folder name of workspace",
+            description="Short workspace name from study.toml",
+        )
+    )
+
+    reg.register_display_field(
+        DisplayField.field(
+            "workspace.path",
+            path="workspace_path",
+            profiles={
+                "table": DisplayProfile(label="Workspace\nPath", width="auto"),
+                "pivot": DisplayProfile(label="Workspace path", width="auto"),
+            },
+            **SHARED_ONTOLOGY,
+            description="Full pathstr for workspace",
+        )
+    )
+
+    reg.register_display_field(
+        DisplayField.field(
+            "workspace.folder",
+            display_fn=lambda row: str(Path(row.get("workspace_path", Path.cwd())).name),
+            profiles={
+                "table": DisplayProfile(label="Workspace\nFolder", width="auto"),
+                "pivot": DisplayProfile(label="Workspace folder", width="auto"),
+            },
+            **SHARED_ONTOLOGY,
+            description="Full pathstr for workspace",
         )
     )
 
@@ -60,6 +103,7 @@ def register_display_fields(
                 ),
             },
             **SHARED_ONTOLOGY,
+            description="Workspace title from study.toml",
         )
     )
 
@@ -79,5 +123,86 @@ def register_display_fields(
                 ),
             },
             **SHARED_ONTOLOGY,
+            description="Workspace description from study.toml",
+        )
+    )
+
+    # ------
+    # Counts
+    # ------
+
+    reg.register_display_field(
+        DisplayField.field(
+            "workspace.trial_cnt",
+            path="workspace.summary.trial_cnt",
+            profiles={
+                "table": DisplayProfile(
+                    label="Trial\nCnt",
+                    width="auto",
+                ),
+                "pivot": DisplayProfile(
+                    label="Trial Count",
+                    width="auto",
+                ),
+            },
+            **SHARED_ONTOLOGY,
+            description="Workspace trial count",
+        )
+    )
+
+    reg.register_display_field(
+        DisplayField.field(
+            "workspace.run_cnt",
+            path="workspace.summary.run_cnt",
+            profiles={
+                "table": DisplayProfile(
+                    label="Run\nCnt",
+                    width="auto",
+                ),
+                "pivot": DisplayProfile(
+                    label="Run Count",
+                    width="auto",
+                ),
+            },
+            **SHARED_ONTOLOGY,
+            description="Workspace run count",
+        )
+    )
+
+    reg.register_display_field(
+        DisplayField.field(
+            "workspace.session_cnt",
+            path="workspace.summary.session_cnt",
+            profiles={
+                "table": DisplayProfile(
+                    label="Session\nCnt",
+                    width="auto",
+                ),
+                "pivot": DisplayProfile(
+                    label="Session Count",
+                    width="auto",
+                ),
+            },
+            **SHARED_ONTOLOGY,
+            description="Workspace session count",
+        )
+    )
+
+    reg.register_display_field(
+        DisplayField.field(
+            "workspace.case_cnt",
+            path="workspace.summary.case_cnt",
+            profiles={
+                "table": DisplayProfile(
+                    label="Case\nCnt",
+                    width="auto",
+                ),
+                "pivot": DisplayProfile(
+                    label="Case Count",
+                    width="auto",
+                ),
+            },
+            **SHARED_ONTOLOGY,
+            description="Workspace case count",
         )
     )

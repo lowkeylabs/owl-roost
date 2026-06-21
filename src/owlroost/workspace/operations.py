@@ -206,7 +206,7 @@ def init_workspace(
     if force or not study_toml.exists():
         study_toml.write_text(
             MINIMAL_STUDY_TOML.format(
-                name=workspace_dir.name,
+                name=str(workspace_dir.resolve().name),
             )
         )
 

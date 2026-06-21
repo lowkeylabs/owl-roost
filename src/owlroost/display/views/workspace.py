@@ -1,3 +1,18 @@
+# src/owlroost/display/views/workspace.py
+#
+# Copyright (c) 2026 John Leonard
+# SPDX-License-Identifier: GPL-3.0-or-later
+# See LICENSE file in repository root.
+
+"""
+TODO: Document module.
+
+Notes
+-----
+Describe responsibilities, ownership,
+and architectural role.
+"""
+
 from __future__ import annotations
 
 from owlroost.core.utils import normalize_module_path
@@ -25,11 +40,32 @@ def register_display_views(
                 # =====================================
                 # Identity
                 # =====================================
-                "workspace.name",
+                "workspace.folder",
+                # "workspace.path",
+                # "workspace.name",
                 "workspace.title",
                 "workspace.description",
             ],
             description=("workspace description"),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    reg.register_view(
+        DisplayView(
+            level="workspace",
+            name="summary",
+            entries=[
+                # =====================================
+                # Identity
+                # =====================================
+                "workspace.name",
+                "workspace.case_cnt",
+                "workspace.session_cnt",
+                "workspace.run_cnt",
+                "workspace.trial_cnt",
+            ],
+            description=("Summary view of workspace status"),
             **SHARED_VIEW_ONTOLOGY,
         )
     )

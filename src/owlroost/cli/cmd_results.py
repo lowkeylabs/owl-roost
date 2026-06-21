@@ -380,8 +380,6 @@ def cmd_results(
         level=level,
     )
 
-    print(rows[0])
-
     rows = attach_row_ids(
         rows,
     )
