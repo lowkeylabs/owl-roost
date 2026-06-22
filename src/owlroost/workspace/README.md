@@ -27,7 +27,8 @@ Conceptually:
 ```text
 Workspace
     ├── Studies
-    │       └── Experiments
+    │       └── Questions
+    │               └── Experiments
     │
     └── Results
             └── Sessions
@@ -52,6 +53,9 @@ Conceptually:
 Definitions
     Workspace
     Study
+    Question
+    Decision
+    Choice Template
     Experiment
 
 Evidence
@@ -68,6 +72,8 @@ Conceptually:
 
 ```text
 Study
+    ↓
+Question
     ↓ instantiate
 Experiment
     ↓ execute
@@ -126,21 +132,34 @@ Workspaces may be distributed as:
 
 # Studies
 
-A study defines an analytical methodology.
+A study organizes related retirement questions.
+
+Studies provide analytical context,
+question discovery, educational
+guidance, and interpretation workflows.
+
+Studies help users move from:
+
+    What question do I have?
+
+to:
+
+    What evidence should be generated?
+
 
 A study answers:
 
-> What question are we trying to answer?
+> What collection of related retirement questions should be explored?
 
 Examples include:
 
-* Social Security Timing
-* Roth Conversion Analysis
-* Spending Flexibility Analysis
-* Regime Sensitivity Analysis
-* Historical versus Bootstrap Analysis
-* Runtime Scaling Analysis
-* Cross-Household Generalization Analysis
+* Retirement Readiness
+* Social Security Strategy
+* Tax Strategy
+* Market Uncertainty
+* Spending Sustainability
+* Survivor Planning
+* Retirement Income Strategy
 
 Studies are reusable.
 
@@ -163,8 +182,68 @@ Conceptually:
 ```text
 Study
     ↓
-Analytical Methodology
+Questions
+    ↓
+Methodologies
+    ↓
+Experiments
 ```
+
+---
+
+# Questions
+
+Questions are the primary analytical
+entities within ROOST.
+
+Examples include:
+
+    Can I retire?
+
+    When can I retire?
+
+    How much can I spend?
+
+    When should I claim
+    Social Security?
+
+    Should I perform
+    Roth conversions?
+
+Questions may refine into
+more specific questions.
+
+Examples:
+
+    Can I retire?
+        ↓
+    How much can I spend?
+
+    How much can I spend?
+        ↓
+    How sensitive is spending
+    to market returns?
+
+Question refinement helps users
+move from broad retirement concerns
+to answerable analytical questions.
+
+
+Questions may participate in
+multiple studies.
+
+Questions represent user intent.
+
+Experiments exist to answer
+questions.
+
+Conceptually:
+
+    Question
+        ↓
+    Experiment
+        ↓
+    Evidence
 
 ---
 
@@ -172,9 +251,19 @@ Analytical Methodology
 
 An experiment defines a reusable execution plan.
 
+Experiments are typically generated
+from questions.
+
+A single question may materialize
+multiple experiments.
+
+Different experiments may provide
+different forms of evidence for the
+same question.
+
 An experiment answers:
 
-> How should we investigate this question?
+> How should this question be investigated?
 
 Examples include:
 
@@ -318,11 +407,18 @@ Cases do not define analytical methodologies.
 
 Cases answer:
 
-> Who are we analyzing?
+    Who are we analyzing?
+
+
+Questions answer:
+
+    What are we asking?
 
 Studies answer:
 
-> What question are we asking?
+    What collection of related
+    questions should be explored?
+
 
 ---
 
@@ -335,6 +431,8 @@ Conceptually:
 ```text
 Study
     ↓
+Question
+    ↓
 Experiment
     ↓
 Case
@@ -346,13 +444,15 @@ Run
 
 A retirement advisor may maintain studies such as:
 
-* Social Security Timing
-* Roth Conversion Analysis
-* Spending Flexibility Analysis
+* Retirement Readiness
+* Social Security Strategy
+* Tax Strategy
+* Market Uncertainty
+* Spending Sustainability
 
 and apply those studies repeatedly across many households.
 
-The study remains stable.
+The study and its questions remains stable.
 
 The sessions become household-specific evidence.
 
@@ -379,6 +479,8 @@ Conceptually:
 
 ```text
 Study
+    ↓
+Question
     ↓
 Experiment
     ↓
@@ -424,6 +526,8 @@ Educational Concept
     ↓
 Study
     ↓
+Question
+    ↓
 Experiment
     ↓
 Demonstration
@@ -466,6 +570,8 @@ Research Question
     ↓
 Study
     ↓
+Question
+    ↓
 Experiment
     ↓
 Evidence
@@ -496,6 +602,8 @@ Personal Question
     ↓
 Study
     ↓
+Question
+    ↓
 Experiment
     ↓
 Evidence
@@ -503,6 +611,7 @@ Evidence
 
 The long-term goal is for individuals to use studies developed by advisors, educators, researchers, or the broader ROOST community without needing deep technical knowledge of the underlying implementation.
 
+For retirees, studies define reusable ways to answer retirement questions.
 ---
 
 ## The ROOST Project
@@ -525,6 +634,8 @@ Conceptually:
 ROOST Development
     ↓
 Study
+    ↓
+Question
     ↓
 Experiment
     ↓
@@ -562,7 +673,9 @@ Case
     ↓
 Characterization
     ↓
-Study Recommendation
+Question Recommendation
+    ↓
+Study Discovery
     ↓
 Experiment Instantiation
     ↓
@@ -655,21 +768,51 @@ Workspaces do not own analytical methodology.
 
 ---
 
-## Studies define analytical methodologies.
+## Studies organize related questions.
 
-Studies define reusable methodologies for answering retirement questions.
+Studies organize reusable collections
+of retirement questions and the
+methodologies used to answer them.
 
 Studies organize:
 
-* Scientific intent
-* Comparison structures
-* Interpretation workflows
-* Reporting strategies
+    Questions
+    Methodologies
+    Comparison structures
+    Interpretation workflows
+    Reporting strategies
 
 Studies do not define execution history.
 
 Studies remain reusable across households, advisors, educators, researchers, and time.
 
+---
+
+## Questions are first-class analytical entities.
+
+Questions represent user intent.
+
+Questions may participate in
+multiple studies.
+
+Experiments answer questions.
+
+Results provide evidence for
+answers.
+
+---
+
+## Questions may be answerable, partially answerable, or unanswered.
+
+Some questions may be answered immediately.
+
+Some require assumptions.
+
+Some require additional household data.
+
+Some require new analytical methods.
+
+Some represent future research opportunities.
 
 ---
 
@@ -681,6 +824,8 @@ Conceptually:
 
 ```text
 Study
+    ↓
+Question
     ↓
 Experiment
     ↓
@@ -808,6 +953,9 @@ The workspace subsystem is expected to become the primary mechanism for:
 * Reproducible retirement analysis
 * Study creation
 * Experiment management
+* Question discovery
+* Question recommendation
+* Question answerability assessment
 * Session execution
 * Household characterization
 * Study recommendation

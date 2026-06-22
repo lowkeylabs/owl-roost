@@ -105,12 +105,6 @@ def materialize_row_metrics(
         # Compute metric
         # =============================================
 
-        print(
-            "\n---",
-            metric.name,
-            metric.materialization_level,
-        )
-
         try:
             value = metric.compute_fn(
                 row,

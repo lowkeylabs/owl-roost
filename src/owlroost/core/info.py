@@ -33,7 +33,7 @@ def get_workspace_dir():
 
 
 def get_workspace_template_dir():
-    return get_workspace_dir() / "templates"
+    return get_roost_root() / "templates"
 
 
 def get_roost_makefile():

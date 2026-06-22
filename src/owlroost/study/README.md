@@ -1,20 +1,34 @@
 # Study Subsystem
 
-The study subsystem provides a higher-level analytical layer above the core ROOST execution architecture.
+The study subsystem provides the analytical guidance layer of ROOST.
 
 Its purpose is to help users move from:
 
 ```text
-What decision should I investigate?
+What question am I trying to answer?
 ```
 
 to:
 
 ```text
-What experiments should I run?
+What evidence should be generated?
 ```
 
-rather than requiring users to manually construct sessions and sweeps from low-level override variables.
+without requiring users to manually construct sessions, runs, sweeps, or low-level override configurations.
+
+The study subsystem sits between:
+
+```text
+retirement questions
+```
+
+and
+
+```text
+execution workflows
+```
+
+and is responsible for transforming analytical intent into reproducible investigation strategies.
 
 ---
 
@@ -41,17 +55,218 @@ How was a result produced?
 The study subsystem addresses a different question:
 
 ```text
-What decisions are available,
-and how should they be investigated?
+What should be investigated,
+and how should it be investigated?
 ```
 
-The study subsystem therefore sits above the execution layer and helps bridge retirement questions, experimental design questions, and execution-tuning questions into reproducible analytical workflows.
+The study subsystem therefore owns:
+
+* Question discovery
+* Question organization
+* Question applicability
+* Experiment generation
+* Analytical guidance
+
+while remaining independent of execution realization.
+
+---
+
+# Question-Centric Architecture
+
+ROOST is intentionally question-driven.
+
+Users rarely begin with:
+
+```text
+What sweep should I run?
+```
+
+Instead they begin with:
+
+```text
+Can I retire?
+
+When should I retire?
+
+When should I claim Social Security?
+
+Should I perform Roth conversions?
+
+How much can I spend?
+```
+
+The study subsystem therefore treats:
+
+```text
+Question
+```
+
+as the primary user-facing analytical abstraction.
+
+Experiments exist to answer questions.
+
+Questions do not exist to justify experiments.
+
+---
+
+# Conceptual Hierarchy
+
+Conceptually:
+
+```text
+Study
+    ↓
+Question
+    ↓
+Decision
+    ↓
+Choice Template
+    ↓
+Lever
+    ↓
+Experiment
+```
+
+Experiments bridge the study subsystem and the execution subsystem:
+
+```text
+Experiment
+    ↓
+Session
+    ↓
+Run
+    ↓
+Trial
+```
+
+---
+
+# Studies
+
+A study organizes related retirement questions.
+
+Studies provide analytical context and help users discover adjacent questions that may be relevant to their situation.
+
+Examples:
+
+```text
+Retirement Readiness
+
+Social Security Strategy
+
+Tax Strategy
+
+Market Uncertainty
+
+Spending Sustainability
+```
+
+A study answers:
+
+```text
+What collection of related
+questions should be explored?
+```
+
+Studies may contain many questions.
+
+Questions may participate in multiple studies.
+
+Studies are organizational entities.
+
+Studies are not execution artifacts.
+
+---
+
+# Questions
+
+Questions represent the primary analytical entities within the study subsystem.
+
+Examples:
+
+```text
+Can I retire?
+
+When can I retire?
+
+How much can I spend?
+
+When should I claim Social Security?
+
+Should I perform Roth conversions?
+
+How much should I convert this year?
+```
+
+Questions may:
+
+* Participate in multiple studies
+* Reference multiple decisions
+* Require assumptions
+* Require additional data
+* Require analytical methodologies
+* Require future research
+
+Questions are intentionally independent of case applicability.
+
+Applicability is determined through decisions, choice templates, and levers.
+
+---
+
+# Question Relationships
+
+Questions form a relationship graph.
+
+Questions may:
+
+```text
+refine other questions
+
+suggest related questions
+
+depend on prerequisite questions
+
+participate in multiple studies
+```
+
+Examples:
+
+```text
+Can I retire?
+    ↓
+
+How much can I spend?
+
+When can I retire?
+
+What are my major risks?
+```
+
+and:
+
+```text
+When should I claim Social Security?
+    ↓
+
+How much does claiming age matter?
+
+How does claiming affect my spouse?
+
+How does claiming affect spending?
+```
+
+These relationships support:
+
+* Discovery
+* Recommendation
+* Educational workflows
+* Study navigation
 
 ---
 
 # Decisions
 
-A decision defines a question that may be investigated.
+A decision defines an analytical dimension that may be investigated.
 
 Examples include:
 
@@ -60,76 +275,47 @@ Examples include:
 * Retirement age
 * Asset allocation
 * Trial count selection
+* Sampling methodology
 * Solver selection
 * Worker scaling
 
 A decision answers:
 
-    What question should be investigated?
-
-Examples:
-
-    Social Security Timing
-        When should Social Security be claimed?
-
-    Roth Conversion
-        How should tax-deferred assets be converted?
-
-    Worker Scaling
-        How should execution concurrency be configured?
-
-A decision does not define a specific methodology or experiment.
-
-Instead, it defines a family of possible methodologies that may be materialized into experiments.
-
-Conceptually:
-
 ```text
-Decision
-    ↓
-Choice Templates
-    ↓
-Experiments
-    ↓
-Sessions
+What dimension of the problem
+should be varied or explored?
 ```
 
-A decision may be investigated through
-multiple choice templates, each of which
-may materialize one or more experiments.
+Decisions are implementation-oriented analytical entities.
 
-For example:
+Questions may reference one or more decisions.
 
-```text
-Decision:
-    Social Security Timing
+Decisions do not define methodologies directly.
 
-Possible Experiments:
-    Annual sweep
-    Monthly sweep
-    Couple sweep
-    Single-person sweep
-```
 ---
+
 # Choice Templates
 
 A choice template defines a methodology for investigating a decision.
 
-A single decision may support multiple choice templates.
-
 Examples:
 
-    Decision
-        Social Security Timing
+```text
+yearly_sweep
 
-    Choice Templates
-        yearly_sweep
-        monthly_sweep
-        owl_optimizer
+monthly_sweep
+
+owl_optimizer
+
+worker_scaling
+```
 
 A choice template answers:
 
-    How should this question be explored?
+```text
+How should this decision
+be explored?
+```
 
 Choice templates may define:
 
@@ -140,15 +326,10 @@ Choice templates may define:
 
 Examples:
 
-    yearly_sweep
-
-        roost_sweeps.ss_age_pair=
-            62,63,64,65,66,67,68,69,70
-
-    worker_scaling
-
-        roost_settings.workers_per_run=
-            2,4,6,8,12,16
+```text
+roost_sweeps.ss_age_pair=
+    62,63,64,65,66,67,68,69,70
+```
 
 Choice templates are reusable analytical recipes.
 
@@ -158,47 +339,128 @@ They are not execution artifacts.
 
 # Levers
 
-A lever represents a case-dependent applicability test.
-
-Levers determine whether a particular choice template is applicable to a specific case.
+A lever represents a case-dependent capability test.
 
 Examples:
 
-    has_social_security
+```text
+has_social_security
 
-    has_pretax_savings
+has_pretax_savings
 
-    has_retirement_timing
+has_retirement_timing
+```
 
 A lever answers:
 
-    Is this methodology applicable to this case?
+```text
+Can this investigation
+be performed?
+```
 
-Examples:
-
-* Social Security analysis requires Social Security income.
-* Roth conversion analysis requires tax-deferred assets.
-* Retirement timing analysis requires retirement to remain a future event.
+Levers evaluate case structure and determine whether a particular choice template may be applied.
 
 Conceptually:
 
-    Case
-        ↓
-    Lever Evaluation
-        ↓
-    Applicable Choice Templates
-        ↓
-    Applicable Decisions
+```text
+Case
+    ↓
+Lever Evaluation
+    ↓
+Applicable Choice Templates
+    ↓
+Applicable Decisions
+    ↓
+Applicable Questions
+```
 
-A choice template is applicable when all of its required levers evaluate true.
+---
 
-A decision is applicable when at least one of its choice templates is applicable.
+# Guidance and Remediation
+
+Levers are expected to evolve beyond simple applicability checks.
+
+A false lever should eventually help answer:
+
+```text
+Why can't this question
+be answered?
+
+What information is missing?
+
+What assumptions are required?
+
+How can the user proceed?
+```
+
+Examples include:
+
+```text
+Missing Social Security information
+
+Missing tax-deferred accounts
+
+Missing retirement age assumptions
+```
+
+Potential guidance may include:
+
+* HFP worksheet recommendations
+* Data collection suggestions
+* Assumption clarification
+* Additional study recommendations
+
+The long-term goal is to transform:
+
+```text
+Question unavailable
+```
+
+into:
+
+```text
+Question unavailable today.
+
+Here are the steps needed
+to make it answerable.
+```
+
+---
+
+# Question Answerability
+
+Questions exist on an answerability spectrum.
+
+Examples include:
+
+```text
+Answerable Today
+
+Requires Assumptions
+
+Requires Additional Data
+
+Requires New Methodology
+
+Requires Research
+```
+
+Some questions may be directly materialized into experiments.
+
+Others may require:
+
+* Additional household information
+* Clarified objectives
+* New analytical methodologies
+* Future research
+
+The study subsystem is expected to help users navigate this progression.
 
 ---
 
 # Decision Domains
 
-ROOST recognizes three broad categories of decisions.
+ROOST currently recognizes three broad categories of decisions.
 
 ## Retirement Decisions
 
@@ -207,16 +469,14 @@ Questions affecting household outcomes.
 Examples:
 
 * Social Security timing
-* Roth conversion
+* Roth conversion strategy
 * Retirement age
-* Spending strategies
+* Spending strategy
 * Asset allocation
-
----
 
 ## Design Decisions
 
-Questions affecting analytical validity.
+Questions affecting evidence generation.
 
 Examples:
 
@@ -225,11 +485,9 @@ Examples:
 * Bootstrap strategy
 * Historical regime selection
 
----
-
 ## Execution Decisions
 
-Questions affecting computational efficiency.
+Questions affecting computational realization.
 
 Examples:
 
@@ -237,7 +495,8 @@ Examples:
 * Worker scaling
 * Thread scaling
 * Runtime tuning
-* Hardware utilization
+
+Execution decisions should affect runtime behavior rather than retirement interpretation.
 
 ---
 
@@ -245,16 +504,16 @@ Examples:
 
 The study subsystem follows the same registry-driven architecture used throughout ROOST.
 
-No hard-coded decision lists should exist.
-
-No hard-coded lever lists should exist.
-
 Registration ownership belongs to individual modules.
 
-
-Ownership
+Conceptually:
 
 ```text
+StudySpec
+    registered by studies/
+
+QuestionSpec
+    registered by questions/
 
 DecisionSpec
     registered by decisions/
@@ -264,28 +523,35 @@ ChoiceTemplateSpec
 
 LeverSpec
     registered by levers/
-
 ```
 
-Relationships flow downward only.
-
-Levers are unaware of decisions.
-
-Decisions are unaware of levers.
-
+Relationships flow downward.
 
 Conceptually:
 
 ```text
-study/
-    decisions/
-    choice_templates/
-    levers/
+Study
+    ↓
+Question
+    ↓
+Decision
+    ↓
+Choice Template
+    ↓
+Lever
 ```
 
-Each module registers itself through the appropriate registry.
+Levers remain unaware of higher-level entities.
 
-Bootstrap code discovers and registers all modules automatically.
+Questions remain independent of specific studies.
+
+Studies organize questions through references.
+
+This allows:
+
+* Question reuse
+* Multi-study participation
+* Independent evolution of analytical workflows
 
 ---
 
@@ -299,6 +565,14 @@ study/
     registry.py
     specs.py
 
+    studies/
+        __init__.py
+        ...
+
+    questions/
+        __init__.py
+        ...
+
     decisions/
         __init__.py
         ...
@@ -314,100 +588,57 @@ study/
 
 ---
 
-# Relationship to Studies
+# Architectural Invariants
 
-ROOST documentation frequently refers to studies.
+Studies organize questions.
 
-A study is intentionally treated as a higher-level organizational concept rather than a first-class registry object.
+Questions are first-class analytical entities.
 
-Conceptually:
+Questions may participate in multiple studies.
 
-```text
-Study
-    ├── Cases
-    ├── Decisions
-    ├── Experiments
-    ├── Sessions
-    ├── Results
-    ├── Reports
-    └── Documentation
-```
+Experiments answer questions.
 
-A study organizes analytical work.
-
-A decision defines a question.
-
-A choice template defines a methodology.
-
-A lever determines whether that methodology applies to a particular case.
-
-The study subsystem therefore focuses on decisions and levers rather than attempting to formalize studies prematurely.
-
-Future versions of ROOST may introduce study templates, study definitions, or study materialization workflows once the requirements become clearer through practical use.
-
----
-
-# Architectural Relationships
-
-The study subsystem intentionally maintains a one-way dependency graph:
-
-    Decision
-        ↓
-    Choice Template
-        ↓
-    Lever
-
-Decisions do not reference levers directly.
-
-Levers do not reference decisions.
-
-Choice templates connect decisions to applicability requirements.
-
-This separation allows multiple methodologies to investigate the same decision while maintaining independent applicability constraints.
-
----
-
-# Architectural Invariant
+Results provide evidence for answers.
 
 Choice templates own applicability.
 
-Decisions do not own applicability.
+Levers own capability evaluation.
 
-A decision is applicable when at least one
-choice template is applicable.
+Execution artifacts remain outside the study subsystem.
 
+The study subsystem defines work that should be performed.
+
+The execution subsystem realizes that work.
+
+---
 
 # Long-Term Direction
 
 The study subsystem is expected to become the primary analytical guidance layer within ROOST.
 
-Choice templates bridge the study subsystem
-and the execution subsystem.
-
-```text
-Decision
-    ↓
-Choice Template
-    ↓
-Experiment
-    ↓
-Session
-    ↓
-Run
-    ↓
-Trial
-```
-
 Future capabilities may include:
 
-* Case-aware decision recommendations
+* Case-aware question recommendations
+* Adjacent-question discovery
 * Automatic lever detection
 * Experiment generation
 * Session generation
+* HFP guidance workflows
 * Educational walkthroughs
+* Research-gap discovery
 * Reproducible research workflows
 * Publication-oriented study templates
 
-while preserving the existing execution hierarchy and provenance model.
+The long-term goal is to help users:
 
-The goal is to help users discover meaningful decisions, construct appropriate experiments, and organize analytical work into reproducible studies.
+```text
+Discover questions
+
+Understand requirements
+
+Generate evidence
+
+Interpret results
+```
+
+while preserving the existing execution hierarchy and provenance model.
