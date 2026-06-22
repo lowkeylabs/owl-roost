@@ -23,6 +23,9 @@ from owlroost.metrics.bootstrap import (
 from owlroost.schema.bootstrap import (
     build_schema_registry,
 )
+from owlroost.workspace.bootstrap import (
+    build_workspace_registry,
+)
 
 # =========================================================
 # Semantic Node Types
@@ -113,12 +116,21 @@ def test_architecture_pipeline():
     assert metrics_registry
 
     # =====================================================
+    # Workspace
+    # =====================================================
+
+    workspace_registry = build_workspace_registry()
+
+    assert workspace_registry
+
+    # =====================================================
     # Display
     # =====================================================
 
     display_registry = build_display_registry(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
+        workspace_registry=workspace_registry,
     )
 
     assert display_registry
@@ -136,6 +148,7 @@ def test_architecture_pipeline():
     catalog_rows = load_catalog(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
+        workspace_registry=workspace_registry,
         display_registry=display_registry,
     )
 

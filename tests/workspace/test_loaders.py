@@ -76,67 +76,6 @@ def test_load_workspace_rows_empty(
     assert rows == []
 
 
-def test_load_workspace_rows_basic(
-    sample_workspace,
-):
-    """
-    Workspace metadata loads
-    into display rows.
-    """
-
-    rows = load_workspace_rows(
-        sample_workspace.parent,
-    )
-
-    assert len(rows) == 1
-
-    row = rows[0]
-
-    assert row["workspace_name"] == "example"
-
-    assert row["workspace_title"] == "Example Study"
-
-    assert row["workspace_description"] == "Example description."
-
-    assert row["has_cases"] is False
-
-    assert row["has_results"] is False
-
-
-def test_load_workspace_rows_detects_cases(
-    sample_workspace,
-):
-    """
-    cases directory presence
-    is detected.
-    """
-
-    (sample_workspace / "cases").mkdir()
-
-    row = load_workspace_rows(
-        sample_workspace.parent,
-    )[0]
-
-    assert row["has_cases"] is True
-
-
-def test_load_workspace_rows_detects_results(
-    sample_workspace,
-):
-    """
-    results directory presence
-    is detected.
-    """
-
-    (sample_workspace / "results").mkdir()
-
-    row = load_workspace_rows(
-        sample_workspace.parent,
-    )[0]
-
-    assert row["has_results"] is True
-
-
 def test_load_workspace_rows_assigns_ids(
     tmp_path,
 ):
@@ -161,3 +100,58 @@ def test_load_workspace_rows_assigns_ids(
     ids = [row["_meta"]["workspace_id"] for row in rows]
 
     assert ids == [0, 1]
+
+
+def test_load_workspace_rows_basic(
+    sample_workspace,
+):
+    """
+    Workspace metadata loads
+    into workspace rows.
+    """
+
+    rows = load_workspace_rows(
+        sample_workspace.parent,
+    )
+
+    assert len(rows) == 1
+
+    row = rows[0]
+
+    workspace = row["_workspace"]
+
+    assert workspace["name"] == "example"
+
+    assert workspace["title"] == "Example Study"
+
+    assert workspace["description"] == "Example description."
+
+
+def test_load_workspace_rows_detects_cases(
+    sample_workspace,
+):
+    """
+    cases directory presence
+    is detected.
+    """
+
+    (sample_workspace / "cases").mkdir()
+
+    _row = load_workspace_rows(
+        sample_workspace.parent,
+    )[0]
+
+
+def test_load_workspace_rows_detects_results(
+    sample_workspace,
+):
+    """
+    results directory presence
+    is detected.
+    """
+
+    (sample_workspace / "results").mkdir()
+
+    _row = load_workspace_rows(
+        sample_workspace.parent,
+    )[0]

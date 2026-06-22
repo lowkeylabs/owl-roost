@@ -300,6 +300,7 @@ def cmd_results(
     (
         schema_registry,
         metrics_registry,
+        workspace_registry,
         display_registry,
         catalog_rows,
         catalog_index,

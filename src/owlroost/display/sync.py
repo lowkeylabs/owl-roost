@@ -271,3 +271,34 @@ def sync_metrics_registry(
                 None,
             ),
         )
+
+
+# =========================================================
+# Workspace Overlay Sync
+# =========================================================
+
+
+def sync_workspace_registry(
+    workspace_registry,
+    display_registry: DisplayRegistry,
+):
+    """
+    Generate default display overlays for
+    workspace variables.
+    """
+
+    for workspace_field in workspace_registry.all():
+        _register_field_if_missing(
+            field_name=workspace_field.name,
+            description=getattr(
+                workspace_field,
+                "description",
+                None,
+            ),
+            display_registry=display_registry,
+            profiles=getattr(
+                workspace_field,
+                "profiles",
+                None,
+            ),
+        )

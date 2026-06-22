@@ -33,6 +33,7 @@ from owlroost.catalog.builders import (
     build_display_overlay_rows,
     build_metric_rows,
     build_schema_rows,
+    build_workspace_rows,
 )
 from owlroost.catalog.ontology import (
     AnalyticKind,
@@ -48,6 +49,30 @@ from owlroost.catalog.ontology import (
 # =========================================================
 
 
+def _merge_rowxxx(
+    entities,
+    row,
+):
+    field_name = row["field_name"]
+
+    if field_name in entities:
+        import pprint
+
+        print("\n===================")
+        print("DUPLICATE FIELD")
+        print("===================")
+
+        print("\nEXISTING:")
+        pprint.pp(entities[field_name])
+
+        print("\nINCOMING:")
+        pprint.pp(row)
+
+        raise ValueError(f"Duplicate canonical semantic identity detected: {field_name}")
+
+    entities[field_name] = row
+
+
 def _merge_row(
     entities: dict,
     row: dict,
@@ -61,7 +86,7 @@ def _merge_row(
     ROOST maintains exactly one canonical
     semantic identity per field_name.
 
-    Schema and metrics rows define
+    Schema, metrics and workspace rows define
     canonical ontology.
 
     Display rows contribute presentation
@@ -102,6 +127,7 @@ def _merge_row(
     canonical_layers = {
         "schema",
         "metrics",
+        "workspace",
     }
 
     if existing_layer in canonical_layers and incoming_layer in canonical_layers:
@@ -199,6 +225,7 @@ def load_catalog(
     *,
     schema_registry,
     metrics_registry,
+    workspace_registry,
     display_registry,
 ):
     """
@@ -256,6 +283,18 @@ def load_catalog(
 
     for row in build_metric_rows(
         metrics_registry,
+    ):
+        _merge_row(
+            entities,
+            row,
+        )
+
+    # =====================================================
+    # Workspace Ontology
+    # =====================================================
+
+    for row in build_workspace_rows(
+        workspace_registry,
     ):
         _merge_row(
             entities,

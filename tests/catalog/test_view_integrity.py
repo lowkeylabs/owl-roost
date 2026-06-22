@@ -16,6 +16,7 @@ def test_all_view_fields_exist(
     (
         schema_registry,
         metrics_registry,
+        workspace_registry,
         display_registry,
     ) = registries
 

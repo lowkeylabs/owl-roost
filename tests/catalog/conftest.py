@@ -14,6 +14,9 @@ from owlroost.metrics.bootstrap import (
 from owlroost.schema.bootstrap import (
     build_schema_registry,
 )
+from owlroost.workspace.bootstrap import (
+    build_workspace_registry,
+)
 
 
 @pytest.fixture
@@ -22,14 +25,18 @@ def registries():
 
     metrics_registry = build_metrics_registry()
 
+    workspace_registry = build_workspace_registry()
+
     display_registry = build_display_registry(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
+        workspace_registry=workspace_registry,
     )
 
     return (
         schema_registry,
         metrics_registry,
+        workspace_registry,
         display_registry,
     )
 
@@ -41,11 +48,13 @@ def catalog_rows(
     (
         schema_registry,
         metrics_registry,
+        workspace_registry,
         display_registry,
     ) = registries
 
     return load_catalog(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
+        workspace_registry=workspace_registry,
         display_registry=display_registry,
     )

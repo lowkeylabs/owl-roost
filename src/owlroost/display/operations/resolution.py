@@ -109,6 +109,24 @@ def resolve_field_value(
         return meta[field_name]
 
     # =====================================================
+    # Workspace
+    # =====================================================
+
+    if field_name.startswith(
+        "workspace.",
+    ):
+        value = extract_path(
+            row.get(
+                "_workspace",
+                {},
+            ),
+            ".".join(field_name.split(".")[1:]),
+        )
+
+        if value is not None:
+            return value
+
+    # =====================================================
     # Inputs
     # =====================================================
 

@@ -268,6 +268,54 @@ def build_metric_rows(
 
 
 # =========================================================
+# Workspace Registry
+# =========================================================
+
+
+def build_workspace_rows(
+    workspace_registry,
+):
+    rows = []
+
+    for field in workspace_registry.all():
+        spec = CatalogSpec(
+            field_name=field.name,
+            node_type="variable",
+            owner=field.owner,
+            semantic_domain=field.semantic_domain,
+            value_origin=field.value_origin,
+            projection_kind=field.projection_kind,
+            analytic_kind=field.analytic_kind,
+            materialization_level=field.materialization_level,
+            source="_workspace",
+            path=field.name,
+            description=field.description,
+            derived_from=list(
+                getattr(
+                    field,
+                    "derived_from",
+                    [],
+                )
+            ),
+            provenance_chain=_build_provenance(
+                stage="workspace",
+                operation=ProvenanceOperation.REGISTERED,
+                source=field,
+            ),
+        )
+
+        rows.append(
+            build_catalog_row(
+                spec=spec,
+                layer="workspace",
+                semantic_field=field,
+            )
+        )
+
+    return rows
+
+
+# =========================================================
 # Display Registry
 # =========================================================
 

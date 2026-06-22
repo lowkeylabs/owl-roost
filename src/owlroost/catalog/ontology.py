@@ -394,6 +394,7 @@ AnalyticKind = Literal[
 # =========================================================
 
 MaterializationLevel = Literal[
+    "workspace",
     "case",
     "session",
     "run",

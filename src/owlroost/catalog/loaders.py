@@ -45,6 +45,7 @@ def load_catalog_rows(
     *,
     schema_registry,
     metrics_registry,
+    workspace_registry,
     display_registry,
     # -----------------------------------------------------
     # Ontology Filters
@@ -71,6 +72,7 @@ def load_catalog_rows(
 
         - schema ontology
         - metrics ontology
+        - workspace ontology
         - synthetic display ontology
 
     into a unified semantic entity graph.
@@ -104,6 +106,7 @@ def load_catalog_rows(
     rows = load_catalog(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
+        workspace_registry=workspace_registry,
         display_registry=display_registry,
     )
 

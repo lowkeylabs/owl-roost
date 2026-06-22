@@ -1,0 +1,165 @@
+# src/owlroost/workspace/inventory/summary.py
+#
+# Copyright (c) 2026 John Leonard
+# SPDX-License-Identifier: GPL-3.0-or-later
+# See LICENSE file in repository root.
+
+"""
+Workspace summary inventory.
+
+Notes
+-----
+Registers high-level inventory
+observations describing the realized
+contents of a workspace.
+
+These observations characterize:
+
+    workspace
+        -> studies
+        -> experiments
+        -> cases
+        -> sessions
+        -> runs
+        -> trials
+
+rather than individual retirement
+execution outputs.
+
+Architectural Invariant
+-----------------------
+Workspace inventory participates in the
+catalog exactly like schema fields and
+metrics.
+
+Inventory observations describe the
+workspace itself.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from owlroost.catalog.ontology import (
+    CatalogNodeType,
+)
+from owlroost.core.utils import (
+    normalize_module_path,
+)
+from owlroost.metrics.specs import (
+    MetricSpec,
+)
+
+# =========================================================
+# Ontology
+# =========================================================
+
+WORKSPACE_SUMMARY_VARIABLE: dict[str, Any] = dict(
+    owner="ROOST",
+    semantic_domain="execution",
+    value_origin="roost-computed",
+    projection_kind="canonical",
+    analytic_kind="primary",
+    materialization_level="workspace",
+    node_type=CatalogNodeType.VARIABLE,
+    defined_in=normalize_module_path(__file__),
+)
+
+# =========================================================
+# Registration
+# =========================================================
+
+
+def register_inventory(
+    reg,
+):
+    """
+    Register workspace summary inventory
+    observations.
+    """
+
+    metrics = [
+        MetricSpec(
+            name="workspace.summary.study_cnt",
+            dtype=int,
+            aggregatable=False,
+            description=(
+                "Number of study definitions "
+                "contained within the workspace."
+            ),
+            derived_from=[
+                "workspace.inventory.studies",
+            ],
+            **WORKSPACE_SUMMARY_VARIABLE,
+        ),
+        MetricSpec(
+            name="workspace.summary.experiment_cnt",
+            dtype=int,
+            aggregatable=False,
+            description=(
+                "Number of experiment definitions "
+                "contained within the workspace."
+            ),
+            derived_from=[
+                "workspace.inventory.experiments",
+            ],
+            **WORKSPACE_SUMMARY_VARIABLE,
+        ),
+        MetricSpec(
+            name="workspace.summary.case_cnt",
+            dtype=int,
+            aggregatable=False,
+            description=(
+                "Number of realized cases "
+                "contained within the workspace."
+            ),
+            derived_from=[
+                "workspace.inventory.cases",
+            ],
+            **WORKSPACE_SUMMARY_VARIABLE,
+        ),
+        MetricSpec(
+            name="workspace.summary.session_cnt",
+            dtype=int,
+            aggregatable=False,
+            description=(
+                "Number of realized sessions "
+                "contained within the workspace."
+            ),
+            derived_from=[
+                "workspace.inventory.sessions",
+            ],
+            **WORKSPACE_SUMMARY_VARIABLE,
+        ),
+        MetricSpec(
+            name="workspace.summary.run_cnt",
+            dtype=int,
+            aggregatable=False,
+            description=(
+                "Number of realized runs "
+                "contained within the workspace."
+            ),
+            derived_from=[
+                "workspace.inventory.runs",
+            ],
+            **WORKSPACE_SUMMARY_VARIABLE,
+        ),
+        MetricSpec(
+            name="workspace.summary.trial_cnt",
+            dtype=int,
+            aggregatable=False,
+            description=(
+                "Number of realized trials "
+                "contained within the workspace."
+            ),
+            derived_from=[
+                "workspace.inventory.trials",
+            ],
+            **WORKSPACE_SUMMARY_VARIABLE,
+        ),
+    ]
+
+    for metric in metrics:
+        reg.register(
+            metric,
+        )

@@ -241,6 +241,7 @@ def cmd_workspace(
     (
         schema_registry,
         metrics_registry,
+        workspace_registry,
         display_registry,
         catalog_rows,
         catalog_index,
@@ -283,8 +284,6 @@ def cmd_workspace(
     rows = apply_canonical_sort(
         rows,
     )
-
-    print(rows)
 
     rows = apply_filters(
         rows,

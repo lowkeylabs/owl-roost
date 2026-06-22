@@ -30,6 +30,7 @@ from owlroost.display.registry import (
 from owlroost.display.sync import (
     sync_metrics_registry,
     sync_schema_registry,
+    sync_workspace_registry,
 )
 from owlroost.display.views import (
     register_display_views,
@@ -43,6 +44,7 @@ from owlroost.display.views import (
 def build_display_registry(
     schema_registry,
     metrics_registry,
+    workspace_registry,
 ):
     """
     Construct fully initialized DisplayRegistry.
@@ -90,6 +92,8 @@ def build_display_registry(
 
     reg.metrics_registry = metrics_registry
 
+    reg.workspace_registry = workspace_registry
+
     # =====================================================
     # Schema Display Overlays
     # =====================================================
@@ -105,6 +109,15 @@ def build_display_registry(
 
     sync_metrics_registry(
         metrics_registry=(metrics_registry),
+        display_registry=reg,
+    )
+
+    # =====================================================
+    # Workspace Display Overlays
+    # =====================================================
+
+    sync_workspace_registry(
+        workspace_registry=workspace_registry,
         display_registry=reg,
     )
 

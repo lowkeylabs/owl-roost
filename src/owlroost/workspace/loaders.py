@@ -20,8 +20,8 @@ a directory containing:
 Responsibilities
 ----------------
 * Discover workspaces
-* Load study metadata
-* Materialize display rows
+* Load workspace metadata
+* Materialize workspace rows
 
 Does NOT
 ---------
@@ -65,7 +65,7 @@ def _workspace_row(
     workspace_dir: Path,
 ):
     """
-    Build a workspace row.
+    Build canonical workspace row.
 
     Parameters
     ----------
@@ -79,60 +79,103 @@ def _workspace_row(
         study_file,
     )
 
-    name = study.get(
-        "name",
-        workspace_dir.name,
-    )
+    cases_dir = (
+        workspace_dir
+        / study.get(
+            "cases_dir",
+            ("cases" if (workspace_dir / "cases").exists() else "."),
+        )
+    ).resolve()
 
-    title = study.get(
-        "title",
-        "",
-    )
+    results_dir = (
+        workspace_dir
+        / study.get(
+            "results_dir",
+            "results",
+        )
+    ).resolve()
 
-    description = study.get(
-        "description",
-        "",
-    ).replace("\n", " ")
-
-    cases_dir = workspace_dir / "cases"
-
-    results_dir = workspace_dir / "results"
+    inventory = {
+        "studies": [],
+        "experiments": [],
+        "cases": [],
+        "sessions": [],
+        "runs": [],
+        "trials": [],
+    }
 
     return {
         "_path": workspace_dir.resolve(),
         "_meta": {
             "level": "workspace",
         },
-        "_study": study,
-        "workspace_name": name,
-        "workspace_title": title,
-        "workspace_description": description,
-        "workspace_path": str(
-            workspace_dir.resolve(),
-        ),
-        "study_file": str(
-            study_file.resolve(),
-        ),
-        "cases_dir": str(
-            (
-                workspace_dir
-                / study.get(
-                    "cases_dir",
-                    "cases" if (workspace_dir / "cases").exists() else ".",
+        "_workspace": {
+            # ---------------------------------------------
+            # Identity
+            # ---------------------------------------------
+            "name": study.get(
+                "name",
+                workspace_dir.name,
+            ),
+            "title": study.get(
+                "title",
+                "",
+            ),
+            "description": (
+                study.get(
+                    "description",
+                    "",
                 )
-            ).resolve()
-        ),
-        "results_dir": str(
-            (
-                workspace_dir
-                / study.get(
-                    "results_dir",
-                    "results",
+                .replace(
+                    "\n",
+                    " ",
                 )
-            ).resolve()
-        ),
-        "has_cases": cases_dir.exists(),
-        "has_results": results_dir.exists(),
+                .strip()
+            ),
+            # ---------------------------------------------
+            # Definition
+            # ---------------------------------------------
+            "definition": study,
+            "definition_file": str(
+                study_file.resolve(),
+            ),
+            # ---------------------------------------------
+            # Filesystem Layout
+            # ---------------------------------------------
+            "paths": {
+                "workspace": str(
+                    workspace_dir.resolve(),
+                ),
+                "cases": str(
+                    cases_dir,
+                ),
+                "results": str(
+                    results_dir,
+                ),
+            },
+            # ---------------------------------------------
+            # Inventory Summary
+            #
+            # Materialized inventory metrics
+            # populate this structure.
+            #
+            # Seed values only.
+            # ---------------------------------------------
+            "summary": {
+                "has_cases": len(inventory.get("cases", [])) > 0,
+                "has_results": len(inventory.get("runs", [])) > 0,
+            },
+            # ---------------------------------------------
+            # Inventory
+            #
+            # Detailed realizations discovered
+            # from the workspace.
+            #
+            # Inventory materializers own
+            # population of these collections.
+            # ---------------------------------------------
+            "inventory": inventory,
+        },
     }
 
 
@@ -156,7 +199,9 @@ def find_workspaces(
     list[Path]
     """
 
-    source = Path(source)
+    source = Path(
+        source,
+    )
 
     if not source.exists():
         return []
@@ -181,6 +226,10 @@ def find_workspaces(
 def load_workspace_row(
     workspace_dir=".",
 ):
+    """
+    Load a single workspace row.
+    """
+
     workspace_dir = Path(
         workspace_dir,
     ).resolve()
@@ -215,7 +264,9 @@ def load_workspace_rows(
     rows = []
 
     for idx, workspace_dir in enumerate(
-        find_workspaces(source),
+        find_workspaces(
+            source,
+        ),
     ):
         row = load_workspace_row(
             workspace_dir,

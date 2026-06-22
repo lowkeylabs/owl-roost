@@ -40,7 +40,7 @@ def register_display_views(
                 # =====================================
                 # Identity
                 # =====================================
-                "workspace.folder",
+                "workspace.name",
                 # "workspace.path",
                 # "workspace.name",
                 "workspace.title",
@@ -60,10 +60,6 @@ def register_display_views(
                 # Identity
                 # =====================================
                 "workspace.name",
-                "workspace.case_cnt",
-                "workspace.session_cnt",
-                "workspace.run_cnt",
-                "workspace.trial_cnt",
             ],
             description=("Summary view of workspace status"),
             **SHARED_VIEW_ONTOLOGY,

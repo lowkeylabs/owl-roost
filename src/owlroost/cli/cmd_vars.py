@@ -44,6 +44,7 @@ from owlroost.display.renderers.rich_dashboard import (
 )
 from owlroost.metrics.bootstrap import build_metrics_registry
 from owlroost.schema.bootstrap import build_schema_registry
+from owlroost.workspace.bootstrap import build_workspace_registry
 
 # =========================================================
 # Defaults
@@ -204,9 +205,12 @@ def cmd_vars(
 
     metrics_registry = build_metrics_registry()
 
+    workspace_registry = build_workspace_registry()
+
     display_registry = build_display_registry(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
+        workspace_registry=workspace_registry,
     )
 
     show_dashboard = not selectors and not args and not filters and not show_all
@@ -218,6 +222,7 @@ def cmd_vars(
     rows = load_catalog_rows(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
+        workspace_registry=workspace_registry,
         display_registry=display_registry,
         search=search_terms,
     )
