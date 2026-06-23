@@ -1,11 +1,16 @@
-# src/owlroost/study/decisions/__init__.py
+# src/owlroost/study/questions/__init__.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See LICENSE file in repository root.
 
 """
-lever discover and loading
+TODO: Document module.
+
+Notes
+-----
+Describe responsibilities, ownership,
+and architectural role.
 """
 
 from __future__ import annotations
@@ -20,9 +25,9 @@ from types import ModuleType
 # =========================================================
 
 
-def _discover_decision_modules() -> list[ModuleType]:
+def _discover_modules() -> list[ModuleType]:
     """
-    discover decision modules
+    Discover question modules.
     """
 
     modules: list[ModuleType] = []
@@ -38,7 +43,9 @@ def _discover_decision_modules() -> list[ModuleType]:
 
         module = importlib.import_module(f"{__name__}.{module_info.name}")
 
-        modules.append(module)
+        modules.append(
+            module,
+        )
 
     return modules
 
@@ -48,24 +55,28 @@ def _discover_decision_modules() -> list[ModuleType]:
 # =========================================================
 
 
-def register_all_decisions(
+def register_all_questions(
     reg,
 ):
-    """ """
+    """
+    Register all questions.
+    """
 
-    for module in _discover_decision_modules():
+    for module in _discover_modules():
         register_fn = getattr(
             module,
-            "register_decisions",
+            "register_questions",
             None,
         )
 
         if register_fn is None:
             continue
 
-        register_fn(reg)
+        register_fn(
+            reg,
+        )
 
 
 __all__ = [
-    "register_all_decisions",
+    "register_all_questions",
 ]

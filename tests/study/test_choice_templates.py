@@ -26,9 +26,11 @@ def test_ss_yearly_sweep():
         "ss_yearly_sweep",
     )
 
-    assert template.decision_name == "social_security"
+    assert template.scenario_family_name == "social_security_claiming"
 
-    assert template.required_levers == ["has_ss_pia"]
+    assert template.required_levers == [
+        "has_ss_pia",
+    ]
 
 
 def test_ss_monthly_sweep():
@@ -38,9 +40,11 @@ def test_ss_monthly_sweep():
         "ss_monthly_sweep",
     )
 
-    assert template.decision_name == "social_security"
+    assert template.scenario_family_name == "social_security_claiming"
 
-    assert template.required_levers == ["has_ss_pia"]
+    assert template.required_levers == [
+        "has_ss_pia",
+    ]
 
 
 def test_ss_owl_optimizer():
@@ -50,9 +54,11 @@ def test_ss_owl_optimizer():
         "ss_owl_optimizer",
     )
 
-    assert template.decision_name == "social_security"
+    assert template.scenario_family_name == "social_security_claiming"
 
-    assert template.required_levers == ["has_ss_pia"]
+    assert template.required_levers == [
+        "has_ss_pia",
+    ]
 
 
 def test_roth_bracket_fill():
@@ -62,9 +68,11 @@ def test_roth_bracket_fill():
         "roth_bracket_fill",
     )
 
-    assert template.decision_name == "roth_conversion"
+    assert template.scenario_family_name == "roth_conversion"
 
-    assert template.required_levers == ["has_pretax_savings"]
+    assert template.required_levers == [
+        "has_pretax_savings",
+    ]
 
 
 def test_social_security_templates():
@@ -72,8 +80,10 @@ def test_social_security_templates():
 
     names = {
         template.name
-        for template in reg.choice_templates_for_decision(
-            "social_security",
+        for template in (
+            reg.choice_templates_for_scenario_family(
+                "social_security_claiming",
+            )
         )
     }
 
@@ -89,8 +99,10 @@ def test_roth_conversion_templates():
 
     names = {
         template.name
-        for template in reg.choice_templates_for_decision(
-            "roth_conversion",
+        for template in (
+            reg.choice_templates_for_scenario_family(
+                "roth_conversion",
+            )
         )
     }
 

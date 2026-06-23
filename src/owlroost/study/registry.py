@@ -12,7 +12,9 @@ Notes
 Owns registration and relationship
 resolution for:
 
-* Decisions
+* Studies
+* Questions
+* Scenario families
 * Choice templates
 * Levers
 
@@ -21,19 +23,30 @@ Architectural Invariant
 
 Relationships flow downward only:
 
-    Decision
+    Study
+        ↓
+    Question
+        ↓
+    Scenario Family
         ↓
     Choice Template
         ↓
     Lever
 
-Decisions do not own applicability.
+    Relationships are stored only once.
 
-Choice templates own applicability.
+StudySpec owns question_names.
 
-A decision is applicable when at
-least one of its choice templates
-is applicable.
+QuestionSpec owns scenario_family_names.
+
+Scenario families define evidence spaces.
+
+ChoiceTemplateSpec owns scenario_family_name.
+
+Levers determine applicability.
+
+Reverse relationships are derived by the registry.
+
 """
 
 from __future__ import annotations
@@ -47,37 +60,97 @@ class StudyRegistry:
     def __init__(
         self,
     ):
-        self._decisions = {}
+        self._studies = {}
+
+        self._questions = {}
+
+        self._scenario_families = {}
 
         self._choice_templates = {}
 
         self._levers = {}
 
     # =====================================================
-    # Decisions
+    # Studies
     # =====================================================
 
-    def register_decision(
+    def register_study(
         self,
         spec,
     ):
-        self._decisions[spec.name] = spec
+        self._studies[spec.name] = spec
 
-    def get_decision(
+    def get_study(
         self,
         name,
     ):
         try:
-            return self._decisions[name]
+            return self._studies[name]
 
         except KeyError as exc:
-            raise RoostError(f"Decision not found: {name}") from exc
+            raise RoostError(f"Study not found: {name}") from exc
 
-    def all_decisions(
+    def all_studies(
         self,
     ):
         return sorted(
-            self._decisions.values(),
+            self._studies.values(),
+            key=lambda x: x.name,
+        )
+
+    # =====================================================
+    # Questions
+    # =====================================================
+
+    def register_question(
+        self,
+        spec,
+    ):
+        self._questions[spec.name] = spec
+
+    def get_question(
+        self,
+        name,
+    ):
+        try:
+            return self._questions[name]
+
+        except KeyError as exc:
+            raise RoostError(f"Question not found: {name}") from exc
+
+    def all_questions(
+        self,
+    ):
+        return sorted(
+            self._questions.values(),
+            key=lambda x: x.name,
+        )
+
+    # =====================================================
+    # Scenario Families
+    # =====================================================
+
+    def register_scenario_family(
+        self,
+        spec,
+    ):
+        self._scenario_families[spec.name] = spec
+
+    def get_scenario_family(
+        self,
+        name,
+    ):
+        try:
+            return self._scenario_families[name]
+
+        except KeyError as exc:
+            raise RoostError(f"Scenario family not found: {name}") from exc
+
+    def all_scenario_families(
+        self,
+    ):
+        return sorted(
+            self._scenario_families.values(),
             key=lambda x: x.name,
         )
 
@@ -141,14 +214,44 @@ class StudyRegistry:
     # Relationships
     # =====================================================
 
-    def choice_templates_for_decision(
+    def questions_for_study(
         self,
-        decision_name,
+        study_name,
+    ):
+        study = self.get_study(
+            study_name,
+        )
+
+        return [
+            self.get_question(
+                question_name,
+            )
+            for question_name in study.question_names
+        ]
+
+    def scenario_families_for_question(
+        self,
+        question_name,
+    ):
+        question = self.get_question(
+            question_name,
+        )
+
+        return [
+            self.get_scenario_family(
+                scenario_family_name,
+            )
+            for scenario_family_name in question.scenario_family_names
+        ]
+
+    def choice_templates_for_scenario_family(
+        self,
+        scenario_family_name,
     ):
         return [
             template
             for template in self.all_choice_templates()
-            if (template.decision_name == decision_name)
+            if (template.scenario_family_name == scenario_family_name)
         ]
 
     def levers_for_choice_template(
@@ -182,6 +285,17 @@ class StudyRegistry:
             )
         ]
 
+    def lever_is_applicable(
+        self,
+        lever_name,
+        case_row,
+    ):
+        return self.get_lever(
+            lever_name,
+        ).applicable_fn(
+            case_row,
+        )
+
     def choice_template_is_applicable(
         self,
         template_name,
@@ -192,54 +306,107 @@ class StudyRegistry:
         )
 
         return all(
-            self.get_lever(
+            self.lever_is_applicable(
                 lever_name,
-            ).applicable_fn(
                 case_row,
             )
             for lever_name in template.required_levers
         )
 
-    def applicable_choice_templates(
+    def scenario_family_is_applicable(
         self,
+        scenario_family_name,
         case_row,
     ):
-        applicable = []
-
-        for template in self.all_choice_templates():
-            if self.choice_template_is_applicable(
-                template.name,
-                case_row,
-            ):
-                applicable.append(
-                    template,
-                )
-
-        return applicable
-
-    def decision_is_applicable(
-        self,
-        decision_name,
-        case_row,
-    ):
-        return any(
-            template.decision_name == decision_name
-            for template in self.applicable_choice_templates(
-                case_row,
-            )
+        scenario_family = self.get_scenario_family(
+            scenario_family_name,
         )
 
-    def applicable_decisions(
+        return all(
+            self.lever_is_applicable(
+                lever_name,
+                case_row,
+            )
+            for lever_name in scenario_family.required_levers
+        )
+
+    def question_is_applicable(
+        self,
+        question_name,
+        case_row,
+    ):
+        question = self.get_question(
+            question_name,
+        )
+
+        if not all(
+            self.lever_is_applicable(
+                lever_name,
+                case_row,
+            )
+            for lever_name in question.required_levers
+        ):
+            return False
+
+        return all(
+            self.scenario_family_is_applicable(
+                scenario_family_name,
+                case_row,
+            )
+            for scenario_family_name in question.scenario_family_names
+        )
+
+    def applicable_questions(
         self,
         case_row,
     ):
         return [
-            decision
-            for decision in self.all_decisions()
-            if (
-                self.decision_is_applicable(
-                    decision.name,
-                    case_row,
-                )
+            question
+            for question in self.all_questions()
+            if self.question_is_applicable(
+                question.name,
+                case_row,
             )
         ]
+
+    # =====================================================
+    # Missing Levers
+    # =====================================================
+
+    def missing_levers_for_question(
+        self,
+        question_name,
+        case_row,
+    ):
+        question = self.get_question(
+            question_name,
+        )
+
+        missing = set()
+
+        for lever_name in question.required_levers:
+            if not self.lever_is_applicable(
+                lever_name,
+                case_row,
+            ):
+                missing.add(
+                    lever_name,
+                )
+
+        for scenario_family_name in question.scenario_family_names:
+            scenario_family = self.get_scenario_family(
+                scenario_family_name,
+            )
+
+            for lever_name in scenario_family.required_levers:
+                if not self.lever_is_applicable(
+                    lever_name,
+                    case_row,
+                ):
+                    missing.add(
+                        lever_name,
+                    )
+
+        return sorted(
+            missing,
+        )

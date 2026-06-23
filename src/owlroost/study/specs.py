@@ -18,7 +18,7 @@ Conceptually:
         ↓
     Question
         ↓
-    Decision
+    Scenario Family
         ↓
     Choice Template
         ↓
@@ -26,15 +26,22 @@ Conceptually:
 
 Studies organize related questions.
 
-Questions are the primary user-facing
-analytical entities.
+Questions represent information needs.
 
-Decisions define dimensions of
-investigation.
+Scenario families define evidence spaces.
 
 Choice templates define methodologies.
 
 Levers determine applicability.
+
+The study subsystem defines work
+that should be performed.
+
+The realization subsystem executes
+that work and generates evidence.
+
+The interpretation layer consumes
+evidence and produces guidance.
 """
 
 from __future__ import annotations
@@ -57,15 +64,12 @@ class StudySpec:
     exploration around a coherent
     topic area.
 
-    Studies are intentionally
-    independent of case applicability.
-
-    Questions determine applicability
-    through their associated decisions,
-    choice templates, and levers.
-
     Questions may participate in
     multiple studies.
+
+    Studies are organizational
+    entities and do not own
+    execution artifacts.
     """
 
     name: str
@@ -99,29 +103,23 @@ class QuestionSpec:
 
         Can I retire?
 
-        When can I retire?
+        Should I retire?
 
-        How much can I spend?
+        When should I retire?
 
         When should I claim
         Social Security?
 
-        Should I perform
-        Roth conversions?
+        How much can I spend?
 
-    Questions may participate in
-    multiple studies.
+    Questions identify information
+    needs.
 
-    Questions may reference one
-    or more decisions.
+    Questions consume evidence but
+    do not directly generate it.
 
-    Questions are intentionally
-    independent of case applicability.
-
-    Applicability is determined by
-    the decisions, choice templates,
-    and levers associated with the
-    question.
+    Evidence generation is delegated
+    to one or more scenario families.
     """
 
     name: str
@@ -132,7 +130,7 @@ class QuestionSpec:
 
     description: str
 
-    decision_names: list[str] = field(
+    scenario_family_names: list[str] = field(
         default_factory=list,
     )
 
@@ -153,35 +151,36 @@ class QuestionSpec:
 
 
 @dataclass(slots=True)
-class DecisionSpec:
+class ScenarioFamilySpec:
     """
-    Defines an analytical dimension.
+    Defines a reusable evidence-
+    generation space.
 
-    A decision represents a dimension
-    of variation or investigation that
-    may contribute to answering one or
-    more questions.
+    Scenario families organize
+    related what-if investigations.
 
     Examples include:
 
-        Social Security timing
+        retirement_timing
 
-        Roth conversion strategy
+        social_security_claiming
 
-        Historical regime selection
+        roth_conversion
 
-        Trial count
+        spending_level
 
-        Worker scaling
+        market_regime
 
-    Questions reference decisions.
+    A scenario family answers:
 
-    Decisions do not reference
-    questions directly.
+        What evidence should
+        be generated?
 
-    Applicability is determined by
-    the available choice templates
-    and their required levers.
+    Scenario families may support
+    multiple questions.
+
+    Questions may depend upon
+    multiple scenario families.
     """
 
     name: str
@@ -191,6 +190,14 @@ class DecisionSpec:
     category: str
 
     description: str
+
+    required_levers: list[str] = field(
+        default_factory=list,
+    )
+
+    related_scenario_families: list[str] = field(
+        default_factory=list,
+    )
 
     profiles: dict[
         str,
@@ -204,24 +211,36 @@ class DecisionSpec:
 class ChoiceTemplateSpec:
     """
     Defines a methodology for
-    investigating a decision.
+    generating evidence within a
+    scenario family.
 
-    A choice template specifies:
+    Choice templates answer:
 
-    * Which decision it supports
-    * Which levers are required
-    * Which override patterns are
-      typically used
+        How should this scenario
+        family be explored?
 
-    Choice templates may later
-    materialize experiments,
-    sessions, reports, or study
+    Examples include:
+
+        yearly_sweep
+
+        monthly_sweep
+
+        historical_windows
+
+        bootstrap_regimes
+
+        owl_optimizer
+
+    Choice templates are reusable
+    analytical recipes.
+
+    They are not execution
     artifacts.
     """
 
     name: str
 
-    decision_name: str
+    scenario_family_name: str
 
     title: str
 
@@ -253,9 +272,9 @@ class LeverSpec:
     Defines case-dependent capability
     requirements.
 
-    Levers evaluate case structure and
-    determine whether a particular
-    investigation may be performed.
+    Levers determine whether a
+    question, scenario family, or
+    choice template may be applied.
 
     Examples include:
 
@@ -265,12 +284,8 @@ class LeverSpec:
 
         has_retirement_timing
 
-    Levers are intentionally unaware of
-    studies, questions, decisions, and
-    choice templates.
-
-    Future versions may extend levers
-    with explanatory and remediation
+    Future versions may extend
+    levers with remediation and
     guidance describing:
 
         Why a question cannot
@@ -278,6 +293,9 @@ class LeverSpec:
 
         What information is
         missing.
+
+        What assumptions are
+        required.
 
         How the user can proceed.
     """

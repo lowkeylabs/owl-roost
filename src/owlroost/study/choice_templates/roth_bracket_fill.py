@@ -18,13 +18,11 @@ from owlroost.study.specs import (
 )
 
 
-def register_choice_templates(
-    reg,
-):
+def register_choice_templates(reg):
     reg.register_choice_template(
         ChoiceTemplateSpec(
             name="roth_bracket_fill",
-            decision_name="roth_conversion",
+            scenario_family_name="roth_conversion",
             title="Roth Bracket Fill",
             description=(
                 "Evaluate Roth conversion "

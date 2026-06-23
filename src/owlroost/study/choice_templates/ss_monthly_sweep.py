@@ -30,13 +30,11 @@ from owlroost.study.specs import (
 )
 
 
-def register_choice_templates(
-    reg,
-):
+def register_choice_templates(reg):
     reg.register_choice_template(
         ChoiceTemplateSpec(
             name="ss_monthly_sweep",
-            decision_name="social_security",
+            scenario_family_name=("social_security_claiming"),
             title="Monthly Sweep",
             description=("Evaluate monthly Social Security claiming ages between 62 and 70."),
             required_levers=[

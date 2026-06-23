@@ -30,13 +30,11 @@ from owlroost.study.specs import (
 )
 
 
-def register_choice_templates(
-    reg,
-):
+def register_choice_templates(reg):
     reg.register_choice_template(
         ChoiceTemplateSpec(
             name="ss_owl_optimizer",
-            decision_name="social_security",
+            scenario_family_name=("social_security_claiming"),
             title="OWL Optimizer",
             description=("Use OWL optimization to identify Social Security claiming ages."),
             required_levers=[
