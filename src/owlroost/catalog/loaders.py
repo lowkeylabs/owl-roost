@@ -46,6 +46,7 @@ def load_catalog_rows(
     schema_registry,
     metrics_registry,
     workspace_registry,
+    comparison_registry,
     display_registry,
     # -----------------------------------------------------
     # Ontology Filters
@@ -107,6 +108,7 @@ def load_catalog_rows(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
+        comparison_registry=comparison_registry,
         display_registry=display_registry,
     )
 

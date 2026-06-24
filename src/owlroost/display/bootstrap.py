@@ -28,6 +28,7 @@ from owlroost.display.registry import (
     DisplayRegistry,
 )
 from owlroost.display.sync import (
+    sync_comparison_registry,
     sync_metrics_registry,
     sync_schema_registry,
     sync_workspace_registry,
@@ -45,6 +46,7 @@ def build_display_registry(
     schema_registry,
     metrics_registry,
     workspace_registry,
+    comparison_registry,
 ):
     """
     Construct fully initialized DisplayRegistry.
@@ -59,6 +61,8 @@ def build_display_registry(
 
         - schema_registry
         - metrics_registry
+        - workspace_registry
+        - comparison_registry
 
     DisplayRegistry owns only presentation
     semantics:
@@ -76,10 +80,12 @@ def build_display_registry(
 
     1. schema ontology overlays
     2. metrics ontology overlays
-    3. explicit display field overlays
-    4. display groups
-    5. display views
-    6. validation
+    3. workspace ontology overlays
+    4. comparison ontology overlays
+    5. explicit display field overlays
+    6. display groups
+    7. display views
+    8. validation
     """
 
     reg = DisplayRegistry()
@@ -93,6 +99,8 @@ def build_display_registry(
     reg.metrics_registry = metrics_registry
 
     reg.workspace_registry = workspace_registry
+
+    reg.comparison_registry = comparison_registry
 
     # =====================================================
     # Schema Display Overlays
@@ -118,6 +126,15 @@ def build_display_registry(
 
     sync_workspace_registry(
         workspace_registry=workspace_registry,
+        display_registry=reg,
+    )
+
+    # =====================================================
+    # Comparison Display Overlays
+    # =====================================================
+
+    sync_comparison_registry(
+        comparison_registry=comparison_registry,
         display_registry=reg,
     )
 

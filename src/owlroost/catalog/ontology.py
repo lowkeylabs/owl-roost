@@ -401,6 +401,7 @@ MaterializationLevel = Literal[
     "trial",
     "catalog",
     "row",
+    "comparison",
 ]
 
 # =========================================================

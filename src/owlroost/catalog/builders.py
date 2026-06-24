@@ -316,6 +316,72 @@ def build_workspace_rows(
 
 
 # =========================================================
+# Comparison Registry
+# =========================================================
+
+
+def build_comparison_rows(
+    comparison_registry,
+):
+    """
+    Build canonical catalog rows from
+    comparison ontology.
+
+    Notes
+    -----
+    Comparison fields represent analytical
+    artifacts derived from a set of already
+    realized rows.
+
+    Comparison values materialize into:
+
+        row["_comparison"]
+
+    and are computed after filtering,
+    sorting, projection, and row selection.
+    """
+
+    rows = []
+
+    for field in comparison_registry.all():
+        spec = CatalogSpec(
+            field_name=field.name,
+            node_type="variable",
+            owner=field.owner,
+            semantic_domain=field.semantic_domain,
+            value_origin=field.value_origin,
+            projection_kind=field.projection_kind,
+            analytic_kind=field.analytic_kind,
+            materialization_level=field.materialization_level,
+            source="_comparison",
+            path=field.name,
+            description=field.description,
+            derived_from=list(
+                getattr(
+                    field,
+                    "derived_from",
+                    [],
+                )
+            ),
+            provenance_chain=_build_provenance(
+                stage="comparison",
+                operation=ProvenanceOperation.REGISTERED,
+                source=field,
+            ),
+        )
+
+        rows.append(
+            build_catalog_row(
+                spec=spec,
+                layer="comparison",
+                semantic_field=field,
+            )
+        )
+
+    return rows
+
+
+# =========================================================
 # Display Registry
 # =========================================================
 

@@ -26,9 +26,9 @@ from __future__ import annotations
 
 import click
 
+from owlroost.catalog.context import build_catalog_context
 from owlroost.catalog.loaders import load_catalog_rows
 from owlroost.cli.utils import render_table, resolve_renderer, select_rows_by_id, split_catalog_args
-from owlroost.display.bootstrap import build_display_registry
 from owlroost.display.explain import parse_explain_request
 from owlroost.display.materializers.materialize import materialize_view
 from owlroost.display.materializers.materialize_dashboard import (
@@ -42,9 +42,6 @@ from owlroost.display.operations.table_ops import inject_id_column
 from owlroost.display.renderers.rich_dashboard import (
     render_rich_dashboard,
 )
-from owlroost.metrics.bootstrap import build_metrics_registry
-from owlroost.schema.bootstrap import build_schema_registry
-from owlroost.workspace.bootstrap import build_workspace_registry
 
 # =========================================================
 # Defaults
@@ -201,17 +198,7 @@ def cmd_vars(
     # Registries
     # =====================================================
 
-    schema_registry = build_schema_registry()
-
-    metrics_registry = build_metrics_registry()
-
-    workspace_registry = build_workspace_registry()
-
-    display_registry = build_display_registry(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-        workspace_registry=workspace_registry,
-    )
+    catalog = build_catalog_context()
 
     show_dashboard = not selectors and not args and not filters and not show_all
 
@@ -220,23 +207,24 @@ def cmd_vars(
     # =====================================================
 
     rows = load_catalog_rows(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-        workspace_registry=workspace_registry,
-        display_registry=display_registry,
+        schema_registry=catalog.schema_registry,
+        metrics_registry=catalog.metrics_registry,
+        workspace_registry=catalog.workspace_registry,
+        comparison_registry=catalog.comparison_registry,
+        display_registry=catalog.display_registry,
         search=search_terms,
     )
     catalog_index = {row["field_name"]: row for row in rows}
 
     if show_dashboard:
-        dashboard_spec = display_registry.get_dashboard(
+        dashboard_spec = catalog.display_registry.get_dashboard(
             dashboard,
         )
 
         dashboard_obj = materialize_dashboard(
             dashboard_spec,
             rows=rows,
-            registry=display_registry,
+            registry=catalog.display_registry,
             catalog_index=catalog_index,
         )
 
@@ -255,7 +243,7 @@ def cmd_vars(
     if "help" in (filters or ()):
         render_field_help(
             rows=rows,
-            registry=display_registry,
+            registry=catalog.display_registry,
             level=DEFAULT_LEVEL,
             view_name=view,
             mode="view",
@@ -277,7 +265,7 @@ def cmd_vars(
     if "help-all" in (filters or ()):
         render_field_help(
             rows=rows,
-            registry=display_registry,
+            registry=catalog.display_registry,
             level=DEFAULT_LEVEL,
             view_name=view,
             mode="all",
@@ -344,7 +332,7 @@ def cmd_vars(
 
     table = materialize_view(
         rows=rows,
-        registry=display_registry,
+        registry=catalog.display_registry,
         catalog_index=catalog_index,
         level=DEFAULT_LEVEL,
         view_name=view,

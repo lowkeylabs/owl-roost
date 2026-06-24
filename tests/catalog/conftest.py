@@ -2,59 +2,26 @@ from __future__ import annotations
 
 import pytest
 
-from owlroost.catalog.service import (
-    load_catalog,
-)
-from owlroost.display.bootstrap import (
-    build_display_registry,
-)
-from owlroost.metrics.bootstrap import (
-    build_metrics_registry,
-)
-from owlroost.schema.bootstrap import (
-    build_schema_registry,
-)
-from owlroost.workspace.bootstrap import (
-    build_workspace_registry,
+from owlroost.catalog.context import (
+    build_catalog_context,
 )
 
 
 @pytest.fixture
-def registries():
-    schema_registry = build_schema_registry()
+def catalog():
+    """
+    Fully initialized catalog context.
+    """
 
-    metrics_registry = build_metrics_registry()
-
-    workspace_registry = build_workspace_registry()
-
-    display_registry = build_display_registry(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-        workspace_registry=workspace_registry,
-    )
-
-    return (
-        schema_registry,
-        metrics_registry,
-        workspace_registry,
-        display_registry,
-    )
+    return build_catalog_context()
 
 
 @pytest.fixture
 def catalog_rows(
-    registries,
+    catalog,
 ):
-    (
-        schema_registry,
-        metrics_registry,
-        workspace_registry,
-        display_registry,
-    ) = registries
+    """
+    Unified catalog rows.
+    """
 
-    return load_catalog(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-        workspace_registry=workspace_registry,
-        display_registry=display_registry,
-    )
+    return catalog.catalog_rows

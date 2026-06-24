@@ -6,23 +6,16 @@ from owlroost.display.materializers.materialize import (
 
 
 def test_all_view_fields_exist(
-    registries,
+    catalog,
 ):
     """
     Every field referenced by every view
     must have a registered DisplayField.
     """
 
-    (
-        schema_registry,
-        metrics_registry,
-        workspace_registry,
-        display_registry,
-    ) = registries
-
-    for view in display_registry.all_views():
+    for view in catalog.display_registry.all_views():
         entries = expand_view_entries(
-            display_registry,
+            catalog.display_registry,
             view.entries,
         )
 
@@ -30,6 +23,6 @@ def test_all_view_fields_exist(
             if entry.get("kind") == "section":
                 continue
 
-            display_registry.get_display_field(
+            catalog.display_registry.get_display_field(
                 entry["field"],
             )

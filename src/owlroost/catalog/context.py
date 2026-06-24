@@ -34,6 +34,9 @@ from dataclasses import dataclass
 from owlroost.catalog.loaders import (
     load_catalog_rows,
 )
+from owlroost.comparison.bootstrap import (
+    build_comparison_registry,
+)
 from owlroost.display.bootstrap import (
     build_display_registry,
 )
@@ -72,6 +75,8 @@ class CatalogContext:
 
     workspace_registry: object
 
+    comparison_registry: object
+
     display_registry: object
 
     catalog_rows: list[dict]
@@ -103,6 +108,8 @@ def build_catalog_context() -> CatalogContext:
 
     workspace_registry = build_workspace_registry()
 
+    comparison_registry = build_comparison_registry()
+
     # =====================================================
     # Display Overlay Registry
     # =====================================================
@@ -111,6 +118,7 @@ def build_catalog_context() -> CatalogContext:
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
+        comparison_registry=comparison_registry,
     )
 
     # =====================================================
@@ -121,6 +129,7 @@ def build_catalog_context() -> CatalogContext:
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
+        comparison_registry=comparison_registry,
         display_registry=display_registry,
     )
 
@@ -134,6 +143,7 @@ def build_catalog_context() -> CatalogContext:
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
+        comparison_registry=comparison_registry,
         display_registry=display_registry,
         catalog_rows=catalog_rows,
         catalog_index=catalog_index,

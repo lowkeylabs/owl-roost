@@ -2,29 +2,15 @@
 
 from __future__ import annotations
 
+from owlroost.catalog.context import build_catalog_context
 from owlroost.catalog.ontology import (
     CatalogNodeType,
-)
-from owlroost.catalog.service import (
-    load_catalog,
-)
-from owlroost.display.bootstrap import (
-    build_display_registry,
 )
 from owlroost.display.materializers.materialize import (
     materialize_view,
 )
 from owlroost.display.renderers.rich_table import (
     render_rich_table,
-)
-from owlroost.metrics.bootstrap import (
-    build_metrics_registry,
-)
-from owlroost.schema.bootstrap import (
-    build_schema_registry,
-)
-from owlroost.workspace.bootstrap import (
-    build_workspace_registry,
 )
 
 # =========================================================
@@ -87,7 +73,9 @@ def test_architecture_pipeline():
     # Schema
     # =====================================================
 
-    schema_registry = build_schema_registry()
+    catalog = build_catalog_context()
+
+    schema_registry = catalog.schema_registry
 
     assert schema_registry
 
@@ -111,7 +99,7 @@ def test_architecture_pipeline():
     # Metrics
     # =====================================================
 
-    metrics_registry = build_metrics_registry()
+    metrics_registry = catalog.metrics_registry
 
     assert metrics_registry
 
@@ -119,19 +107,19 @@ def test_architecture_pipeline():
     # Workspace
     # =====================================================
 
-    workspace_registry = build_workspace_registry()
+    workspace_registry = catalog.workspace_registry
 
     assert workspace_registry
+
+    comparison_registry = catalog.comparison_registry
+
+    assert comparison_registry
 
     # =====================================================
     # Display
     # =====================================================
 
-    display_registry = build_display_registry(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-        workspace_registry=workspace_registry,
-    )
+    display_registry = catalog.display_registry
 
     assert display_registry
 
@@ -145,12 +133,7 @@ def test_architecture_pipeline():
     # Catalog
     # =====================================================
 
-    catalog_rows = load_catalog(
-        schema_registry=schema_registry,
-        metrics_registry=metrics_registry,
-        workspace_registry=workspace_registry,
-        display_registry=display_registry,
-    )
+    catalog_rows = catalog.catalog_rows
 
     assert catalog_rows
 

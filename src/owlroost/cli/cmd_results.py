@@ -46,7 +46,6 @@ from owlroost.display.operations.row_ops import apply_top, attach_row_ids
 from owlroost.display.operations.sorting import apply_canonical_sort, apply_sort
 from owlroost.display.operations.table_ops import inject_id_column
 from owlroost.display.projection import project_rows
-from owlroost.display.sync import sync_comparison_fields
 from owlroost.operations.delete import collect_delete_targets, delete_paths
 from owlroost.operations.promote import collect_promote_targets, promote_runs
 
@@ -489,11 +488,6 @@ def cmd_results(
             rows,
             selectors,
         )
-
-    sync_comparison_fields(
-        rows,
-        catalog.display_registry,
-    )
 
     # =====================================================
     # Detect superseded runs

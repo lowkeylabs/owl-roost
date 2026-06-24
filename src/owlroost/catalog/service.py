@@ -16,6 +16,8 @@ Catalog integrates:
 
     - schema ontology
     - metrics ontology
+    - workspace ontology
+    - comparison ontology
 
 into a unified collection of canonical
 semantic entities.
@@ -29,6 +31,7 @@ from __future__ import annotations
 from copy import deepcopy
 
 from owlroost.catalog.builders import (
+    build_comparison_rows,
     build_display_declaration_rows,
     build_display_overlay_rows,
     build_metric_rows,
@@ -86,7 +89,7 @@ def _merge_row(
     ROOST maintains exactly one canonical
     semantic identity per field_name.
 
-    Schema, metrics and workspace rows define
+    Schema, metrics, workspace, and comparison rows define
     canonical ontology.
 
     Display rows contribute presentation
@@ -128,6 +131,7 @@ def _merge_row(
         "schema",
         "metrics",
         "workspace",
+        "comparison",
     }
 
     if existing_layer in canonical_layers and incoming_layer in canonical_layers:
@@ -226,6 +230,7 @@ def load_catalog(
     schema_registry,
     metrics_registry,
     workspace_registry,
+    comparison_registry,
     display_registry,
 ):
     """
@@ -295,6 +300,18 @@ def load_catalog(
 
     for row in build_workspace_rows(
         workspace_registry,
+    ):
+        _merge_row(
+            entities,
+            row,
+        )
+
+    # =====================================================
+    # Comparison Ontology
+    # =====================================================
+
+    for row in build_comparison_rows(
+        comparison_registry,
     ):
         _merge_row(
             entities,
