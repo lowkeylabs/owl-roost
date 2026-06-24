@@ -180,6 +180,20 @@ def _register_field_if_missing(
             table_fmt = "boolean_flag"
 
     # -----------------------------------------------------
+    # Formatting for overrides
+    # -----------------------------------------------------
+
+    if field_name.endswith(
+        (
+            "common_overrides",
+            "run_specific_overrides",
+            "task_overrides",
+        )
+    ):
+        table_fmt = "overrides"
+        pivot_fmt = "overrides"
+
+    # -----------------------------------------------------
     # Default Profiles
     # -----------------------------------------------------
 
@@ -302,3 +316,134 @@ def sync_workspace_registry(
                 None,
             ),
         )
+
+
+# =========================================================
+# Comparison Field Discovery
+# =========================================================
+
+
+def _discover_comparison_fields(
+    obj,
+    *,
+    prefix,
+    discovered,
+    depth=0,
+):
+    """
+    Recursively discover comparison field names.
+
+    Example
+    -------
+
+    Input:
+
+        {
+            "session": {
+                "common_overrides": {...},
+                "group_size": 3,
+            }
+        }
+
+    Produces:
+
+        comparison.session.common_overrides
+        comparison.session.group_size
+
+    Notes
+    -----
+    Comparison namespaces currently have
+    the structure:
+
+        comparison
+            <scope>
+                <field>
+
+    Dictionaries below the field level are
+    treated as values rather than namespaces.
+    """
+
+    if not isinstance(
+        obj,
+        dict,
+    ):
+        return
+
+    for key, value in obj.items():
+        field_name = f"{prefix}.{key}"
+
+        # ---------------------------------------------
+        # Recurse only into scope namespaces
+        #
+        # comparison
+        #     session
+        #         common_overrides
+        #
+        # Stop at:
+        #
+        # comparison.session.common_overrides
+        # ---------------------------------------------
+
+        if depth < 1 and isinstance(
+            value,
+            dict,
+        ):
+            _discover_comparison_fields(
+                value,
+                prefix=field_name,
+                discovered=discovered,
+                depth=depth + 1,
+            )
+
+        else:
+            discovered.add(
+                field_name,
+            )
+
+
+# =========================================================
+# Comparison Overlay Sync
+# =========================================================
+
+
+def sync_comparison_fields(
+    rows,
+    display_registry: DisplayRegistry,
+):
+    """
+    Generate default display overlays for
+    comparison variables discovered from
+    row comparison structures.
+
+    Notes
+    -----
+    Comparison fields are not registry-backed.
+
+    They are discovered dynamically from
+    the currently materialized row set.
+    """
+
+    discovered = set()
+
+    for row in rows:
+        comparison = row.get(
+            "_comparison",
+            {},
+        )
+
+        _discover_comparison_fields(
+            comparison,
+            prefix="comparison",
+            discovered=discovered,
+        )
+
+    for field_name in sorted(
+        discovered,
+    ):
+        _register_field_if_missing(
+            field_name=field_name,
+            description=None,
+            display_registry=display_registry,
+        )
+
+    return rows

@@ -138,14 +138,7 @@ def cmd_run(
     # Build Registries
     # =====================================================
 
-    (
-        schema_registry,
-        metrics_registry,
-        workspace_registry,
-        display_registry,
-        catalog_rows,
-        catalog_index,
-    ) = build_catalog_context()
+    catalog = build_catalog_context()
 
     # =====================================================
     # Check requested view
@@ -154,7 +147,7 @@ def cmd_run(
     level = "run"
 
     if 0:
-        if not view or not display_registry.has_view_for_level(
+        if not view or not catalog.display_registry.has_view_for_level(
             level,
             view,
         ):
@@ -162,7 +155,7 @@ def cmd_run(
                 click.echo(f"Display view not found: {level}/{view}")
 
             render_available_views(
-                display_registry,
+                catalog.display_registry,
                 level=level,
             )
 
@@ -173,7 +166,7 @@ def cmd_run(
     # =====================================================
 
     rows = load_run_rows(
-        metrics_registry=metrics_registry,
+        metrics_registry=catalog.metrics_registry,
         results_root=str(root),
     )
 
@@ -187,8 +180,8 @@ def cmd_run(
         sort=sort,
         top=top,
         rows=rows,
-        display_registry=display_registry,
-        schema_registry=schema_registry,
+        display_registry=catalog.display_registry,
+        schema_registry=catalog.schema_registry,
         level=level,
     ):
         return
@@ -257,7 +250,7 @@ def cmd_run(
 
     table = materialize_view(
         rows=rows,
-        registry=display_registry,
+        registry=catalog.display_registry,
         level="run",
         view_name=view,
         mode="pivot" if pivot else "table",

@@ -18,23 +18,18 @@ construction context used by:
     - dashboards
     - audit tools
 
-The returned tuple exposes the
-individual objects directly rather
-than wrapping them in a runtime class.
+The returned CatalogContext provides
+named access to all registries and
+catalog structures.
 
 Returns
 -------
-(
-    schema_registry,
-    metrics_registry,
-    workspace_registry,
-    display_registry,
-    catalog_rows,
-    catalog_index,
-)
+CatalogContext
 """
 
 from __future__ import annotations
+
+from dataclasses import dataclass
 
 from owlroost.catalog.loaders import (
     load_catalog_rows,
@@ -52,22 +47,50 @@ from owlroost.workspace.bootstrap import (
     build_workspace_registry,
 )
 
+# =========================================================
+# Catalog Context
+# =========================================================
 
-def build_catalog_context():
+
+@dataclass(
+    slots=True,
+)
+class CatalogContext:
+    """
+    Fully initialized catalog bootstrap context.
+
+    Notes
+    -----
+    Provides convenient access to all
+    ontology registries, display overlays,
+    and unified catalog structures.
+    """
+
+    schema_registry: object
+
+    metrics_registry: object
+
+    workspace_registry: object
+
+    display_registry: object
+
+    catalog_rows: list[dict]
+
+    catalog_index: dict[str, dict]
+
+
+# =========================================================
+# Bootstrap
+# =========================================================
+
+
+def build_catalog_context() -> CatalogContext:
     """
     Build complete catalog context.
 
     Returns
     -------
-    tuple
-        (
-            schema_registry,
-            metrics_registry,
-            workspace_registry,
-            display_registry,
-            catalog_rows,
-            catalog_index,
-        )
+    CatalogContext
     """
 
     # =====================================================
@@ -107,11 +130,11 @@ def build_catalog_context():
     # Context
     # =====================================================
 
-    return (
-        schema_registry,
-        metrics_registry,
-        workspace_registry,
-        display_registry,
-        catalog_rows,
-        catalog_index,
+    return CatalogContext(
+        schema_registry=schema_registry,
+        metrics_registry=metrics_registry,
+        workspace_registry=workspace_registry,
+        display_registry=display_registry,
+        catalog_rows=catalog_rows,
+        catalog_index=catalog_index,
     )

@@ -127,6 +127,24 @@ def resolve_field_value(
             return value
 
     # =====================================================
+    # Comparison
+    # =====================================================
+
+    if field_name.startswith(
+        "comparison.",
+    ):
+        value = extract_path(
+            row.get(
+                "_comparison",
+                {},
+            ),
+            ".".join(field_name.split(".")[1:]),
+        )
+
+        if value is not None:
+            return value
+
+    # =====================================================
     # Inputs
     # =====================================================
 

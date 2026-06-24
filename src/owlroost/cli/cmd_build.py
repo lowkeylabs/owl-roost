@@ -371,14 +371,7 @@ def cmd_build(
     #
     #        build_only = True
 
-    (
-        schema_registry,
-        metrics_registry,
-        workspace_registry,
-        display_registry,
-        catalog_rows,
-        catalog_index,
-    ) = build_catalog_context()
+    catalog = build_catalog_context()
 
     # =====================================================
     # Parse explain request
@@ -397,7 +390,7 @@ def cmd_build(
 
     overrides, override_errors = parse_override_request(
         overrides,
-        schema_registry,
+        catalog.schema_registry,
     )
 
     if 0 and override_errors:
@@ -413,7 +406,7 @@ def cmd_build(
 
     level = DEFAULT_LEVEL
 
-    if not view or not display_registry.has_view_for_level(
+    if not view or not catalog.display_registry.has_view_for_level(
         level,
         view,
     ):
@@ -421,7 +414,7 @@ def cmd_build(
             click.echo(f"Display view not found: {level}/{view}")
 
         render_available_views(
-            display_registry,
+            catalog.display_registry,
             level=level,
         )
 
@@ -431,11 +424,11 @@ def cmd_build(
     # Context-sensitive CLI help
     # =====================================================
 
-    rows = load_case_rows(case_folder, metrics_registry=metrics_registry)
+    rows = load_case_rows(case_folder, metrics_registry=catalog.metrics_registry)
     # if no cases and we're in ".", look in ./cases
     if not rows:
         case_folder = "./cases"
-        rows = load_case_rows(case_folder, metrics_registry=metrics_registry)
+        rows = load_case_rows(case_folder, metrics_registry=catalog.metrics_registry)
     rows = attach_row_ids(rows)
 
     if process_help_requests(
@@ -448,8 +441,8 @@ def cmd_build(
         sort=sort,
         top=top,
         rows=rows,
-        display_registry=display_registry,
-        schema_registry=schema_registry,
+        display_registry=catalog.display_registry,
+        schema_registry=catalog.schema_registry,
         level=level,
     ):
         return
@@ -523,8 +516,8 @@ def cmd_build(
     if compare or diff or auto_compare:
         table = materialize_compare_table(
             rows,
-            registry=display_registry,
-            catalog_index=catalog_index,
+            registry=catalog.display_registry,
+            catalog_index=catalog.catalog_index,
             diff_only=diff,
             explain_facets=explain_facets,
         )
@@ -545,8 +538,8 @@ def cmd_build(
     if is_cases_command or (not selectors and not overrides):
         table = materialize_view(
             rows=rows,
-            registry=display_registry,
-            catalog_index=catalog_index,
+            registry=catalog.display_registry,
+            catalog_index=catalog.catalog_index,
             level=DEFAULT_LEVEL,
             view_name=view,
             mode="pivot" if pivot else "table",

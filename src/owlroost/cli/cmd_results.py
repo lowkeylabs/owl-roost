@@ -39,12 +39,14 @@ from owlroost.display.explain import (
 from owlroost.display.loaders import load_run_rows
 from owlroost.display.materializers.compare import materialize_compare_table
 from owlroost.display.materializers.materialize import materialize_view
+from owlroost.display.operations.comparison import apply_comparisons
 from owlroost.display.operations.filtering import apply_filters
 from owlroost.display.operations.help import render_field_help
 from owlroost.display.operations.row_ops import apply_top, attach_row_ids
 from owlroost.display.operations.sorting import apply_canonical_sort, apply_sort
 from owlroost.display.operations.table_ops import inject_id_column
 from owlroost.display.projection import project_rows
+from owlroost.display.sync import sync_comparison_fields
 from owlroost.operations.delete import collect_delete_targets, delete_paths
 from owlroost.operations.promote import collect_promote_targets, promote_runs
 
@@ -294,24 +296,17 @@ def cmd_results(
         raise click.ClickException("Hydra-style overrides are not supported in 'roost results'.")
 
     # =====================================================
-    # Build Registries
+    # Build variable catalog
     # =====================================================
 
-    (
-        schema_registry,
-        metrics_registry,
-        workspace_registry,
-        display_registry,
-        catalog_rows,
-        catalog_index,
-    ) = build_catalog_context()
+    catalog = build_catalog_context()
 
     # =====================================================
     # Check requested view
     # =====================================================
 
     if 0:
-        if not view or not display_registry.has_view_for_level(
+        if not view or not catalog.display_registry.has_view_for_level(
             level,
             view,
         ):
@@ -319,7 +314,7 @@ def cmd_results(
                 click.echo(f"Display view not found: {level}/{view}")
 
             render_available_views(
-                display_registry,
+                catalog.display_registry,
                 level=level,
             )
 
@@ -330,7 +325,7 @@ def cmd_results(
     # =====================================================
 
     rows = load_run_rows(
-        metrics_registry=metrics_registry,
+        metrics_registry=catalog.metrics_registry,
         results_root="results",
     )
 
@@ -356,8 +351,8 @@ def cmd_results(
         sort=sort,
         top=top,
         rows=rows,
-        display_registry=display_registry,
-        schema_registry=schema_registry,
+        display_registry=catalog.display_registry,
+        schema_registry=catalog.schema_registry,
         level=level,
     ):
         return
@@ -392,7 +387,7 @@ def cmd_results(
     if "help" in (filters or ()):
         render_field_help(
             rows=rows,
-            registry=display_registry,
+            registry=catalog.display_registry,
             level=level,
             view_name=view,
             mode="view",
@@ -407,7 +402,7 @@ def cmd_results(
     if "help-all" in (filters or ()):
         render_field_help(
             rows=rows,
-            registry=display_registry,
+            registry=catalog.display_registry,
             level=level,
             view_name=view,
             mode="all",
@@ -419,7 +414,7 @@ def cmd_results(
     if sort == "help":
         render_field_help(
             rows=rows,
-            registry=display_registry,
+            registry=catalog.display_registry,
             level=level,
             view_name=view,
             mode="view",
@@ -434,7 +429,7 @@ def cmd_results(
     if sort == "help-all":
         render_field_help(
             rows=rows,
-            registry=display_registry,
+            registry=catalog.display_registry,
             level=level,
             view_name=view,
             mode="all",
@@ -481,6 +476,10 @@ def cmd_results(
         top,
     )
 
+    rows = apply_comparisons(
+        rows,
+    )
+
     rows = attach_row_ids(
         rows,
     )
@@ -490,6 +489,11 @@ def cmd_results(
             rows,
             selectors,
         )
+
+    sync_comparison_fields(
+        rows,
+        catalog.display_registry,
+    )
 
     # =====================================================
     # Detect superseded runs
@@ -537,8 +541,8 @@ def cmd_results(
 
         purge_table = materialize_view(
             rows=superseded_rows,
-            registry=display_registry,
-            catalog_index=catalog_index,
+            registry=catalog.display_registry,
+            catalog_index=catalog.catalog_index,
             level=level,
             view_name=view,
             mode="table",
@@ -621,8 +625,8 @@ def cmd_results(
 
         delete_table = materialize_view(
             rows=rows_to_delete,
-            registry=display_registry,
-            catalog_index=catalog_index,
+            registry=catalog.display_registry,
+            catalog_index=catalog.catalog_index,
             level=level,
             view_name=view,
             mode="table",
@@ -695,8 +699,8 @@ def cmd_results(
 
         promote_table = materialize_view(
             rows=rows_to_promote,
-            registry=display_registry,
-            catalog_index=catalog_index,
+            registry=catalog.display_registry,
+            catalog_index=catalog.catalog_index,
             level=level,
             view_name=view,
             mode="table",
@@ -782,8 +786,8 @@ def cmd_results(
     if compare or diff:
         table = materialize_compare_table(
             rows=rows,
-            registry=display_registry,
-            catalog_index=catalog_index,
+            registry=catalog.display_registry,
+            catalog_index=catalog.catalog_index,
             diff_only=diff,
             explain_facets=explain_facets,
         )
@@ -806,8 +810,8 @@ def cmd_results(
 
     table = materialize_view(
         rows=rows,
-        registry=display_registry,
-        catalog_index=catalog_index,
+        registry=catalog.display_registry,
+        catalog_index=catalog.catalog_index,
         level=level,
         view_name=view,
         mode="pivot" if pivot else "table",
