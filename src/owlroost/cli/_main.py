@@ -25,6 +25,7 @@ from ..version import __version__
 from .cmd_build import cmd_build
 from .cmd_reports import cmd_reports
 from .cmd_results import cmd_results
+from .cmd_review import cmd_review
 from .cmd_run import cmd_run
 from .cmd_vars import cmd_vars
 from .cmd_workspace import cmd_workspace
@@ -106,3 +107,4 @@ cli.add_command(cmd_results)
 
 cli.add_command(cmd_vars, name="vars")
 cli.add_command(cmd_workspace)
+cli.add_command(cmd_review)

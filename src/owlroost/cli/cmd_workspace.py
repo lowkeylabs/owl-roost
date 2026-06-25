@@ -39,6 +39,7 @@ from owlroost.catalog.context import (
     build_catalog_context,
 )
 from owlroost.cli.utils import (
+    is_workspace,
     render_available_views,
     render_table,
     resolve_renderer,
@@ -234,18 +235,14 @@ def cmd_workspace(
 
         return
 
+    if not is_workspace("."):
+        raise click.ClickException("Current directory is not a workspace.")
+
     # =====================================================
     # Context
     # =====================================================
 
-    (
-        schema_registry,
-        metrics_registry,
-        workspace_registry,
-        display_registry,
-        catalog_rows,
-        catalog_index,
-    ) = build_catalog_context()
+    catalog = build_catalog_context()
 
     # =====================================================
     # Validate view
@@ -253,14 +250,14 @@ def cmd_workspace(
 
     level = DEFAULT_LEVEL
 
-    if not display_registry.has_view_for_level(
+    if not catalog.display_registry.has_view_for_level(
         level,
         view,
     ):
         click.echo(f"Display view not found: {level}/{view}")
 
         render_available_views(
-            display_registry,
+            catalog.display_registry,
             level=level,
         )
 
@@ -355,8 +352,8 @@ def cmd_workspace(
 
     table = materialize_view(
         rows=selected_rows,
-        registry=display_registry,
-        catalog_index=catalog_index,
+        registry=catalog.display_registry,
+        catalog_index=catalog.catalog_index,
         level=level,
         mode="pivot" if pivot else "table",
         view_name=view,

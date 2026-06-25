@@ -504,3 +504,9 @@ def select_workspace_rows(
         )
 
     return out
+
+
+def is_workspace(
+    path,
+) -> bool:
+    return Path(path).joinpath("study.toml").exists()
