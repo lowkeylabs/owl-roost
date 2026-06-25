@@ -47,9 +47,7 @@ from owlroost.display.discovery import (
 from owlroost.exceptions import (
     RoostError,
 )
-from owlroost.workspace.checks import (
-    has_workspace,
-)
+from owlroost.workspace.levers.workspace import is_initialized
 
 MINIMAL_WORKSPACE_TOML = '''\
 name = "{name}"
@@ -172,7 +170,7 @@ def validate_workspace(
         )
         return errors
 
-    if not has_workspace(
+    if not is_initialized(
         workspace_dir,
     ):
         errors.append(
@@ -211,7 +209,7 @@ def init_workspace(
     if not workspace_dir.is_dir():
         raise RoostError(f"Not a directory: {workspace_dir}")
 
-    workspace_exists = has_workspace(
+    workspace_exists = is_initialized(
         workspace_dir,
     )
 
@@ -292,7 +290,7 @@ def sync_results_catalog(
         workspace_dir,
     ).resolve()
 
-    if not has_workspace(
+    if not is_initialized(
         workspace_dir,
     ):
         raise RoostError(f"Missing workspace.toml: {workspace_dir / 'workspace.toml'}")

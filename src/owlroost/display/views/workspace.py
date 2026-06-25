@@ -40,13 +40,39 @@ def register_display_views(
                 # =====================================
                 # Identity
                 # =====================================
+                ("section", "Identity"),
                 "workspace.name",
-                # "workspace.path",
-                # "workspace.name",
                 "workspace.title",
                 "workspace.description",
+                # =====================================
+                # Readiness
+                # =====================================
+                ("section", "Readiness"),
+                "workspace.is_initialized",
+                "workspace.has_household",
+                "workspace.has_valid_household",
+                # =====================================
+                # Artifacts
+                # =====================================
+                ("section", "Artifacts"),
+                "workspace.has_cases",
+                "workspace.has_results",
+                "workspace.has_reports",
+                # =====================================
+                # Locations
+                # =====================================
+                ("section", "Locations"),
+                "workspace.paths.workspace",
+                "workspace.paths.cases",
+                "workspace.paths.results",
             ],
-            description=("workspace description"),
+            description=(
+                "Summarizes the current "
+                "workspace, its readiness "
+                "for retirement planning, "
+                "and available analytical "
+                "artifacts."
+            ),
             **SHARED_VIEW_ONTOLOGY,
         )
     )

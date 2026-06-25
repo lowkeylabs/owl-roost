@@ -1,0 +1,144 @@
+# src/owlroost/workspace/inventory/status.py
+#
+# Copyright (c) 2026 John Leonard
+# SPDX-License-Identifier: GPL-3.0-or-later
+# See LICENSE file in repository root.
+
+"""
+Workspace status inventory.
+
+Notes
+-----
+Registers computed observations
+describing the current status and
+readiness of a workspace.
+
+Status observations are derived
+from the current filesystem and
+OWL validation rather than from
+workspace metadata.
+
+Architectural Invariant
+-----------------------
+
+Status observations describe the
+current condition of a workspace.
+
+Identity observations belong to:
+
+    workspace.inventory.workspace
+
+Review recommendations belong to:
+
+    review
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from owlroost.catalog.ontology import (
+    CatalogNodeType,
+)
+from owlroost.core.utils import (
+    normalize_module_path,
+)
+from owlroost.workspace.checks import (
+    has_cases,
+    has_household,
+    has_reports,
+    has_results,
+    has_valid_household,
+    has_workspace,
+    is_initialized,
+)
+from owlroost.workspace.specs import (
+    WorkspaceSpec,
+)
+
+# =========================================================
+# Ontology
+# =========================================================
+
+WORKSPACE_STATUS: dict[str, Any] = dict(
+    owner="ROOST",
+    semantic_domain="execution",
+    value_origin="roost-computed",
+    projection_kind="canonical",
+    analytic_kind="primary",
+    materialization_level="workspace",
+    node_type=CatalogNodeType.VARIABLE,
+    defined_in=normalize_module_path(__file__),
+)
+
+# =========================================================
+# Status Definitions
+# =========================================================
+
+STATUS_FIELDS: list[tuple[str, object, str]] = [
+    (
+        "workspace.has_workspace",
+        has_workspace,
+        "Workspace definition file is present.",
+    ),
+    (
+        "workspace.is_initialized",
+        is_initialized,
+        "Workspace has been initialized for ROOST.",
+    ),
+    (
+        "workspace.has_household",
+        has_household,
+        "Workspace contains exactly one household definition.",
+    ),
+    (
+        "workspace.has_valid_household",
+        has_valid_household,
+        "Household definition is accepted by OWL.",
+    ),
+    (
+        "workspace.has_cases",
+        has_cases,
+        "Workspace contains a cases directory.",
+    ),
+    (
+        "workspace.has_results",
+        has_results,
+        "Workspace contains analytical results.",
+    ),
+    (
+        "workspace.has_reports",
+        has_reports,
+        "Workspace contains generated reports.",
+    ),
+]
+
+# =========================================================
+# Registration
+# =========================================================
+
+
+def register_inventory(
+    reg,
+):
+    """
+    Register computed workspace
+    status observations.
+    """
+
+    for (
+        name,
+        check_fn,
+        description,
+    ) in STATUS_FIELDS:
+        reg.register(
+            WorkspaceSpec(
+                name=name,
+                dtype=bool,
+                compute_fn=lambda row, fn=check_fn: fn(
+                    row["_path"],
+                ),
+                description=description,
+                **WORKSPACE_STATUS,
+            )
+        )

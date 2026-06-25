@@ -69,6 +69,7 @@ from owlroost.workspace.loaders import (
     load_workspace_row,
     load_workspace_rows,
 )
+from owlroost.workspace.materializers import materialize_workspace
 from owlroost.workspace.operations import (
     create_workspace,
     init_workspace,
@@ -249,6 +250,7 @@ def cmd_workspace(
     # =====================================================
 
     level = DEFAULT_LEVEL
+    pivot = True
 
     if not catalog.display_registry.has_view_for_level(
         level,
@@ -277,6 +279,14 @@ def cmd_workspace(
         if not rows:
             print("No workspaces found in subfolders or this folder")
             return
+
+    rows = [
+        materialize_workspace(
+            row,
+            catalog.workspace_registry,
+        )
+        for row in rows
+    ]
 
     rows = apply_canonical_sort(
         rows,

@@ -18,6 +18,7 @@ from __future__ import annotations
 from owlroost.workspace.inventory import (
     register_inventory,
 )
+from owlroost.workspace.levers import register_all_levers
 from owlroost.workspace.registry import (
     WorkspaceRegistry,
 )
@@ -33,5 +34,7 @@ def build_workspace_registry():
     register_inventory(
         reg,
     )
+
+    register_all_levers(reg)
 
     return reg

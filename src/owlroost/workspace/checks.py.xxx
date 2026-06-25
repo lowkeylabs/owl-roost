@@ -15,7 +15,8 @@ the current state of a workspace.
 Architectural Invariant
 -----------------------
 
-Checks answer questions.
+Checks answer semantic questions
+about a workspace.
 
 Checks do NOT mutate the workspace.
 
@@ -40,15 +41,16 @@ from owlroost.workspace.owl_utils import (
 )
 
 # =========================================================
-# Discovery
+# Discovery Helpers
 # =========================================================
 
 
-def find_toml_files(
+def find_household_files(
     root=".",
 ):
     """
-    Discover household TOML files.
+    Discover household definition
+    files.
 
     Notes
     -----
@@ -56,32 +58,39 @@ def find_toml_files(
     excluded.
     """
 
-    root = Path(root)
+    root = Path(
+        root,
+    )
 
-    return sorted(path for path in root.glob("*.toml") if path.name != "workspace.toml")
+    return sorted(
+        path
+        for path in root.glob(
+            "*.toml",
+        )
+        if path.name != "workspace.toml"
+    )
 
 
 def find_hfp_files(
     root=".",
 ):
     """
-    Discover HFP spreadsheets in
-    the current directory.
-
-    Returns
-    -------
-    list[Path]
+    Discover HFP workbooks.
     """
 
-    root = Path(root)
+    root = Path(
+        root,
+    )
 
     return sorted(
-        root.glob("*.xlsx"),
+        root.glob(
+            "*.xlsx",
+        ),
     )
 
 
 # =========================================================
-# Workspace
+# Workspace Status
 # =========================================================
 
 
@@ -90,12 +99,30 @@ def has_workspace(
 ):
     """
     Does this directory contain a
+    workspace definition?
+    """
+
+    root = Path(
+        root,
+    )
+
+    return (
+        root / "workspace.toml"
+    ).exists()
+
+
+def is_initialized(
+    root=".",
+):
+    """
+    Has this directory been
+    initialized as a ROOST
     workspace?
     """
 
-    root = Path(root)
-
-    return (root / "workspace.toml").exists()
+    return has_workspace(
+        root,
+    )
 
 
 # =========================================================
@@ -107,12 +134,13 @@ def has_toml(
     root=".",
 ):
     """
-    Does at least one TOML exist?
+    Does at least one household
+    TOML exist?
     """
 
     return (
         len(
-            find_toml_files(
+            find_household_files(
                 root,
             )
         )
@@ -124,12 +152,13 @@ def has_single_toml(
     root=".",
 ):
     """
-    Exactly one TOML exists.
+    Exactly one household TOML
+    exists.
     """
 
     return (
         len(
-            find_toml_files(
+            find_household_files(
                 root,
             )
         )
@@ -141,12 +170,13 @@ def has_multiple_toml(
     root=".",
 ):
     """
-    More than one TOML exists.
+    More than one household TOML
+    exists.
     """
 
     return (
         len(
-            find_toml_files(
+            find_household_files(
                 root,
             )
         )
@@ -158,7 +188,8 @@ def has_hfp(
     root=".",
 ):
     """
-    Does at least one HFP exist?
+    Does at least one HFP workbook
+    exist?
     """
 
     return (
@@ -175,7 +206,8 @@ def has_single_hfp(
     root=".",
 ):
     """
-    Exactly one HFP exists.
+    Exactly one HFP workbook
+    exists.
     """
 
     return (
@@ -192,7 +224,8 @@ def has_multiple_hfp(
     root=".",
 ):
     """
-    More than one HFP exists.
+    More than one HFP workbook
+    exists.
     """
 
     return (
@@ -206,7 +239,7 @@ def has_multiple_hfp(
 
 
 # =========================================================
-# Household Validation
+# Workspace Readiness
 # =========================================================
 
 
@@ -216,12 +249,6 @@ def has_household(
     """
     Does this workspace contain
     exactly one household?
-
-    Notes
-    -----
-    A household is currently
-    represented by a single
-    household TOML.
     """
 
     return has_single_toml(
@@ -240,34 +267,23 @@ def has_valid_household(
     native OWL functionality.
     """
 
-    tomls = find_toml_files(
+    households = find_household_files(
         root,
     )
 
-    if len(tomls) != 1:
+    if len(
+        households,
+    ) != 1:
         return False
 
     return validate_household(
-        tomls[0],
+        households[0],
     )
 
 
 # =========================================================
 # Workspace Inventory
 # =========================================================
-
-
-def has_results(
-    root=".",
-):
-    """
-    Does the workspace contain a
-    results directory?
-    """
-
-    root = Path(root)
-
-    return (root / "results").exists()
 
 
 def has_cases(
@@ -278,9 +294,30 @@ def has_cases(
     cases directory?
     """
 
-    root = Path(root)
+    root = Path(
+        root,
+    )
 
-    return (root / "cases").exists()
+    return (
+        root / "cases"
+    ).exists()
+
+
+def has_results(
+    root=".",
+):
+    """
+    Does the workspace contain a
+    results directory?
+    """
+
+    root = Path(
+        root,
+    )
+
+    return (
+        root / "results"
+    ).exists()
 
 
 def has_reports(
@@ -291,6 +328,10 @@ def has_reports(
     reports directory?
     """
 
-    root = Path(root)
+    root = Path(
+        root,
+    )
 
-    return (root / "reports").exists()
+    return (
+        root / "reports"
+    ).exists()

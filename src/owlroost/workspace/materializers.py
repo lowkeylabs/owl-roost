@@ -65,6 +65,48 @@ def workspace_lookup(
     return compute_fn
 
 
+# =========================================================
+# Nested Assignment
+# =========================================================
+
+
+def _set_workspace_value(
+    row,
+    field_name,
+    value,
+):
+    """
+    Store a workspace observation
+    into row["_workspace"].
+
+    Example
+    -------
+
+    workspace.has_results
+
+        -> _workspace["has_results"]
+
+    workspace.paths.results
+
+        -> _workspace["paths"]["results"]
+    """
+
+    current = row.setdefault(
+        "_workspace",
+        {},
+    )
+
+    parts = field_name.split(".")[1:]
+
+    for part in parts[:-1]:
+        current = current.setdefault(
+            part,
+            {},
+        )
+
+    current[parts[-1]] = value
+
+
 def materialize_workspace(
     row,
     workspace_registry,
@@ -92,11 +134,17 @@ def materialize_workspace(
             continue
 
         try:
-            field.compute_fn(
+            value = field.compute_fn(
                 row,
             )
 
         except Exception:
             continue
+
+        _set_workspace_value(
+            row,
+            field.name,
+            value,
+        )
 
     return row

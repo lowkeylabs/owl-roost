@@ -208,13 +208,29 @@ def register_display_views(
     reg.register_view(
         DisplayView(
             level="run",
-            name="overrides",
+            name="working_set_overrides",
             entries=[
                 "case_name",
                 "display.compact_id",
                 "display.completion_fraction",
                 "comparison.working_set.common_overrides",
                 "comparison.working_set.run_specific_overrides",
+            ],
+            description=("Run-level specific and common overrides, forming an execution plan."),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    reg.register_view(
+        DisplayView(
+            level="run",
+            name="session_overrides",
+            entries=[
+                "case_name",
+                "display.compact_id",
+                "display.completion_fraction",
+                "comparison.session.common_overrides",
+                "comparison.session.run_specific_overrides",
             ],
             description=("Run-level specific and common overrides, forming an execution plan."),
             **SHARED_VIEW_ONTOLOGY,
