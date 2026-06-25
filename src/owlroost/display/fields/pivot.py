@@ -98,7 +98,7 @@ def register_display_fields(
                     width="auto",
                     min_width=20,
                     max_width=45,
-                    wrap=False,
+                    wrap=True,
                     content_align="left",
                 ),
             },

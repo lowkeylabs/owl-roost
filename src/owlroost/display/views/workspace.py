@@ -47,17 +47,10 @@ def register_display_views(
                 # =====================================
                 # Readiness
                 # =====================================
-                ("section", "Readiness"),
+                ("section", "Workspace Readiness"),
                 "workspace.is_initialized",
                 "workspace.has_household",
                 "workspace.has_valid_household",
-                # =====================================
-                # Artifacts
-                # =====================================
-                ("section", "Artifacts"),
-                "workspace.has_cases",
-                "workspace.has_results",
-                "workspace.has_reports",
                 # =====================================
                 # Locations
                 # =====================================

@@ -164,6 +164,8 @@ def _register_field_if_missing(
     pivot_fmt = None
     table_content_align = None
     pivot_content_align = None
+    table_wrap = None
+    pivot_wrap = None
 
     if field_name.startswith(
         (
@@ -193,6 +195,10 @@ def _register_field_if_missing(
         table_fmt = "overrides"
         pivot_fmt = "overrides"
 
+    if field_name.endswith("description"):
+        table_wrap = True
+        pivot_wrap = True
+
     # -----------------------------------------------------
     # Default Profiles
     # -----------------------------------------------------
@@ -205,6 +211,7 @@ def _register_field_if_missing(
                 ),
                 fmt=table_fmt,
                 content_align=table_content_align,
+                wrap=table_wrap,
             ),
             "pivot": DisplayProfile(
                 label=path_to_pivot_label(
@@ -212,6 +219,7 @@ def _register_field_if_missing(
                 ),
                 fmt=pivot_fmt,
                 content_align=pivot_content_align,
+                wrap=pivot_wrap,
             ),
         }
 
