@@ -122,7 +122,7 @@ def test_load_workspace_rows_basic(
 
     assert workspace["name"] == "example"
 
-    assert workspace["title"] == "Example Study"
+    assert workspace["title"] == "Example Workspace"
 
     assert workspace["description"] == "Example description."
 

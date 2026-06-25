@@ -16,6 +16,13 @@ A workspace is currently defined
 as a directory containing:
 
     workspace.toml
+
+Workspace capability queries
+belong in workspace.checks.
+
+This module should perform
+mutations only.
+
 """
 
 from __future__ import annotations
@@ -39,6 +46,9 @@ from owlroost.display.discovery import (
 )
 from owlroost.exceptions import (
     RoostError,
+)
+from owlroost.workspace.checks import (
+    has_workspace,
 )
 
 MINIMAL_WORKSPACE_TOML = '''\
@@ -157,14 +167,22 @@ def validate_workspace(
     errors = []
 
     if not workspace_dir.exists():
-        errors.append("workspace directory does not exist")
+        errors.append(
+            "workspace directory does not exist",
+        )
         return errors
 
-    if not (workspace_dir / "workspace.toml").exists():
-        errors.append("missing workspace.toml")
+    if not has_workspace(
+        workspace_dir,
+    ):
+        errors.append(
+            "missing workspace.toml",
+        )
 
     if not (workspace_dir / "Makefile").exists():
-        errors.append("missing Makefile")
+        errors.append(
+            "missing Makefile",
+        )
 
     return errors
 
@@ -185,13 +203,17 @@ def init_workspace(
 
     workspace_dir = Path(
         workspace_dir,
-    )
+    ).resolve()
 
     if not workspace_dir.exists():
         raise RoostError(f"Directory does not exist: {workspace_dir}")
 
     if not workspace_dir.is_dir():
         raise RoostError(f"Not a directory: {workspace_dir}")
+
+    workspace_exists = has_workspace(
+        workspace_dir,
+    )
 
     workspace_toml = workspace_dir / "workspace.toml"
 
@@ -203,7 +225,7 @@ def init_workspace(
     # workspace.toml
     # -----------------------------------------
 
-    if force or not workspace_toml.exists():
+    if force or not workspace_exists:
         workspace_toml.write_text(
             MINIMAL_WORKSPACE_TOML.format(
                 name=str(workspace_dir.resolve().name),
@@ -269,6 +291,11 @@ def sync_results_catalog(
     workspace_dir = Path(
         workspace_dir,
     ).resolve()
+
+    if not has_workspace(
+        workspace_dir,
+    ):
+        raise RoostError(f"Missing workspace.toml: {workspace_dir / 'workspace.toml'}")
 
     workspace_file = workspace_dir / "workspace.toml"
 

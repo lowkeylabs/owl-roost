@@ -71,11 +71,13 @@ def cmd_review(
 
     console.print("[bold]ROOST Review[/bold]")
 
-    console.print(f"Folder : {observations['root']}")
+    console.print(f"Folder     : {observations['root']}")
 
-    console.print(f"Household : {'✓' if observations['household_found'] else '✗'}")
+    console.print(f"Workspace         : {'✓' if observations['has_workspace'] else '✗'}")
 
-    console.print(f"Workspace : {'✓' if observations['workspace_found'] else '✗'}")
+    console.print(f"Household         : {'✓' if observations['has_household'] else '✗'}")
+
+    console.print(f"Valid Household   : {'✓' if observations['has_valid_household'] else '✗'}")
 
     console.print()
 

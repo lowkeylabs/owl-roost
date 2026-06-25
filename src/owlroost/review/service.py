@@ -50,6 +50,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from owlroost.workspace.checks import (
+    has_household,
+    has_valid_household,
+    has_workspace,
+)
+
 
 class ReviewService:
     """
@@ -82,37 +88,34 @@ class ReviewService:
         -------
         dict
             Review observations.
-
-        Notes
-        -----
-        Version 1 performs only
-        minimal discovery.
-
-        Future versions will
-        progressively orchestrate
-        additional review phases.
         """
 
-        root = Path(root).resolve()
+        root = Path(
+            root,
+        ).resolve()
 
         observations = {
             "root": root,
-            "workspace_found": False,
-            "household_found": False,
+            # -------------------------------------
+            # Workspace
+            # -------------------------------------
+            "has_workspace": has_workspace(
+                root,
+            ),
+            # -------------------------------------
+            # Household
+            # -------------------------------------
+            "has_household": has_household(
+                root,
+            ),
+            "has_valid_household": has_valid_household(
+                root,
+            ),
+            # -------------------------------------
+            # Recommendation
+            # -------------------------------------
             "next_step": None,
         }
-
-        #
-        # Future:
-        #
-        #   workspace.evaluate_checks(...)
-        #
-        #   study.evaluate_levers(...)
-        #
-        #   comparison.evaluate(...)
-        #
-        #   reports.evaluate(...)
-        #
 
         return observations
 
@@ -126,20 +129,23 @@ class ReviewService:
 
         Notes
         -----
-        Version 1 is intentionally
-        simple.
+        Version 1 simply establishes
+        the minimal prerequisites for
+        a retirement planning review.
 
-        Future versions will use
-        workspace state, study
-        applicability, completed
-        evidence, and calendar
-        history.
+        Future versions will consider
+        workspace state, review
+        history, applicable studies,
+        evidence, and calendar phase.
         """
 
-        if not observations["household_found"]:
-            return "Locate a household (TOML/HFP)."
+        if not observations["has_household"]:
+            return "Locate a household."
 
-        if not observations["workspace_found"]:
+        if not observations["has_valid_household"]:
+            return "Correct the household."
+
+        if not observations["has_workspace"]:
             return "Initialize a workspace."
 
         return "Review complete."
@@ -151,10 +157,10 @@ def review(
     """
     Convenience entry point.
 
-    This function provides the
-    stable Python API intended for
-    notebooks, Quarto documents,
-    and the command-line interface.
+    Provides the stable Python API
+    used by the CLI, notebooks,
+    Quarto documents, and future
+    interfaces.
     """
 
     service = ReviewService()
