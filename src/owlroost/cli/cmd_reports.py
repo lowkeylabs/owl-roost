@@ -56,7 +56,7 @@ from owlroost.reports.reports import (
     type=click.Path(
         path_type=Path,
     ),
-    help=("Override results_template_dir defined in study.toml."),
+    help=("Override results_template_dir defined in workspace.toml."),
 )
 def cmd_reports(
     sync: bool,

@@ -27,7 +27,7 @@ def sample_workspace(
 
     ws.mkdir()
 
-    (ws / "study.toml").write_text(
+    (ws / "workspace.toml").write_text(
         """
 name = "example"
 

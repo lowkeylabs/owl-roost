@@ -15,7 +15,7 @@ workspace definitions.
 A workspace is currently defined as
 a directory containing:
 
-    study.toml
+    workspace.toml
 
 Responsibilities
 ----------------
@@ -38,11 +38,11 @@ from pathlib import Path
 from owlroost.exceptions import RoostError
 
 
-def _load_study_toml(
+def _load_workspace_toml(
     path: Path,
 ):
     """
-    Load study.toml.
+    Load workspace.toml.
 
     Returns
     -------
@@ -70,18 +70,18 @@ def _workspace_row(
     Parameters
     ----------
     workspace_dir
-        Directory containing study.toml.
+        Directory containing workspace.toml.
     """
 
-    study_file = workspace_dir / "study.toml"
+    workspace_file = workspace_dir / "workspace.toml"
 
-    study = _load_study_toml(
-        study_file,
+    workspace = _load_workspace_toml(
+        workspace_file,
     )
 
     cases_dir = (
         workspace_dir
-        / study.get(
+        / workspace.get(
             "cases_dir",
             ("cases" if (workspace_dir / "cases").exists() else "."),
         )
@@ -89,7 +89,7 @@ def _workspace_row(
 
     results_dir = (
         workspace_dir
-        / study.get(
+        / workspace.get(
             "results_dir",
             "results",
         )
@@ -113,16 +113,16 @@ def _workspace_row(
             # ---------------------------------------------
             # Identity
             # ---------------------------------------------
-            "name": study.get(
+            "name": workspace.get(
                 "name",
                 workspace_dir.name,
             ),
-            "title": study.get(
+            "title": workspace.get(
                 "title",
                 "",
             ),
             "description": (
-                study.get(
+                workspace.get(
                     "description",
                     "",
                 )
@@ -135,9 +135,9 @@ def _workspace_row(
             # ---------------------------------------------
             # Definition
             # ---------------------------------------------
-            "definition": study,
+            "definition": workspace,
             "definition_file": str(
-                study_file.resolve(),
+                workspace_file.resolve(),
             ),
             # ---------------------------------------------
             # Filesystem Layout
@@ -186,7 +186,7 @@ def find_workspaces(
     Discover workspaces.
 
     A workspace is any immediate
-    subdirectory containing study.toml.
+    subdirectory containing workspace.toml.
 
     Parameters
     ----------
@@ -215,7 +215,7 @@ def find_workspaces(
         if not child.is_dir():
             continue
 
-        if (child / "study.toml").exists():
+        if (child / "workspace.toml").exists():
             workspaces.append(
                 child,
             )
@@ -234,10 +234,10 @@ def load_workspace_row(
         workspace_dir,
     ).resolve()
 
-    study_file = workspace_dir / "study.toml"
+    workspace_file = workspace_dir / "workspace.toml"
 
-    if not study_file.exists():
-        raise RoostError(f"Missing study.toml: {study_file}")
+    if not workspace_file.exists():
+        raise RoostError(f"Missing workspace.toml: {workspace_file}")
 
     return _workspace_row(
         workspace_dir,

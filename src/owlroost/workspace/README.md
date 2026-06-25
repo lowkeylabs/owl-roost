@@ -723,7 +723,7 @@ The minimal workspace remains intentionally small:
 
 ```text
 workspace/
-├── study.toml
+├── workspace.toml
 └── Makefile
 ```
 

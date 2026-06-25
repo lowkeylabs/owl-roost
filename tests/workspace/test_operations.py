@@ -28,7 +28,7 @@ def test_create_workspace(
 
     assert workspace.exists()
 
-    assert (workspace / "study.toml").exists()
+    assert (workspace / "workspace.toml").exists()
 
     assert (workspace / "Makefile").exists()
 
@@ -57,7 +57,7 @@ def test_create_workspace_study_toml_contains_name(
 ):
     """
     Name is materialized into
-    study.toml.
+    workspace.toml.
     """
 
     workspace = create_workspace(
@@ -65,7 +65,7 @@ def test_create_workspace_study_toml_contains_name(
         parent=tmp_path,
     )
 
-    contents = (workspace / "study.toml").read_text()
+    contents = (workspace / "workspace.toml").read_text()
 
     assert 'name = "example"' in contents
 
@@ -163,7 +163,7 @@ def test_validate_workspace_missing_study_toml(
     tmp_path,
 ):
     """
-    Missing study.toml is
+    Missing workspace.toml is
     reported.
     """
 
@@ -177,7 +177,7 @@ def test_validate_workspace_missing_study_toml(
         workspace,
     )
 
-    assert "missing study.toml" in errors
+    assert "missing workspace.toml" in errors
 
 
 def test_validate_workspace_missing_makefile(
@@ -192,7 +192,7 @@ def test_validate_workspace_missing_makefile(
 
     workspace.mkdir()
 
-    (workspace / "study.toml").write_text("")
+    (workspace / "workspace.toml").write_text("")
 
     errors = validate_workspace(
         workspace,

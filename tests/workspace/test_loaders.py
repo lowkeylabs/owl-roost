@@ -11,7 +11,7 @@ def test_find_workspaces_empty(
     tmp_path,
 ):
     """
-    No study.toml files produces
+    No workspace.toml files produces
     no discovered workspaces.
     """
 
@@ -28,14 +28,14 @@ def test_find_workspaces_discovers_workspace(
 ):
     """
     Directories containing
-    study.toml are workspaces.
+    workspace.toml are workspaces.
     """
 
     ws = tmp_path / "example"
 
     ws.mkdir()
 
-    (ws / "study.toml").write_text('name = "example"\n')
+    (ws / "workspace.toml").write_text('name = "example"\n')
 
     workspaces = find_workspaces(
         tmp_path,
@@ -48,7 +48,7 @@ def test_find_workspaces_ignores_non_workspace_dirs(
     tmp_path,
 ):
     """
-    Directories without study.toml
+    Directories without workspace.toml
     are ignored.
     """
 
@@ -91,7 +91,7 @@ def test_load_workspace_rows_assigns_ids(
 
         ws.mkdir()
 
-        (ws / "study.toml").write_text(f'name = "{name}"\n')
+        (ws / "workspace.toml").write_text(f'name = "{name}"\n')
 
     rows = load_workspace_rows(
         tmp_path,
