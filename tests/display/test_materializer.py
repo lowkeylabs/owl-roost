@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from owlroost.display.materializers.materialize import (
-    expand_view_entries,
+    expand_entries,
     materialize_view,
 )
 from owlroost.display.registry import (
@@ -105,7 +105,7 @@ def build_registry():
 # =========================================================
 
 
-def test_expand_view_entries():
+def test_expand_entries():
     reg = build_registry()
 
     view = reg.get_view(
@@ -113,7 +113,7 @@ def test_expand_view_entries():
         "basic",
     )
 
-    fields = expand_view_entries(
+    fields = expand_entries(
         reg,
         view.entries,
     )
@@ -365,7 +365,7 @@ def test_materialize_unknown_entry_raises():
     reg = DisplayRegistry()
 
     with pytest.raises(ValueError):
-        expand_view_entries(
+        expand_entries(
             reg,
             [
                 {

@@ -26,9 +26,6 @@ def register_scenario_families(
             description=(
                 "Explores how retirement outcomes change as Social Security claiming ages vary."
             ),
-            required_levers=[
-                "has_ss_pia",
-            ],
             related_scenario_families=[
                 "market_regime",
                 "longevity",

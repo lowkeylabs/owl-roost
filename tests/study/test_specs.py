@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from owlroost.study.specs import (
-    ChoiceTemplateSpec,
-    LeverSpec,
     QuestionSpec,
     ScenarioFamilySpec,
     StudySpec,
@@ -62,38 +60,3 @@ def test_scenario_family_spec():
     assert spec.required_levers == []
 
     assert spec.related_scenario_families == []
-
-
-def test_choice_template_spec():
-    spec = ChoiceTemplateSpec(
-        name="ss_age_yearly_sweep",
-        scenario_family_name=("social_security_claiming"),
-        title="Yearly Sweep",
-        description="Test",
-        required_levers=[
-            "has_ss_pia",
-        ],
-    )
-
-    assert spec.name == ("ss_age_yearly_sweep")
-
-    assert spec.scenario_family_name == ("social_security_claiming")
-
-    assert spec.required_levers == [
-        "has_ss_pia",
-    ]
-
-
-def test_lever_spec():
-    spec = LeverSpec(
-        name="has_ss_pia",
-        title="Has Social Security",
-        description="Test",
-        applicable_fn=lambda row: True,
-    )
-
-    assert spec.name == ("has_ss_pia")
-
-    assert spec.applicable_fn(
-        {},
-    )

@@ -120,11 +120,11 @@ def test_load_workspace_rows_basic(
 
     workspace = row["_workspace"]
 
-    assert workspace["name"] == "example"
+    assert workspace["identity"]["name"] == "example"
 
-    assert workspace["title"] == "Example Workspace"
+    assert workspace["identity"]["title"] == "Example Workspace"
 
-    assert workspace["description"] == "Example description."
+    assert workspace["identity"]["description"] == "Example description."
 
 
 def test_load_workspace_rows_detects_cases(

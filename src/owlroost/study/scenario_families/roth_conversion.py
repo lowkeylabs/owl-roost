@@ -28,9 +28,6 @@ def register_scenario_families(
                 "different Roth conversion amounts "
                 "and conversion strategies."
             ),
-            required_levers=[
-                "has_pretax_savings",
-            ],
             related_scenario_families=[
                 "market_regime",
             ],

@@ -38,9 +38,6 @@ from __future__ import annotations
 from owlroost.study.choice_templates import (
     register_all_choice_templates,
 )
-from owlroost.study.levers import (
-    register_all_levers,
-)
 from owlroost.study.questions import (
     register_all_questions,
 )
@@ -76,10 +73,6 @@ def build_study_registry():
     )
 
     register_all_choice_templates(
-        reg,
-    )
-
-    register_all_levers(
         reg,
     )
 

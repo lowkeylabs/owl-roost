@@ -46,7 +46,6 @@ evidence and produces guidance.
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from owlroost.display.specs import (
@@ -199,6 +198,12 @@ class ScenarioFamilySpec:
         default_factory=list,
     )
 
+    choice_template_names: list[str] = field(
+        default_factory=list,
+    )
+
+    defined_in: str | None = (None,)
+
     profiles: dict[
         str,
         DisplayProfile,
@@ -210,103 +215,89 @@ class ScenarioFamilySpec:
 @dataclass(slots=True)
 class ChoiceTemplateSpec:
     """
-    Defines a methodology for
-    generating evidence within a
-    scenario family.
+    Defines an unrealized experimental
+    design.
 
-    Choice templates answer:
+    A Choice Template specifies a
+    reusable methodology for exploring
+    a scenario family.
 
-        How should this scenario
-        family be explored?
+    A Choice Template consists of:
+
+        • Fixed model overrides
+
+        • Variable model overrides
+
+        • Applicability requirements
+
+    When materialized for a household,
+    a Choice Template becomes a Session.
+
+    The Session expands the variable
+    overrides into one or more Runs.
+
+    Runs are the primary units of
+    comparison.
+
+    Sessions exist to concisely define
+    large collections of related Runs.
 
     Examples include:
 
-        yearly_sweep
+        Bootstrap Sequence of Returns
 
-        monthly_sweep
+        Historical Average Returns
 
-        historical_windows
+        Fixed Return Models
 
-        bootstrap_regimes
+        Historical Replay
 
-        owl_optimizer
+        Social Security Age Sweep
 
-    Choice templates are reusable
-    analytical recipes.
-
-    They are not execution
-    artifacts.
+        Retirement Date Sweep
     """
 
-    name: str
+    #
+    # Identity
+    #
 
-    scenario_family_name: str
+    name: str
 
     title: str
 
     description: str
+
+    #
+    # Applicability
+    #
 
     required_levers: list[str] = field(
+        default_factory=lambda: [
+            "workspace.levers.is_initialized",
+        ],
+    )
+
+    optional_levers: list[str] = field(
         default_factory=list,
     )
 
-    overrides: list[str] = field(
+    #
+    # Experimental Design
+    #
+
+    fixed_overrides: list[str] = field(
         default_factory=list,
     )
 
-    tags: list[str] = field(
+    variable_overrides: list[str] = field(
         default_factory=list,
     )
 
-    profiles: dict[
-        str,
-        DisplayProfile,
-    ] = field(
-        default_factory=dict,
-    )
+    defined_in: str | None = (None,)
 
-
-@dataclass(slots=True)
-class LeverSpec:
-    """
-    Defines case-dependent capability
-    requirements.
-
-    Levers determine whether a
-    question, scenario family, or
-    choice template may be applied.
-
-    Examples include:
-
-        has_social_security
-
-        has_pretax_savings
-
-        has_retirement_timing
-
-    Future versions may extend
-    levers with remediation and
-    guidance describing:
-
-        Why a question cannot
-        be answered.
-
-        What information is
-        missing.
-
-        What assumptions are
-        required.
-
-        How the user can proceed.
-    """
-
-    name: str
-
-    title: str
-
-    description: str
-
-    applicable_fn: Callable
+    #
+    # Display
+    #
 
     profiles: dict[
         str,

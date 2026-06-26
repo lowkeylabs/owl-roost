@@ -223,7 +223,7 @@ def register_levers(
     for lever in WORKSPACE_LEVERS:
         reg.register(
             WorkspaceSpec(
-                name=f"workspace.{lever['name']}",
+                name=f"workspace.levers.{lever['name']}",
                 dtype=bool,
                 compute_fn=lambda row, fn=lever["compute_fn"]: fn(
                     row["_path"],

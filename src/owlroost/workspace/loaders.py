@@ -113,25 +113,27 @@ def _workspace_row(
             # ---------------------------------------------
             # Identity
             # ---------------------------------------------
-            "name": workspace.get(
-                "name",
-                workspace_dir.name,
-            ),
-            "title": workspace.get(
-                "title",
-                "",
-            ),
-            "description": (
-                workspace.get(
-                    "description",
+            "identity": {
+                "name": workspace.get(
+                    "name",
+                    workspace_dir.name,
+                ),
+                "title": workspace.get(
+                    "title",
                     "",
-                )
-                .replace(
-                    "\n",
-                    " ",
-                )
-                .strip()
-            ),
+                ),
+                "description": (
+                    workspace.get(
+                        "description",
+                        "",
+                    )
+                    .replace(
+                        "\n",
+                        " ",
+                    )
+                    .strip()
+                ),
+            },
             # ---------------------------------------------
             # Definition
             # ---------------------------------------------

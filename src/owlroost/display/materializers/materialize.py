@@ -77,6 +77,7 @@ def normalize_entry(
         return {
             "kind": "section",
             "label": entry[1],
+            "level": 0,
         }
 
     # -----------------------------------------------------
@@ -101,7 +102,99 @@ def normalize_entry(
 
         return spec
 
+    # -----------------------------------------------------
+    # Tree
+    # -----------------------------------------------------
+
+    if (
+        isinstance(entry, tuple)
+        and len(entry) == 2
+        and entry[0] == "tree"
+        and isinstance(entry[1], dict)
+    ):
+        spec = {
+            "kind": "tree",
+        }
+
+        spec.update(
+            entry[1],
+        )
+
+        return spec
+
     raise ValueError(f"Unsupported entry: {entry}")
+
+
+def normalize_entries(
+    entries,
+):
+    """
+    Normalize an expanded view into a list
+    of entry specifications.
+    """
+
+    return [
+        normalize_entry(
+            entry,
+        )
+        for entry in entries
+    ]
+
+
+# =========================================================
+# Tree resolver
+# =========================================================
+
+
+def resolve_tree_root(
+    row,
+    root,
+):
+    """
+    Resolve symbolic tree roots.
+
+    Examples
+    --------
+
+    study.scenario_families
+
+        -> row["_study"]["scenario_families"]
+
+    workspace.inventory
+
+        -> row["_workspace"]["inventory"]
+    """
+
+    if root.startswith(
+        "study.",
+    ):
+        value = row.get(
+            "_study",
+            {},
+        )
+
+        parts = root.split(".")[1:]
+
+    elif root.startswith(
+        "workspace.",
+    ):
+        value = row.get(
+            "_workspace",
+            {},
+        )
+
+        parts = root.split(".")[1:]
+
+    else:
+        raise ValueError(f"Unknown tree root: {root}")
+
+    for part in parts:
+        value = value.get(
+            part,
+            {},
+        )
+
+    return value
 
 
 # =========================================================
@@ -109,57 +202,341 @@ def normalize_entry(
 # =========================================================
 
 
-def expand_view_entries(
+def expand_entries(
     registry,
     entries,
+    row=None,
 ):
     """
-    Expand view/group entries into
-    a flat ordered list of normalized entry specs.
+    Expand groups and runtime trees.
 
-    Output format:
-
-        [
-            {
-                "field": "case_name",
-            },
-            {
-                "field": "compact_id",
-                "modes": ["table"],
-            }
-        ]
+    Returns raw view entries.
     """
 
     out = []
 
     for entry in entries:
-        # =================================================
-        # GROUP
-        # =================================================
+        #
+        # Groups
+        #
 
         if isinstance(entry, tuple) and len(entry) == 2 and entry[0] == "group":
-            group_name = entry[1]
-
-            group = registry.get_group(group_name)
+            group = registry.get_group(
+                entry[1],
+            )
 
             out.extend(
-                expand_view_entries(
+                expand_entries(
                     registry,
                     group.entries,
+                    row=row,
                 )
             )
 
             continue
 
-        # =================================================
-        # Normalize
-        # =================================================
+        #
+        # Trees
+        #
 
-        spec = normalize_entry(entry)
+        if isinstance(entry, tuple) and len(entry) == 2 and entry[0] == "tree":
+            if row is None:
+                continue
 
-        out.append(spec)
+            out.extend(
+                expand_tree(
+                    row,
+                    entry[1],
+                )
+            )
+
+            continue
+
+        out.append(
+            normalize_entry(
+                entry,
+            )
+        )
 
     return out
+
+
+# =========================================================
+# Tree expansion
+# =========================================================
+
+
+def expand_tree(
+    row,
+    spec,
+):
+    """
+    Expand a materialized tree into ordinary
+    view entries.
+
+    Sections may optionally own a display field.
+
+    The returned list contains only ordinary
+    view entries understood by the existing
+    materializer.
+    """
+
+    root = spec["root"]
+
+    depth = spec.get(
+        "depth",
+        99,
+    )
+
+    order = spec.get(
+        "order",
+        [],
+    )
+
+    label_override = spec.get("label", None)
+
+    # -----------------------------------------------------
+    # Resolve root
+    # -----------------------------------------------------
+
+    node = row
+
+    for part in root.split("."):
+        if not isinstance(
+            node,
+            dict,
+        ):
+            return []
+
+        node = node.get(
+            f"_{part}",
+            node.get(
+                part,
+            ),
+        )
+
+        if node is None:
+            return []
+
+        #
+        # Optional view-specific root label.
+        #
+        if label_override and isinstance(node, dict):
+            node = dict(node)
+            node["label"] = label_override
+
+    entries = []
+
+    # -----------------------------------------------------
+    # Ordering helper
+    # -----------------------------------------------------
+
+    def ordered_children(
+        children,
+    ):
+        if not order:
+            return children
+
+        lookup = {}
+
+        for child in children:
+            if not isinstance(
+                child,
+                dict,
+            ):
+                continue
+
+            name = (
+                child.get(
+                    "label",
+                    "",
+                )
+                .lower()
+                .replace(
+                    " ",
+                    "_",
+                )
+            )
+
+            lookup[name] = child
+
+        ordered = []
+
+        used = set()
+
+        for name in order:
+            child = lookup.get(
+                name,
+            )
+
+            if child is None:
+                continue
+
+            ordered.append(
+                child,
+            )
+
+            used.add(
+                id(child),
+            )
+
+        ordered.extend(child for child in children if id(child) not in used)
+
+        return ordered
+
+    # -----------------------------------------------------
+    # Recursive walk
+    # -----------------------------------------------------
+
+    def walk(
+        node,
+        level,
+    ):
+        if node is None or level > depth:
+            return
+
+        #
+        # Lists
+        #
+        if isinstance(
+            node,
+            list,
+        ):
+            for child in node:
+                walk(
+                    child,
+                    level,
+                )
+
+            return
+
+        if not isinstance(
+            node,
+            dict,
+        ):
+            return
+
+        kind = node.get(
+            "kind",
+        )
+
+        # -------------------------------------------------
+        # Section
+        # -------------------------------------------------
+
+        if kind == "section":
+            meta = dict(
+                node.get(
+                    "meta",
+                    {},
+                )
+            )
+
+            meta["level"] = level
+
+            #
+            # If the section owns a field,
+            # emit ONE field row rather than
+            # a section followed by a field.
+            #
+            if "field" in node:
+                meta.update(
+                    {
+                        "kind": "field",
+                        "field": node["field"],
+                        #
+                        # Override the display
+                        # label for this field.
+                        #
+                        "profiles": {
+                            "pivot": {
+                                "label": node.get(
+                                    "label",
+                                    "",
+                                ),
+                            },
+                            "table": {
+                                "label": node.get(
+                                    "label",
+                                    "",
+                                ),
+                            },
+                        },
+                    }
+                )
+
+                entries.append(
+                    meta,
+                )
+
+            else:
+                meta.update(
+                    {
+                        "kind": "section",
+                        "label": node.get(
+                            "label",
+                            "",
+                        ),
+                    }
+                )
+
+                entries.append(
+                    meta,
+                )
+
+        # -------------------------------------------------
+        # Standalone field
+        # -------------------------------------------------
+
+        elif kind == "field":
+            meta = dict(
+                node.get(
+                    "meta",
+                    {},
+                )
+            )
+
+            meta["level"] = level
+
+            meta.update(
+                {
+                    "kind": "field",
+                    "field": node["field"],
+                }
+            )
+
+            entries.append(
+                meta,
+            )
+
+        # -------------------------------------------------
+        # Children
+        # -------------------------------------------------
+
+        children = list(
+            node.get(
+                "children",
+                [],
+            )
+        )
+
+        if order and level == 0:
+            children = ordered_children(
+                children,
+            )
+
+        for child in children:
+            walk(
+                child,
+                level + 1,
+            )
+
+    walk(
+        node,
+        0,
+    )
+
+    return entries
 
 
 # =========================================================
@@ -236,23 +613,25 @@ def pivot_table(
             pass
 
     # =====================================================
-    # New Columns
+    # Pivot Columns
     # =====================================================
 
     new_columns = [
         TableColumn(
             key="pivot_metric",
-            label=str(metric_profile.label if metric_profile is not None else "Metric"),
+            label=str(metric_profile.label if metric_profile else "Metric"),
             wrap=(metric_profile.wrap if metric_profile else True),
             content_align=(metric_profile.content_align if metric_profile else "left"),
-            width=metric_profile.width if metric_profile else 25,
+            width=(metric_profile.width if metric_profile else 25),
             min_width=(metric_profile.min_width if metric_profile else None),
             max_width=(metric_profile.max_width if metric_profile else None),
         )
     ]
 
-    for idx, _ in enumerate(
-        table.rows,
+    for idx in range(
+        len(
+            table.rows,
+        )
     ):
         new_columns.append(
             TableColumn(
@@ -265,10 +644,6 @@ def pivot_table(
                 max_width=(value_profile.max_width if value_profile else None),
             )
         )
-
-    # =====================================================
-    # Optional Explanation Column
-    # =====================================================
 
     if explain_enabled:
         new_columns.append(
@@ -286,41 +661,39 @@ def pivot_table(
         )
 
     # =====================================================
-    # New Rows
+    # Legacy callers
+    # =====================================================
+
+    if not visible_entries:
+        visible_entries = [
+            {
+                "kind": "field",
+                "field": column.field_name,
+            }
+            for column in table.columns
+        ]
+
+    # =====================================================
+    # Build pivot rows
     # =====================================================
 
     new_rows = []
 
     new_row_meta = []
 
-    # =====================================================
-    # Legacy Support
-    #
-    # Older callers may not pass
-    # visible_entries.
-    # =====================================================
-
-    if not visible_entries:
-        visible_entries = [
-            {
-                "field": column.field_name,
-            }
-            for column in table.columns
-        ]
-
-    has_named_sections = any(
-        entry.get("kind") == "section" and entry.get("label", "").strip()
-        for entry in visible_entries
-    )
-
-    column_idx = 0
+    field_column = 0
 
     for entry in visible_entries:
-        # =================================================
-        # Section Rows
-        # =================================================
+        kind = entry.get(
+            "kind",
+            "field",
+        )
 
-        if entry.get("kind") == "section":
+        # -------------------------------------------------
+        # Section rows
+        # -------------------------------------------------
+
+        if kind == "section":
             row = [
                 entry.get(
                     "label",
@@ -331,42 +704,41 @@ def pivot_table(
             row.extend(["" for _ in table.rows])
 
             if explain_enabled:
-                row.append("")
+                row.append(
+                    "",
+                )
 
             new_rows.append(
                 row,
             )
 
+            #
+            # Preserve metadata exactly.
+            #
             new_row_meta.append(
-                {
-                    "kind": "section",
-                }
+                dict(
+                    entry,
+                )
             )
 
             continue
 
-        # =================================================
-        # Normal Field Rows
-        # =================================================
+        # -------------------------------------------------
+        # Field rows
+        # -------------------------------------------------
 
-        column = table.columns[column_idx]
+        column = table.columns[field_column]
 
-        column_idx += 1
-
-        # indent first column if there are column labels present
-        label = column.label
-
-        if has_named_sections:
-            label = f"  {label}"
+        field_column += 1
 
         row = [
-            label,
+            column.label,
         ]
 
         row_values = []
 
         for original_row in table.rows:
-            value = original_row[column_idx - 1]
+            value = original_row[field_column - 1]
 
             row.append(
                 value,
@@ -375,10 +747,6 @@ def pivot_table(
             row_values.append(
                 value,
             )
-
-        # -------------------------------------------------
-        # Explanation Cell
-        # -------------------------------------------------
 
         if explain_enabled:
             row.append(
@@ -395,14 +763,19 @@ def pivot_table(
             row,
         )
 
-        new_row_meta.append(
-            {
-                "column": column,
-                "field_name": column.key,
-                "wrap": column.wrap,
-                "width": column.width,
-            }
+        meta = dict(
+            entry,
         )
+
+        meta["column"] = column
+
+        new_row_meta.append(
+            meta,
+        )
+
+    #    print("row_meta -----")
+    #    from pprint import pprint
+    #    pprint(new_row_meta)
 
     return RoostTable(
         columns=new_columns,
@@ -467,10 +840,15 @@ def materialize_view(
     # Expand View
     # =====================================================
 
-    expanded_entries = expand_view_entries(
+    expand_row = rows[0] if rows else []
+
+    expanded_entries = expand_entries(
         registry,
         view.entries,
+        row=expand_row,
     )
+
+    normalized_entries = expanded_entries
 
     # =====================================================
     # Apply Visibility
@@ -478,16 +856,19 @@ def materialize_view(
 
     visible_entries = []
 
-    for entry in expanded_entries:
+    for entry in normalized_entries:
         if entry.get("kind") == "section":
-            visible_entries.append(entry)
+            visible_entries.append(
+                entry,
+            )
             continue
 
-        modes = entry.get("modes")
+        modes = entry.get(
+            "modes",
+        )
 
-        if modes is not None:
-            if mode not in modes:
-                continue
+        if modes is not None and mode not in modes:
+            continue
 
         visible_entries.append(
             entry,
@@ -499,9 +880,14 @@ def materialize_view(
 
     columns: list[TableColumn] = []
 
-    field_entries = [entry for entry in visible_entries if entry.get("kind") != "section"]
+    # field_entries = [entry for entry in visible_entries if entry.get("kind") != "section"]
+
+    field_entries = visible_entries
 
     for entry in field_entries:
+        if entry.get("kind") == "section":
+            continue
+
         field_name = entry["field"]
 
         display_field = registry.get_display_field(
@@ -546,6 +932,7 @@ def materialize_view(
                 display_field=display_field,
             )
         )
+        entry["column"] = columns[-1]
 
     # =====================================================
     # Rows
@@ -559,6 +946,9 @@ def materialize_view(
         materialized_row = []
 
         for entry in field_entries:
+            if entry.get("kind") == "section":
+                continue
+
             field_name = entry["field"]
 
             display_field = registry.get_display_field(

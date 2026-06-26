@@ -102,6 +102,18 @@ def build_rich_table(
                 row_meta = table.row_meta[row_idx]
 
         # -------------------------------------------------
+        # Optional blank line before structural rows
+        # -------------------------------------------------
+
+        if isinstance(
+            row_meta,
+            dict,
+        ) and row_meta.get(
+            "blank_before",
+        ):
+            rich_table.add_row(*["" for _ in table.columns])
+
+        # -------------------------------------------------
         # Blank spacer rows
         # -------------------------------------------------
 
@@ -110,28 +122,39 @@ def build_rich_table(
             continue
 
         # -------------------------------------------------
-        # Structural section rows
+        # Structural rows
         # -------------------------------------------------
 
-        if (
-            isinstance(
-                row_meta,
-                dict,
-            )
-            and row_meta.get("kind") == "section"
+        if isinstance(
+            row_meta,
+            dict,
         ):
-            rich_table.add_row(*["" for _ in table.columns])
-
-            cells = [row[0]]
-
-            cells.extend(["" for _ in table.columns[1:]])
-
-            rich_table.add_row(
-                *cells,
-                style="bold cyan",
+            kind = row_meta.get(
+                "kind",
             )
 
-            continue
+            if kind == "section":
+                if row_meta.get("level", -1) == 0 and row_idx > 0:
+                    rich_table.add_row(*[""] * len(table.columns))
+
+                level = row_meta.get(
+                    "level",
+                    0,
+                )
+
+                cells = [("\u00a0" * level) + row[0]]
+
+                cells.extend(["" for _ in table.columns[1:]])
+
+                rich_table.add_row(
+                    *cells,
+                    style=row_meta.get(
+                        "style",
+                        "bold cyan",
+                    ),
+                )
+
+                continue
 
         formatted = []
 
@@ -145,7 +168,11 @@ def build_rich_table(
             row_meta,
             dict,
         ):
-            if row_meta.get("dim"):
+            row_style = row_meta.get(
+                "style",
+            )
+
+            if row_style is None and row_meta.get("dim"):
                 row_style = "dim"
 
         # -------------------------------------------------
@@ -229,6 +256,24 @@ def build_rich_table(
             formatted.append(
                 rendered,
             )
+
+        # -------------------------------------------------
+        # Tree indentation
+        # -------------------------------------------------
+
+        if (
+            isinstance(
+                row_meta,
+                dict,
+            )
+            and formatted
+        ):
+            level = row_meta.get(
+                "level",
+            )
+
+            if level is not None:
+                formatted[0] = "\u00a0" * level + (formatted[0] or "")
 
         rich_table.add_row(
             *formatted,

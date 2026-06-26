@@ -69,7 +69,12 @@ from owlroost.workspace.loaders import (
     load_workspace_row,
     load_workspace_rows,
 )
-from owlroost.workspace.materializers import materialize_workspace
+from owlroost.workspace.materializers import (
+    materialize_study,
+    materialize_study_tree,
+    materialize_workspace,
+    materialize_workspace_tree,
+)
 from owlroost.workspace.operations import (
     create_workspace,
     init_workspace,
@@ -280,36 +285,18 @@ def cmd_workspace(
             print("No workspaces found in subfolders or this folder")
             return
 
-    rows = [
-        materialize_workspace(
-            row,
-            catalog.workspace_registry,
-        )
-        for row in rows
-    ]
+    rows = [materialize_workspace(row, catalog.workspace_registry) for row in rows]
+    rows = [materialize_workspace_tree(row, catalog.workspace_registry) for row in rows]
 
-    rows = apply_canonical_sort(
-        rows,
-    )
+    rows = [materialize_study(row, catalog.study_registry) for row in rows]
+    rows = [materialize_study_tree(row, catalog.study_registry) for row in rows]
 
-    rows = apply_filters(
-        rows,
-        filters,
-    )
+    rows = apply_canonical_sort(rows)
+    rows = apply_filters(rows, filters)
+    rows = apply_sort(rows, sort)
+    rows = apply_top(rows, top)
 
-    rows = apply_sort(
-        rows,
-        sort,
-    )
-
-    rows = apply_top(
-        rows,
-        top,
-    )
-
-    rows = attach_row_ids(
-        rows,
-    )
+    rows = attach_row_ids(rows)
 
     if not rows:
         click.echo("No workspaces found.")
@@ -375,6 +362,13 @@ def cmd_workspace(
             table,
             selected_rows,
         )
+
+    print("rows: -----")
+    print(selected_rows)
+    print("table columns: -----")
+    print(table.columns)
+    print("table rows: -----")
+    print(table.rows)
 
     output = render_table(
         table,

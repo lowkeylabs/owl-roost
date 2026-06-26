@@ -70,15 +70,15 @@ WORKSPACE_VARIABLE: dict[str, Any] = dict(
 
 WORKSPACE_FIELDS: list[tuple[str, str]] = [
     (
-        "workspace.name",
+        "workspace.identity.name",
         "Workspace name.",
     ),
     (
-        "workspace.title",
+        "workspace.identity.title",
         "Workspace title.",
     ),
     (
-        "workspace.description",
+        "workspace.identity.description",
         "Workspace description.",
     ),
     (

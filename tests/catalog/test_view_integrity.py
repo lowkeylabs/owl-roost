@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from owlroost.display.materializers.materialize import (
-    expand_view_entries,
+    expand_entries,
 )
 
 
@@ -14,7 +14,7 @@ def test_all_view_fields_exist(
     """
 
     for view in catalog.display_registry.all_views():
-        entries = expand_view_entries(
+        entries = expand_entries(
             catalog.display_registry,
             view.entries,
         )

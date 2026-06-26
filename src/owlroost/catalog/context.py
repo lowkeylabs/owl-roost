@@ -46,6 +46,9 @@ from owlroost.metrics.bootstrap import (
 from owlroost.schema.bootstrap import (
     build_schema_registry,
 )
+from owlroost.study.bootstrap import (
+    build_study_registry,
+)
 from owlroost.workspace.bootstrap import (
     build_workspace_registry,
 )
@@ -76,6 +79,8 @@ class CatalogContext:
     workspace_registry: object
 
     comparison_registry: object
+
+    study_registry: object
 
     display_registry: object
 
@@ -109,6 +114,8 @@ def build_catalog_context() -> CatalogContext:
     workspace_registry = build_workspace_registry()
 
     comparison_registry = build_comparison_registry()
+
+    study_registry = build_study_registry()
 
     # =====================================================
     # Display Overlay Registry
@@ -144,6 +151,7 @@ def build_catalog_context() -> CatalogContext:
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
         comparison_registry=comparison_registry,
+        study_registry=study_registry,
         display_registry=display_registry,
         catalog_rows=catalog_rows,
         catalog_index=catalog_index,

@@ -14,7 +14,7 @@ field per registered choice template.
 
 Each field indicates whether the
 choice template is applicable to
-the current case.
+the current workspace.
 """
 
 from __future__ import annotations
@@ -22,14 +22,14 @@ from __future__ import annotations
 from owlroost.catalog.ontology import (
     CatalogNodeType,
 )
-from owlroost.core.utils import (
-    normalize_module_path,
-)
 from owlroost.display.specs import (
     DisplayField,
 )
 from owlroost.study.bootstrap import (
     build_study_registry,
+)
+from owlroost.workspace.tree import (
+    tree_contains_field,
 )
 
 CHOICE_TEMPLATE_ONTOLOGY = dict(
@@ -40,27 +40,36 @@ CHOICE_TEMPLATE_ONTOLOGY = dict(
     analytic_kind="primary",
     materialization_level="case",
     node_type=CatalogNodeType.VARIABLE,
-    defined_in=normalize_module_path(__file__),
 )
 
 CHECK_MARK = "✓"
 
-NO_MARK = "·"
+NO_MARK = "-"
 
 
 def make_display_fn(
     template,
-    study_registry,
 ):
+    field_name = f"choice_template.{template.name}"
+
     def display_fn(
         row,
     ):
-        applicable = study_registry.choice_template_is_applicable(
-            template.name,
-            row,
+        tree = row.get(
+            "_study",
+            {},
+        ).get(
+            "scenario_families",
         )
 
-        return CHECK_MARK if applicable else NO_MARK
+        return (
+            CHECK_MARK
+            if tree_contains_field(
+                tree,
+                field_name,
+            )
+            else NO_MARK
+        )
 
     return display_fn
 
@@ -73,13 +82,13 @@ def register_display_fields(
     for template in study_registry.all_choice_templates():
         reg.register_display_field(
             DisplayField.field(
-                (f"choice_template.{template.name}"),
+                f"choice_template.{template.name}",
                 display_fn=make_display_fn(
                     template,
-                    study_registry,
                 ),
-                description=(template.description),
-                profiles=(template.profiles),
+                description=template.description,
+                profiles=template.profiles,
                 **CHOICE_TEMPLATE_ONTOLOGY,
+                defined_in=template.defined_in,
             )
         )

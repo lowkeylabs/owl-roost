@@ -1,4 +1,4 @@
-# src/owlroost/study/scenario_families/market_regime.py
+# src/owlroost/study/scenario_families/market_uncertainty.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -10,6 +10,7 @@ Market regime scenario family.
 
 from __future__ import annotations
 
+from owlroost.display.specs import DisplayProfile
 from owlroost.study.specs import (
     ScenarioFamilySpec,
 )
@@ -20,8 +21,8 @@ def register_scenario_families(
 ):
     reg.register_scenario_family(
         ScenarioFamilySpec(
-            name="market_regime",
-            title="Market Regime",
+            name="market_uncertainty",
+            title="Market Uncertainty",
             category="risk",
             description=(
                 "Explores how retirement outcomes "
@@ -36,5 +37,18 @@ def register_scenario_families(
                 "roth_conversion",
                 "longevity",
             ],
+            choice_template_names=[
+                "bootstrap_regimes",
+                "historical_average_regimes",
+                "fixed_return_models",
+            ],
+            profiles={
+                "table": DisplayProfile(
+                    label="Market\nUncertainty",
+                ),
+                "pivot": DisplayProfile(
+                    label="Market Uncertainty",
+                ),
+            },
         )
     )

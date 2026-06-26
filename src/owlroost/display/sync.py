@@ -132,6 +132,7 @@ def _register_field_if_missing(
     description: str | None,
     display_registry: DisplayRegistry,
     profiles=None,
+    defined_in=None,
 ):
     """
     Register default display overlay.
@@ -232,7 +233,7 @@ def _register_field_if_missing(
             field_name=field_name,
             description=description,
             profiles=profiles,
-            defined_in=normalize_module_path(__file__),
+            defined_in=(defined_in or normalize_module_path(__file__)),
         )
     )
 
@@ -261,6 +262,7 @@ def sync_schema_registry(
                 "profiles",
                 None,
             ),
+            defined_in=getattr(schema_field, "defined_in", None),
         )
 
 
@@ -292,6 +294,7 @@ def sync_metrics_registry(
                 "profiles",
                 None,
             ),
+            defined_in=getattr(metrics_field, "defined_in", None),
         )
 
 
@@ -323,6 +326,7 @@ def sync_workspace_registry(
                 "profiles",
                 None,
             ),
+            defined_in=getattr(workspace_field, "defined_in", None),
         )
 
 
@@ -354,4 +358,5 @@ def sync_comparison_registry(
                 "profiles",
                 None,
             ),
+            defined_in=getattr(comparison_field, "defined_in", None),
         )

@@ -38,26 +38,25 @@ def register_display_views(
             name="workspace",
             entries=[
                 # =====================================
-                # Identity
+                # Workspace Inventory
                 # =====================================
-                ("section", "Identity"),
-                "workspace.name",
-                "workspace.title",
-                "workspace.description",
+                ("tree", {"root": "workspace_tree", "depth": 2, "label": "."}),
                 # =====================================
-                # Readiness
+                # Scenario Families
                 # =====================================
-                ("section", "Workspace Readiness"),
-                "workspace.is_initialized",
-                "workspace.has_household",
-                "workspace.has_valid_household",
-                # =====================================
-                # Locations
-                # =====================================
-                ("section", "Locations"),
-                "workspace.paths.workspace",
-                "workspace.paths.cases",
-                "workspace.paths.results",
+                (
+                    "tree",
+                    {
+                        "root": "study_tree.scenario_families",
+                        "label": "Available Scenario Families",
+                        "depth": 5,
+                        "order": [
+                            "market_uncertainty",
+                            "social_security_claiming",
+                            "retirement_timing",
+                        ],
+                    },
+                ),
             ],
             description=(
                 "Summarizes the current "
@@ -78,7 +77,7 @@ def register_display_views(
                 # =====================================
                 # Identity
                 # =====================================
-                "workspace.name",
+                "workspace.identity.name",
             ],
             description=("Summary view of workspace status"),
             **SHARED_VIEW_ONTOLOGY,
