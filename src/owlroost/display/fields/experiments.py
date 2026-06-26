@@ -28,9 +28,6 @@ from owlroost.display.specs import (
 from owlroost.study.bootstrap import (
     build_study_registry,
 )
-from owlroost.workspace.tree import (
-    tree_contains_field,
-)
 
 EXPERIMENT_ONTOLOGY = dict(
     owner="ROOST",
@@ -48,28 +45,42 @@ NO_MARK = "-"
 
 
 def make_display_fn(
-    template,
+    experiment,
 ):
-    field_name = f"experiment.{template.name}"
-
     def display_fn(
         row,
     ):
-        tree = row.get(
+        families = row.get(
             "_study",
             {},
         ).get(
             "scenario_families",
+            {},
         )
 
-        return (
-            CHECK_MARK
-            if tree_contains_field(
-                tree,
-                field_name,
+        for family in families.values():
+            experiments = family.get(
+                "experiments",
+                {},
             )
-            else NO_MARK
-        )
+
+            info = experiments.get(
+                experiment.name,
+            )
+
+            if info is None:
+                continue
+
+            return (
+                CHECK_MARK
+                if info.get(
+                    "applicable",
+                    False,
+                )
+                else NO_MARK
+            )
+
+        return NO_MARK
 
     return display_fn
 

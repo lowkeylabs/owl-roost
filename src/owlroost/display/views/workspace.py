@@ -49,7 +49,7 @@ def register_display_views(
                     {
                         "root": "study_tree.scenario_families",
                         "label": "Available Scenario Families",
-                        "depth": 5,
+                        "depth": 3,
                         "order": [
                             "market_uncertainty",
                             "social_security_claiming",

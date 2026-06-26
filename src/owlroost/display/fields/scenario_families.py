@@ -77,7 +77,18 @@ def make_display_fn(
         if not experiments:
             return "-add experiments-"
 
-        return CHECK_MARK
+        #
+        # Scenario family is available if
+        # ANY experiment is applicable.
+        #
+        for experiment in experiments.values():
+            if experiment.get(
+                "applicable",
+                False,
+            ):
+                return CHECK_MARK
+
+        return NO_MARK
 
     return display_fn
 
