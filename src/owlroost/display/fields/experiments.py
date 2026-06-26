@@ -1,4 +1,4 @@
-# src/owlroost/display/fields/choice_templates.py
+# src/owlroost/display/fields/experiments.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -10,10 +10,10 @@ Choice template display fields.
 Notes
 -----
 Dynamically materializes one display
-field per registered choice template.
+field per registered experiment.
 
 Each field indicates whether the
-choice template is applicable to
+experiment is applicable to
 the current workspace.
 """
 
@@ -32,7 +32,7 @@ from owlroost.workspace.tree import (
     tree_contains_field,
 )
 
-CHOICE_TEMPLATE_ONTOLOGY = dict(
+EXPERIMENT_ONTOLOGY = dict(
     owner="ROOST",
     semantic_domain="decision",
     value_origin="roost-computed",
@@ -50,7 +50,7 @@ NO_MARK = "-"
 def make_display_fn(
     template,
 ):
-    field_name = f"choice_template.{template.name}"
+    field_name = f"experiment.{template.name}"
 
     def display_fn(
         row,
@@ -79,16 +79,16 @@ def register_display_fields(
 ):
     study_registry = build_study_registry()
 
-    for template in study_registry.all_choice_templates():
+    for template in study_registry.all_experiments():
         reg.register_display_field(
             DisplayField.field(
-                f"choice_template.{template.name}",
+                f"experiment.{template.name}",
                 display_fn=make_display_fn(
                     template,
                 ),
                 description=template.description,
                 profiles=template.profiles,
-                **CHOICE_TEMPLATE_ONTOLOGY,
+                **EXPERIMENT_ONTOLOGY,
                 defined_in=template.defined_in,
             )
         )

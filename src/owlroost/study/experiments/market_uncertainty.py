@@ -1,11 +1,11 @@
-# src/owlroost/study/choice_templates/market_uncertainty.py
+# src/owlroost/study/experiments/market_uncertainty.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See LICENSE file in repository root.
 
 """
-Market uncertainty choice templates.
+Market uncertainty experiment templates.
 
 Notes
 -----
@@ -14,11 +14,11 @@ designs for exploring uncertainty
 arising from investment return
 assumptions.
 
-Each choice template defines an
+Each experiment template defines an
 unrealized experiment.
 
 When materialized for a household,
-a choice template becomes a Session
+a experiment template becomes a Session
 containing one or more Runs.
 
 Runs are the primary analytical
@@ -29,20 +29,20 @@ from __future__ import annotations
 
 from owlroost.core.utils import normalize_module_path
 from owlroost.study.specs import (
-    ChoiceTemplateSpec,
+    ExperimentSpec,
 )
 
 
-def register_choice_templates(
+def register_experiments(
     reg,
 ):
     """
     Register market uncertainty
-    choice templates.
+    experiment templates.
     """
 
-    reg.register_choice_template(
-        ChoiceTemplateSpec(
+    reg.register_experiment(
+        ExperimentSpec(
             name="bootstrap_regimes",
             title="Bootstrap Sequence of Returns",
             description=(
@@ -65,8 +65,8 @@ def register_choice_templates(
         )
     )
 
-    reg.register_choice_template(
-        ChoiceTemplateSpec(
+    reg.register_experiment(
+        ExperimentSpec(
             name="historical_average_regimes",
             title="Historical Average Returns",
             description=(
@@ -87,8 +87,8 @@ def register_choice_templates(
         )
     )
 
-    reg.register_choice_template(
-        ChoiceTemplateSpec(
+    reg.register_experiment(
+        ExperimentSpec(
             name="fixed_return_models",
             title="Fixed Return Models",
             description=(

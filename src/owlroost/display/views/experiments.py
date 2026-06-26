@@ -1,4 +1,4 @@
-# src/owlroost/display/views/choice_templates.py
+# src/owlroost/display/views/experiments.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -46,15 +46,15 @@ def register_display_views(
         "case_name",
     ]
 
-    for template in study_registry.all_choice_templates():
-        entries.append(f"choice_template.{template.name}")
+    for template in study_registry.all_experiments():
+        entries.append(f"experiment.{template.name}")
 
     reg.register_view(
         DisplayView(
             level="row",
-            name="choice_templates",
+            name="experiments",
             entries=entries,
-            description=("Choice templates available for this case."),
+            description=("Experiments available for this case."),
             **SHARED_VIEW_ONTOLOGY,
         )
     )

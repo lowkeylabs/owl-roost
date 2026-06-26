@@ -198,7 +198,7 @@ class ScenarioFamilySpec:
         default_factory=list,
     )
 
-    choice_template_names: list[str] = field(
+    experiment_names: list[str] = field(
         default_factory=list,
     )
 
@@ -213,7 +213,7 @@ class ScenarioFamilySpec:
 
 
 @dataclass(slots=True)
-class ChoiceTemplateSpec:
+class ExperimentSpec:
     """
     Defines an unrealized experimental
     design.

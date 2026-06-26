@@ -89,7 +89,7 @@ Question
     ↓
 Scenario Family
     ↓
-Choice Template
+Experiment
 ```
 
 The definition layer answers:
@@ -221,7 +221,7 @@ Question
     ↓
 Scenario Family
     ↓
-Choice Template
+Experiment
     ↓
 Lever
 ```
@@ -231,7 +231,7 @@ Evidence generation bridges the definition layer and realization layer:
 ```text
 Scenario Family
     ↓
-Choice Template
+Experiment
     ↓
 Experiment
     ↓
@@ -444,9 +444,9 @@ Scenario families are expected to become the primary evidence-generation abstrac
 
 ---
 
-# Choice Templates
+# Experiments
 
-A choice template defines a methodology for generating evidence within a scenario family.
+A Experiment defines a methodology for generating evidence within a scenario family.
 
 Examples:
 
@@ -464,14 +464,14 @@ amount_sweeps
 owl_optimizer
 ```
 
-A choice template answers:
+A Experiment answers:
 
 ```text
 How should this scenario
 family be explored?
 ```
 
-Choice templates may define:
+Experiments may define:
 
 * Required levers
 * Override patterns
@@ -485,7 +485,7 @@ roost_sweeps.ss_age_pair=
     62,63,64,65,66,67,68,69,70
 ```
 
-Choice templates belong to exactly one
+Experiments belong to exactly one
 scenario family.
 
 Scenario-family-to-choice-template
@@ -522,7 +522,7 @@ Levers may apply to:
 
 * Questions
 * Scenario Families
-* Choice Templates
+* Experiments
 
 Conceptually:
 
@@ -531,7 +531,7 @@ Case
     ↓
 Lever Evaluation
     ↓
-Applicable Choice Templates
+Applicable Experiments
     ↓
 Applicable Scenario Families
     ↓
@@ -718,7 +718,7 @@ ScenarioFamilySpec
     registered by scenario_families/
 
 ChoiceTemplateSpec
-    registered by choice_templates/
+    registered by experiments/
 
 LeverSpec
     registered by levers/
@@ -733,7 +733,7 @@ Question
     ↓
 Scenario Family
     ↓
-Choice Template
+Experiment
     ↓
 Lever
 ```
@@ -769,7 +769,7 @@ study/
         __init__.py
         ...
 
-    choice_templates/
+    experiments/
         __init__.py
         ...
 
@@ -788,7 +788,7 @@ Questions are first-class user-facing entities.
 
 Scenario families define evidence spaces.
 
-Choice templates belong to scenario
+Experiments belong to scenario
 families and define methodologies.
 
 Scenario-family relationships are

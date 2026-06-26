@@ -363,10 +363,10 @@ def materialize_study(
             "name": scenario_family.name,
             "title": scenario_family.title,
             "description": (scenario_family.description),
-            "choice_templates": {},
+            "experiments": {},
         }
 
-        templates = study_registry.choice_templates_for_scenario_family(
+        templates = study_registry.experiments_for_scenario_family(
             scenario_family.name,
         )
 
@@ -393,7 +393,7 @@ def materialize_study(
                     lever_name,
                 )
 
-            family["choice_templates"][template.name] = template_data
+            family["experiments"][template.name] = template_data
 
         study["scenario_families"][scenario_family.name] = family
 
@@ -455,14 +455,14 @@ def materialize_study_tree(
             "children": [],
         }
 
-        templates = study_registry.choice_templates_for_scenario_family(
+        templates = study_registry.experiments_for_scenario_family(
             scenario_family.name,
         )
 
         if templates:
             template_group = {
                 "kind": "section",
-                "label": "Choice Templates",
+                "label": "Experiments",
                 "meta": {},
                 "children": [],
             }
@@ -479,7 +479,7 @@ def materialize_study_tree(
                 template_section = {
                     "kind": "section",
                     "label": template.title,
-                    "field": (f"choice_template.{template.name}"),
+                    "field": (f"experiment.{template.name}"),
                     "meta": {
                         "applicable": applicable,
                     },

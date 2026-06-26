@@ -69,13 +69,13 @@ def make_display_fn(
         if family is None:
             return NO_MARK
 
-        choice_templates = family.get(
-            "choice_templates",
+        experiments = family.get(
+            "experiments",
             {},
         )
 
-        if not choice_templates:
-            return "-add choices-"
+        if not experiments:
+            return "-add experiments-"
 
         return CHECK_MARK
 

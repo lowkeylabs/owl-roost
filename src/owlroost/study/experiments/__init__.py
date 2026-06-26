@@ -1,4 +1,4 @@
-# src/owlroost/study/choice_templates/__init__.py
+# src/owlroost/study/experiments/__init__.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -20,7 +20,7 @@ from types import ModuleType
 # =========================================================
 
 
-def _discover_choice_template_modules() -> list[ModuleType]:
+def _discover_modules() -> list[ModuleType]:
     """
     discover choice template modules
     """
@@ -48,15 +48,15 @@ def _discover_choice_template_modules() -> list[ModuleType]:
 # =========================================================
 
 
-def register_all_choice_templates(
+def register_all_experiments(
     reg,
 ):
     """ """
 
-    for module in _discover_choice_template_modules():
+    for module in _discover_modules():
         register_fn = getattr(
             module,
-            "register_choice_templates",
+            "register_experiments",
             None,
         )
 
@@ -67,5 +67,5 @@ def register_all_choice_templates(
 
 
 __all__ = [
-    "register_all_choice_templates",
+    "register_all_experiments",
 ]

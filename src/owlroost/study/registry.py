@@ -15,7 +15,7 @@ resolution for:
 * Studies
 * Questions
 * Scenario Families
-* Choice Templates
+* Experiments
 
 Architectural Invariant
 -----------------------
@@ -28,7 +28,7 @@ Relationships flow downward only:
         ↓
     Scenario Family
         ↓
-    Choice Template
+    Experiment
 
 Relationships are stored only once.
 
@@ -42,9 +42,9 @@ QuestionSpec owns:
 
 ScenarioFamilySpec owns:
 
-    choice_template_names
+    experiment_names
 
-Choice templates are reusable
+Experiments are reusable
 experimental designs.
 
 Applicability is evaluated by
@@ -69,7 +69,7 @@ class StudyRegistry:
 
         self._scenario_families = {}
 
-        self._choice_templates = {}
+        self._experiments = {}
 
     # =====================================================
     # Studies
@@ -156,30 +156,30 @@ class StudyRegistry:
         )
 
     # =====================================================
-    # Choice Templates
+    # Experiment Templates
     # =====================================================
 
-    def register_choice_template(
+    def register_experiment(
         self,
         spec,
     ):
-        self._choice_templates[spec.name] = spec
+        self._experiments[spec.name] = spec
 
-    def get_choice_template(
+    def get_experiment(
         self,
         name,
     ):
         try:
-            return self._choice_templates[name]
+            return self._experiments[name]
 
         except KeyError as exc:
-            raise RoostError(f"Choice template not found: {name}") from exc
+            raise RoostError(f"Experiment not found: {name}") from exc
 
-    def all_choice_templates(
+    def all_experiments(
         self,
     ):
         return sorted(
-            self._choice_templates.values(),
+            self._experiments.values(),
             key=lambda x: x.name,
         )
 
@@ -217,7 +217,7 @@ class StudyRegistry:
             for scenario_family_name in question.scenario_family_names
         ]
 
-    def choice_templates_for_scenario_family(
+    def experiments_for_scenario_family(
         self,
         scenario_family_name,
     ):
@@ -226,8 +226,8 @@ class StudyRegistry:
         )
 
         return [
-            self.get_choice_template(
+            self.get_experiment(
                 template_name,
             )
-            for template_name in scenario_family.choice_template_names
+            for template_name in scenario_family.experiment_names
         ]

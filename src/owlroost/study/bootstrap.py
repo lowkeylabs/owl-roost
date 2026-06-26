@@ -35,8 +35,8 @@ not affect correctness.
 
 from __future__ import annotations
 
-from owlroost.study.choice_templates import (
-    register_all_choice_templates,
+from owlroost.study.experiments import (
+    register_all_experiments,
 )
 from owlroost.study.questions import (
     register_all_questions,
@@ -72,7 +72,7 @@ def build_study_registry():
         reg,
     )
 
-    register_all_choice_templates(
+    register_all_experiments(
         reg,
     )
 

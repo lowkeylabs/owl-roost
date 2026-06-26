@@ -37,7 +37,7 @@ def register_scenario_families(
                 "roth_conversion",
                 "longevity",
             ],
-            choice_template_names=[
+            experiment_names=[
                 "bootstrap_regimes",
                 "historical_average_regimes",
                 "fixed_return_models",
