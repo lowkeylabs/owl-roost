@@ -2,538 +2,506 @@
 
 **Retirement Options and Outcomes Studies Tool**
 
-**ROOST** (Retirement Options and Outcomes Studies Tool) evaluates **retirement decision policies**—not just static plans—by comparing how **agent-controlled actions** perform under **uncertainty** when those decisions are revisited annually.
+ROOST is a household-centered evidence generation system for financial life planning.
 
-ROOST is designed to answer questions like:
+ROOST helps individuals, households, researchers, educators, advisors, and future AI systems understand the consequences of financial decisions by generating objective, reproducible evidence.
 
-> *“Given the uncertainty I face, how flexible are my retirement decisions—and which decision policies are most robust?”*
+ROOST builds upon OWL and its ability to evaluate household financial outcomes under uncertainty.
 
-It does this by organizing retirement analysis around a small number of clear, orthogonal concepts spanning:
+ROOST is **not** a retirement advisor.
 
-* Scientific experimentation
-* Stochastic simulation
-* Policy comparison
-* Execution provenance
-* Statistical evaluation under uncertainty
-* Reproducible operational execution
+ROOST does **not** attempt to determine the "best" retirement strategy.
 
-ROOST builds on OWL while extending retirement analysis into a broader scientific experimentation framework for studying retirement policies under uncertainty.
+Instead, ROOST systematically evaluates alternative transitions under one or more future environments and produces explainable evidence.
 
-## License
+Humans, advisors, educators, researchers, and LLMs interpret that evidence.
 
-ROOST is licensed under the GNU General Public License
-version 3 or later (GPL-3.0-or-later).
+Decisions remain the responsibility of the decision maker.
 
-ROOST builds upon OWL and is distributed under a
-GPL-compatible license.
+---
 
+# Vision
 
-## Core Concepts
+Financial planning is fundamentally a process of understanding the current situation, exploring possible transitions, evaluating uncertainty, and making informed decisions.
 
-ROOST introduces several key concepts in extending the work of OWL.
+ROOST exists to support that process.
 
-* Studies
-* Decisions
-* Choice Templates
-* Cases
-* Experiments
-* Sessions
-* Runs
-* Trials
-* Results
-
-Organizationally:
+Conceptually:
 
 ```text
-Study
-    ├── Cases
-    ├── Experiments
-    │       └── Related Runs
-    ├── Sessions
-    │       └── Executed Runs
-    ├── Results
-    ├── Reports
-    └── Documentation
-```
-
-ROOST builds directly on OWL cases and
-execution outputs.
-
-# Analytical Workflow
-
-Conceptually, ROOST guides users from
-questions to evidence.
-
-```text
+Household
+    ↓
+Characterization
+    ↓
+Transitions
+    ↓
+Evidence Generation
+    ↓
+Evidence Package
+    ↓
+Interpretation
+    ↓
 Decision
-    ↓
-Choice Template
-    ↓
-Experiment
-    ↓
-Run
-    ↓
-Trial
-```
-Decisions define questions.
-
-Choice templates define methodologies.
-
-Experiments organize scientific exploration.
-
-Runs evaluate fixed policies.
-
-Trials represent individual stochastic realizations.
-
-
-## Relationship to OWL
-
-* **OWL** computes optimal strategies for a given case
-* **ROOST** evaluates, compares, and studies retirement decision policies under uncertainty
-
-ROOST builds on OWL’s optimization engine by providing the conceptual structure, stochastic simulation framework, scientific organization model, and tooling needed to explore retirement decisions as they are actually faced:
-
-* Sequentially
-* Under uncertainty
-* Across many plausible futures
-* With multiple competing policy alternatives under consideration
-* With reproducible scientific experimentation and statistical evaluation
-
-
-## Conceptual Relationships
-
-The following relationships define the conceptual structure of ROOST.
-
-```text
-Case × Session → Runs
-Experiment → Scientifically Related Runs
-Run → Statistical Summary of Trials
-Trial → Primitive Stochastic Observation
 ```
 
-These concepts are intentionally asymmetric.
+ROOST owns evidence generation.
 
-* Trials and runs contain scientific and statistical evidence.
-* Sessions preserve operational provenance and execution history.
-* Experiments organize scientific interpretation and comparison.
+Interpretation belongs to its consumers.
 
+---
 
-## Statistical and Scientific Model
+# Evidence Engine
 
-ROOST distinguishes between:
+ROOST is an evidence engine.
 
-* **Decision variables** that define retirement policies and strategies
-* **Sampling variables** that control stochastic exploration
-* **Execution variables** that control runtime and infrastructure behavior
+Its responsibility is to evaluate candidate transitions under specified future environments and produce transparent, reproducible evidence.
+
+ROOST intentionally separates:
+
+* Evidence generation
+* Interpretation
+* Recommendation
+* Decision making
+
+This separation allows ROOST to remain:
+
+* Objective
+* Explainable
+* Reproducible
+* Extensible
+
+while supporting many different decision-making styles.
+
+---
+
+# The Household is the Primary Context
+
+Every ROOST investigation begins with a household.
+
+A household represents the current financial planning situation.
+
+It may include:
+
+* Household configuration
+* Financial information
+* Assets
+* Liabilities
+* Income
+* Spending
+* Constraints
+* Goals
+* Assumptions
+
+Households may represent:
+
+* Real households
+* Educational examples
+* Research subjects
+* Synthetic households
+
+All evidence generated by ROOST is produced within the context of a household.
+
+Financial concepts become meaningful only when evaluated for a particular household.
+
+---
+
+# Characterization
+
+The first responsibility of ROOST is to characterize the current planning situation.
+
+Rather than exposing raw inputs and outputs directly, ROOST computes semantic observations describing the household and its current planning context.
+
+These observations are called **Levers**.
+
+Levers are computed.
+
+They are never manually maintained.
+
+A lever may represent:
+
+* A boolean capability
+* A categorical state
+* A continuous value
+* A derived planning concept
 
 Examples include:
 
-| Variable Type       | Examples                                                                |
-| ------------------- | ----------------------------------------------------------------------- |
-| Decision variables  | Roth conversion strategy, Social Security timing, spending policy       |
-| Sampling variables  | random seed, trial count, bootstrap selection                           |
-| Execution variables | workers per run, resolved solver, thread counts, runtime execution mode |
+* Current spending
+* Current retirement status
+* Social Security status
+* Portfolio allocation
+* Home ownership
+* Workspace readiness
 
-This distinction is central to ROOST’s architecture.
+Levers provide a semantic understanding of the current planning situation.
 
-Changing a decision variable creates a scientifically different policy evaluation.
+They determine which planning transitions are applicable and parameterize the experiments that evaluate those transitions.
 
-Changing a sampling or execution variable may produce:
+---
 
-* Different statistical estimates
-* Different convergence behavior
-* Different runtime characteristics
-* Different operational execution profiles
+# Transitions
 
-while still evaluating the same underlying policy.
+Financial planning is fundamentally concerned with change.
 
-## Trials and Runs
+A **Transition** describes a meaningful change from the current planning situation.
 
-A **trial** represents a single stochastic realization of uncertainty.
+Examples include:
 
-Examples of stochastic variation include:
+* Retire next year instead of this year
+* Reduce spending
+* Increase spending
+* Delay Social Security
+* Perform Roth conversions
+* Downsize a residence
 
-* Market returns
-* Historical sequence selection
-* Bootstrap sampling
-* Inflation trajectories
-* Longevity realizations
+Transitions represent candidate actions.
 
-Trials are the primitive observations of the ROOST system.
+ROOST does not recommend transitions.
 
-A **run** represents a statistical evaluation of a fixed policy configuration across one or more trials.
+ROOST evaluates them.
+
+Some transitions are reversible.
+
+Some are effectively permanent.
+
+Some are incremental.
+
+Some represent major life changes.
+
+Transitions may be grouped into **Transition Families**, representing related planning decisions.
+
+Examples include:
+
+* Retirement Timing
+* Spending Level
+* Social Security Claiming
+* Roth Conversion
+* Housing Decisions
+
+Transition families define planning decision spaces.
+
+---
+
+# Evaluation Environments
+
+Transitions are evaluated within one or more future environments.
+
+Evaluation environments describe assumptions about the world rather than choices made by the retiree.
+
+Examples include:
+
+* Historical market returns
+* Bootstrap market sequences
+* Regime-based market models
+* Inflation assumptions
+* Longevity assumptions
+* Future tax assumptions
+
+Evaluation environments are orthogonal to transitions.
+
+A single transition may be evaluated under many environments.
+
+Likewise, a single environment may be used to evaluate many transitions.
+
+---
+
+# Experiments
+
+Experiments generate evidence.
+
+An experiment evaluates one or more transitions under one or more evaluation environments.
 
 Conceptually:
 
 ```text
-Policy + Uncertainty Sampling → Run
+Current Household
+        ↓
+Compute Levers
+        ↓
+Generate Applicable Transitions
+        ↓
+Evaluate Experiments
+        ↓
+Evidence
 ```
-
-Runs are the primary scientific comparison unit in ROOST.
-
-When a run contains:
-
-* A single trial, run-level metrics are identical to trial metrics
-* Multiple trials, run-level metrics become statistical summaries over uncertainty
-
-Examples include:
-
-* Mean spending
-* Median bequest
-* P90/P95 outcomes
-* Success rates
-* Runtime distributions
-* Sampling stability measurements
-
-This allows ROOST to evaluate policies for robustness across many plausible futures rather than optimizing against a single deterministic scenario.
-
-## Experiments
-
-An **experiment** defines a structured scientific exploration for a given decision or uncertainty dimension.
-
-Conceptually:
-
-```text
-Experiment → Scientifically Related Runs
-```
-
-An experiment answers the question:
-
-> *“What scientific question or policy dimension are we exploring?”*
-
-Experiments may:
-
-* Systematically vary a decision parameter (e.g., Social Security claiming age)
-* Sweep across a family of choice templates
-* Explore Roth conversion strategies
-* Compare spending policies
-* Enumerate historical market regimes
-* Compare optimization or simulation approaches
-* Study execution and sampling strategies
-* Test whether conclusions generalize across households
 
 Experiments are:
 
-* Logical rather than physical
-* Scientific rather than operational
-* Potentially cross-case and cross-session
+* Deterministic
+* Explainable
+* Repeatable
+* Inspectable
 
-A single experiment may include runs from:
+Experiments describe **how** evidence will be generated.
 
-* Multiple sessions
-* Multiple dates
-* Multiple cases/households
-* Multiple execution environments
+They do not interpret that evidence.
 
-Experiments are logical scientific overlays over structurally related runs.
+---
 
-Experiments therefore organize and interpret related runs under a common research objective.
+# Evidence Packages
 
-Experiments do **not** define filesystem structure.
+An Evidence Package is the primary output of ROOST.
 
-They define scientific meaning.
+Evidence packages summarize the consequences of one or more evaluated transitions.
 
-## Generalization and Cross-Case Studies
+They may contain:
 
-Although many retirement studies focus on a single household, ROOST is also designed to support broader comparative analysis across multiple cases.
-
-Experiments may explore questions such as:
-
-* Do retirement strategies generalize across different households?
-* Which policies remain robust across varying balance structures?
-* How sensitive are outcomes to demographic differences?
-* Which optimization strategies scale consistently across cases?
-* Which execution strategies scale consistently across environments?
-
-This allows ROOST to support both:
-
-* Detailed household-specific retirement analysis
-  and
-* Cross-household scientific generalization studies
-
-within the same conceptual framework.
-
-## Sampling and Estimation
-
-ROOST treats uncertainty sampling as a first-class scientific concern.
-
-Multiple runs may evaluate the same underlying policy while differing only in:
-
-* Random seeds
-* Sampling methods
-* Trial counts
-* Execution configuration
-
-This supports workflows such as:
-
-* Combining compatible runs to increase sample sizes
-* Comparing sampling strategies
-* Studying estimator stability
-* Evaluating convergence behavior under uncertainty
-* Comparing execution strategies
-* Studying runtime scaling behavior
-
-For example:
-
-* Two independent runs of 100 trials each may be compared against
-* One run containing 200 trials
-
-to study differences in sampling behavior and estimator quality.
-
-Scientifically compatible runs may therefore be merged or compared even when generated in different sessions.
-
-## Core Architectural Invariants
-
-The following concepts are foundational to ROOST and SHOULD remain stable unless intentionally redesigned.
-
-### Runs are the primary scientific comparison unit
-
-Runs represent statistical evaluations of fixed policy configurations under uncertainty.
-
-Most scientific comparison, reporting, and analysis in ROOST occurs at the run level.
-
-### Trials are primitive stochastic observations
-
-Trials represent individual realizations of uncertainty and are aggregated into run-level statistical summaries.
-
-
-### Experiments are logical scientific overlays
-
-Experiments organize scientifically related runs and MAY span:
-
-* Multiple sessions
-* Multiple cases
-* Multiple dates
-* Multiple execution environments
-
-Experiments SHOULD remain logically decoupled from filesystem hierarchy.
-
-### Decision, sampling, and execution variables are distinct
-
-Decision variables alter policy meaning.
-
-Sampling variables alter statistical estimation.
-
-Execution variables alter runtime behavior.
-
-These variable classes SHOULD remain conceptually distinct throughout the ROOST architecture.
-
-## Design Philosophy
-
-ROOST treats retirement planning as a **sequential decision problem**:
-
-* Decisions are agent-controlled
-* They are revisited annually
-* Outcomes unfold under uncertainty
-* Policies are evaluated across many plausible futures for robustness, not just optimality
-* Runs statistically evaluate policy behavior across stochastic realizations
-* Experiments organize scientific comparison and interpretation
-* Sessions preserve execution provenance and support incremental exploration over time
-
-Rather than asking:
-
-> *“What is the single optimal plan?”*
-
-ROOST instead helps answer:
-
-> *“Which decision policies perform well across many plausible futures—and how much flexibility do I really have?”*
-
-## Studies
-
-A **study** defines a structured analytical investigation organized around a particular question, methodology, or research objective.
-
-Studies organize:
-
-* Scientific intent
-* Variable exploration strategies
-* Comparison methodologies
-* Aggregation semantics
-* Reporting structure
-* Interpretation workflows
-
-Studies frequently organize one or more
-decisions, choice templates, and
-experiments into a coherent analytical
-methodology.
-
-Conceptually:
-
-```text
-Study → Structured Interpretation of Related Runs
-```
-
-A study answers questions such as:
-
-> *“What analytical question are we exploring, and how should the resulting evidence be interpreted?”*
-
-Examples include:
-
-* Social Security timing analysis
-* Spending flexibility analysis
-* Roth conversion strategy comparison
-* Historical versus bootstrap sampling analysis
-* Worker-scaling analysis
-* Cross-household generalization analysis
-* Statistical convergence analysis
-
-Studies are:
-
-* Logical rather than operational
-* Methodological rather than execution-oriented
-* Potentially cross-session and cross-case
-* Independent of any particular execution event
-
-Studies provide the analytical context within which experiments, runs, and results are interpreted.
-
-## Studies as Reproducible Research Packages
-
-A study is intended to become the primary unit of sharing, reproduction, publication, and education within ROOST.
-
-Studies may contain:
-
-* Cases
-* Household Financial Profiles (HFPs)
-* Experiments
-* Results
-* Reports
-* Documentation
+* Outcome summaries
+* Comparative analysis
+* Sensitivity analysis
+* Uncertainty analysis
+* Metrics
 * Visualizations
-* Publication artifacts
+* Explanatory narratives
+* Supporting documentation
+
+Evidence packages are intended for:
+
+* Individuals
+* Advisors
+* Educators
+* Researchers
+* LLM-assisted interpretation
+* Future planning systems
+
+Evidence packages should clearly distinguish observation from interpretation.
+
+---
+
+# Interpretation
+
+Interpretation is intentionally outside the scope of ROOST.
+
+Interpretation evaluates evidence.
+
+Interpretation may identify:
+
+* Tradeoffs
+* Risks
+* Opportunities
+* Flexibility
+* Optionality
+* Robustness
+* Sensitivity
+* Additional information needs
+
+Interpretation may be performed by:
+
+* Individuals
+* Financial advisors
+* Educators
+* Researchers
+* LLM-based assistants
+* Future planning systems
+
+ROOST intentionally does not embed planning philosophy or recommendation logic.
+
+---
+
+# Explainability
+
+Every piece of evidence generated by ROOST should be explainable.
+
+Users should be able to understand:
+
+* What information was used
+* Which transitions were evaluated
+* Which environments were assumed
+* Which experiments were executed
+* How metrics were computed
+* Why evidence differs across alternatives
+
+Explainability is considered a first-class architectural concern.
+
+---
+
+# Documentation
+
+Evidence should be easy to communicate, inspect, reproduce, and share.
+
+ROOST therefore treats documentation as a first-class outcome.
+
+Documentation may include:
+
+* Reports
+* Dashboards
+* Websites
+* Educational material
+* Research artifacts
+* LLM briefing packages
+
+Documentation should support both high-level understanding and detailed inspection.
+
+---
+
+# LLM Collaboration
+
+ROOST is designed to support future AI-assisted planning.
+
+LLMs are consumers of ROOST evidence rather than replacements for ROOST.
+
+ROOST provides structured evidence suitable for interpretation.
+
+LLMs may:
+
+* Translate questions into transitions
+* Request additional evidence
+* Compare alternatives
+* Explain tradeoffs
+* Summarize findings
+* Assist decision makers
+
+ROOST remains responsible for evidence generation.
+
+LLMs remain responsible for interpretation.
+
+---
+
+# Reproducibility
+
+ROOST values reproducibility.
+
+Evidence generation should always be:
+
+* Repeatable
+* Transparent
+* Explainable
+* Inspectable
+* Documented
+
+Users should be able to determine:
+
+* What household was evaluated
+* Which transitions were explored
+* Which environments were assumed
+* Which experiments were executed
+* How evidence was produced
+
+---
+
+# Architectural Invariants
+
+The following concepts are foundational to ROOST.
+
+These concepts should remain stable unless intentionally redesigned.
+
+## Households are the primary analytical context
+
+Every investigation begins with a household.
+
+---
+
+## Levers characterize the current planning situation
+
+Levers are semantic observations computed from household information, analytical results, and derived evidence.
+
+Levers determine which transition families are applicable and constrain the valid transitions available for evaluation.
+
+---
+
+## Transitions represent candidate changes
+
+Transitions describe meaningful changes from the current planning situation.
+
+ROOST evaluates transitions.
+
+ROOST does not recommend them.
+
+---
+
+## Evaluation environments describe possible futures
+
+Evaluation environments represent assumptions about the external world.
+
+They are independent of retiree decisions.
+
+Transitions are evaluated under one or more environments.
+
+---
+
+## Experiments generate evidence
+
+Experiments evaluate transitions under specified environments.
+
+Experiments are deterministic, reproducible, and explainable.
+
+---
+
+## Evidence generation and interpretation are separate activities
+
+ROOST generates evidence.
+
+Consumers interpret evidence.
+
+Recommendations remain outside the architectural boundary of ROOST.
+
+---
+
+## OWL remains the analytical engine
+
+ROOST builds upon OWL's ability to evaluate household financial outcomes.
+
+---
+
+## Documentation is a first-class outcome
+
+Generated evidence should be understandable, reproducible, reviewable, and shareable.
+
+---
+
+## ROOST should use its own workflow
+
+ROOST should document, validate, teach, and evaluate itself using the same evidence-generation workflow it provides to its users.
+
+---
+
+# Long-Term Direction
+
+ROOST is evolving toward an increasingly evidence-centered architecture.
 
 Conceptually:
 
 ```text
-Study
-    ├── Cases
-    ├── Experiments
-    ├── Results
-    ├── Reports
-    └── Documentation
-```
+                Advisor / LLM / Human
 
-Studies are intentionally broader than experiments.
+             Questions
+                  │
+                  ▼
+        Select Transition(s)
+                  │
+                  ▼
+═══════════════════════════════════════
+           ROOST Boundary
+═══════════════════════════════════════
 
-An experiment defines a scientific manipulation or comparison.
-
-A study defines the broader analytical context in which one or more experiments are interpreted, documented, reproduced, and communicated.
-
-Examples include:
-
-* Social Security timing studies
-* Roth conversion studies
-* Runtime scaling studies
-* Sampling convergence studies
-* OWL methodology tutorials
-* Publication and reproducibility packages
-
-Studies therefore complement rather than replace experiments.
-
-## Study Templates
-
-A **study template** defines a reusable analytical methodology capable of generating studies and their associated analytical workflows.
-
-Conceptually:
-
-```text
-Study Template
-    ↓
-Study
-    ↓
+Household
+     │
+     ▼
+Characterization
+     │
+     ▼
+Levers
+     │
+     ▼
+Applicable Transition Families
+     │
+     ▼
+Transitions
+     │
+     ▼
 Experiments
-    ↓
-Results
-    ↓
-Reports
+     │
+     ▼
+Evidence
+     │
+     ▼
+Evidence Package
+
+═══════════════════════════════════════
 ```
 
-Study templates may define:
+ROOST exists to faithfully characterize financial choices, evaluate their consequences under uncertainty, and produce trustworthy evidence.
 
-* Decision-variable sweeps
-* Sampling-variable sweeps
-* Execution-variable sweeps
-* Comparison structures
-* Aggregation methodologies
-* Reporting templates
-* Visualization workflows
+The goal is not to discover a single optimal answer.
 
-A study template may operationalize investigations such as:
-
-```text
-Explore retirement age sensitivity
-    across:
-        retirement ages
-        market sampling methods
-        uncertainty realizations
-```
-
-or:
-
-```text
-Evaluate runtime scaling behavior
-    across:
-        workers_per_run
-        thread allocation
-        solver configurations
-```
-
-Long-term, study templates are intended to support increasingly automated workflows in which ROOST can:
-
-* Instantiate studies from reusable methodologies
-* Generate experiments
-* Infer comparison dimensions
-* Produce reports and dashboards
-* Organize scientific interpretation
-
-This direction extends ROOST beyond simple parameter sweeps into a broader framework for retirement decision analysis, uncertainty analysis, runtime analysis, comparative research, and methodological evaluation.
-
-## Relationship to Variable Classes
-
-Study semantics are strongly influenced by the classes of variables being explored.
-
-ROOST distinguishes between:
-
-| Variable Class      | Analytical Meaning                    |
-| ------------------- | ------------------------------------- |
-| Decision variables  | Retirement policy exploration         |
-| Sampling variables  | Uncertainty and estimator exploration |
-| Execution variables | Runtime and computational exploration |
-
-This distinction allows ROOST to support multiple categories of studies within a unified framework.
-
-Examples include:
-
-| Study Type             | Primary Variable Classes |
-| ---------------------- | ------------------------ |
-| Retirement policy      | Decision variables       |
-| Sampling analysis      | Sampling variables       |
-| Runtime scaling        | Execution variables      |
-| Methodology comparison | Mixed variable classes   |
-
-Over time, these distinctions may support increasingly automated inference of:
-
-* Study categories
-* Comparison methodologies
-* Aggregation semantics
-* Visualization strategies
-* Reporting structures
-* Suggested analytical workflows
-
-
-## Future Direction
-
-ROOST is evolving toward increasingly
-automated study-centered workflows.
-
-Future capabilities may include:
-
-* Automated study generation
-* Study-oriented reporting
-* Publication-oriented research packages
-* Automated comparison workflows
-* Methodology-driven analysis
-
-The goal is to make studies the primary
-unit of reproducibility, communication,
-education, and research while preserving
-the core concepts described throughout
-this document.
+The goal is to help decision makers understand their available transitions, explore uncertainty, compare alternatives, and make informed decisions with confidence.

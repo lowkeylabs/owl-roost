@@ -1,411 +1,481 @@
 # ROOST Architecture
 
-This document describes the enduring architectural principles of ROOST.
+This document describes the enduring software architecture of ROOST.
 
-Unlike `README.md`, which introduces the project, and `FUTURE-README.md`, which describes the long-term product vision, this document captures the software architecture philosophies that guide implementation decisions.
+Unlike `README.md`, which explains **what ROOST is**, this document explains **how ROOST is organized** and the architectural principles that guide its implementation.
 
-The goal is not to describe the current codebase.
+This document intentionally avoids describing the current package layout or implementation details.
 
-The goal is to describe how ROOST should be built.
+Its purpose is to capture the architectural ideas that should remain stable even as the implementation evolves.
 
-As the implementation evolves, the principles in this document should remain relatively stable.
+Subsystem READMEs describe how these ideas are realized within the current codebase.
 
 ---
 
 # Architectural Philosophy
 
-ROOST is designed as a collection of independent, deterministic subsystems that cooperate through well-defined interfaces.
+ROOST is an evidence-generation system composed of independent, deterministic subsystems with well-defined responsibilities.
 
-Each subsystem owns a single area of responsibility.
+Each subsystem owns a distinct concept.
 
-Subsystems expose semantic observations and services rather than implementation details.
+Subsystems expose semantic observations and reusable services rather than implementation details.
 
-Higher-level workflows compose these subsystems without taking ownership of their knowledge.
+Higher-level workflows emerge through composition rather than duplication.
 
-This separation supports:
+This architecture emphasizes:
 
-* deterministic behavior
-* reproducibility
-* explainability
-* extensibility
-* multiple user interfaces
-* long-term maintainability
+* Determinism
+* Explainability
+* Reproducibility
+* Extensibility
+* Composability
+* Long-term maintainability
 
 ---
 
-# Architectural Principles
+# The Architectural Boundary
 
-## Separation of Responsibilities
+ROOST deliberately separates evidence generation from decision making.
 
-Every major subsystem should own one concept.
+Conceptually:
+
+```text
+Outside ROOST
+
+Questions
+Interpretation
+Recommendations
+Decisions
+
+──────────────────────────────────────────
+
+ROOST
+
+Household
+    ↓
+Characterization
+    ↓
+Levers
+    ↓
+Transition Discovery
+    ↓
+Experiments
+    ↓
+Evidence
+    ↓
+Evidence Packages
+
+──────────────────────────────────────────
+```
+
+ROOST owns evidence generation.
+
+Interpretation and recommendation belong to people, advisors, educators, researchers, or future AI systems built on top of ROOST.
+
+This separation is fundamental.
+
+---
+
+# Architectural Workflow
+
+Conceptually, every investigation follows the same workflow.
+
+```text
+Household
+    ↓
+Characterization
+    ↓
+Levers
+    ↓
+Applicable Transition Families
+    ↓
+Transitions
+    ↓
+Experiments
+    ↓
+Evidence
+    ↓
+Evidence Package
+```
+
+Every subsystem contributes to one or more stages of this workflow.
+
+No subsystem owns the entire workflow.
+
+---
+
+# Characterization
+
+Characterization is the process of understanding the current planning situation.
+
+Rather than exposing raw inputs directly, ROOST computes semantic observations describing the household and analytical context.
+
+These observations are called **Levers**.
+
+Levers may be:
+
+* Boolean
+* Categorical
+* Continuous
+* Derived
+
+Levers characterize the current planning situation.
+
+They determine which transition families are applicable and constrain the valid transitions available for exploration.
+
+Levers are computed rather than manually maintained.
+
+---
+
+# Transitions
+
+ROOST evaluates change.
+
+A transition represents a meaningful change from the current planning situation.
 
 Examples include:
 
-* Workspace
-* Study
-* Comparison
-* Display
-* Metrics
-* Review
+* Retire one year later
+* Increase spending
+* Delay Social Security
+* Perform Roth conversions
+* Change asset allocation
 
-Ownership should remain local.
+Transitions represent candidate actions.
 
-Composition should occur at higher levels.
+ROOST evaluates transitions.
 
-Subsystems should avoid reaching into each other's internal structures.
+ROOST does not recommend them.
+
+Related transitions may be organized into Transition Families.
 
 ---
 
-## Thin Interfaces
+# Evaluation Environments
 
-ROOST should support multiple user interfaces without duplicating implementation.
+Transitions are evaluated within one or more future environments.
+
+Evaluation environments describe assumptions about the future rather than choices made by the retiree.
+
+Examples include:
+
+* Historical markets
+* Bootstrap markets
+* Inflation assumptions
+* Longevity assumptions
+* Tax assumptions
+
+Evaluation environments remain independent from transitions.
+
+Experiments combine transitions with evaluation environments to generate evidence.
+
+---
+
+# Evidence Generation
+
+Experiments generate evidence.
+
+An experiment defines a deterministic methodology for evaluating one or more transitions under one or more evaluation environments.
+
+Evidence generation should always be:
+
+* Deterministic
+* Reproducible
+* Explainable
+* Inspectable
+
+Experiments define methodology.
+
+Evidence packages describe results.
+
+---
+
+# Definitions and Realizations
+
+ROOST distinguishes reusable analytical definitions from realized execution artifacts.
+
+Conceptually:
+
+```text
+Definition
+        ↓
+Realization
+```
+
+Examples include:
+
+```text
+Transition Family
+        ↓
+Transitions
+
+Experiment
+        ↓
+Session
+
+Display View
+        ↓
+Rendered Presentation
+```
+
+Definitions describe analytical intent.
+
+Realizations preserve execution history.
+
+Maintaining this distinction improves reuse while preserving provenance.
+
+---
+
+# Separation of Responsibilities
+
+Every major subsystem owns one architectural responsibility.
+
+Subsystems should own knowledge rather than workflows.
+
+Higher-level workflows emerge through composition.
+
+Subsystems should communicate through semantic interfaces rather than implementation details.
+
+Ownership should remain local.
+
+Composition should occur above subsystem boundaries.
+
+---
+
+# Semantic Communication
+
+Subsystems communicate through semantic observations rather than storage structures or implementation details.
+
+Consumers request meaning rather than location.
+
+Conceptually:
+
+```text
+Semantic Observation
+        ↓
+Resolution
+        ↓
+Consumer
+```
+
+Consumers should not require knowledge of:
+
+* Filesystem layout
+* Storage representation
+* Runtime implementation
+* Internal subsystem organization
+
+Semantic communication promotes loose coupling and explainability.
+
+---
+
+# Explainability
+
+Every meaningful observation should be explainable.
+
+Explainability should include:
+
+* Description
+* Provenance
+* Lineage
+* Rationale
+* Dependencies
+
+Explainability is considered a first-class architectural concern rather than a reporting feature.
+
+---
+
+# Provenance
+
+ROOST preserves provenance throughout the analytical lifecycle.
+
+Provenance explains:
+
+* What was evaluated
+* How it was evaluated
+* Why it was evaluated
+* Which assumptions were used
+* Which evidence was produced
+
+Artifacts should preserve sufficient information to reproduce and explain their creation.
+
+---
+
+# Determinism
+
+Given identical:
+
+* Household
+* Levers
+* Transition definitions
+* Evaluation environments
+* Execution configuration
+* Software versions
+
+ROOST should generate identical evidence.
+
+Automation should never obscure reproducibility.
+
+---
+
+# Service-Oriented Architecture
+
+ROOST functionality should be exposed through reusable Python services.
+
+User interfaces should remain thin orchestration layers.
 
 Interfaces may include:
 
-* Command-line interface (CLI)
-* Python API
+* Command-line tools
+* Python APIs
 * Jupyter notebooks
 * Quarto documents
 * Future graphical interfaces
 * Future web services
 
-Conceptually:
+All interfaces should invoke the same underlying services.
 
-```text
-CLI
-
-Notebook
-
-Quarto
-
-GUI
-
-        ↓
-
-Common Python Service Layer
-
-        ↓
-
-ROOST Subsystems
-
-        ↓
-
-OWL
-```
-
-No interface should contain business logic.
-
-The CLI should remain a thin wrapper around reusable Python services.
+Business logic should not reside within user interfaces.
 
 ---
 
-## Service-Oriented Design
+# Composability
 
-Subsystems should expose Python services rather than requiring invocation through command-line interfaces.
+Complex analytical workflows should emerge by composing simple capabilities.
 
-For example:
+Subsystems should provide focused responsibilities that can be reused in many workflows.
 
-```python
-build(...)
-
-run(...)
-
-results(...)
-
-review(...)
-```
-
-should be directly callable from Python.
-
-The CLI should invoke these same services.
-
-This ensures that:
-
-* notebooks
-* Quarto
-* automation
-* testing
-* future interfaces
-
-all share identical implementations.
+Composition should be preferred over duplication.
 
 ---
 
-## Determinism
-
-ROOST prioritizes deterministic execution.
-
-Given identical:
-
-* household
-* assumptions
-* execution plans
-* software versions
-
-ROOST should generate identical evidence.
-
-Automation should never obscure how evidence was generated.
-
----
-
-## Reproducibility
-
-Every analytical artifact should be reproducible.
-
-Users should always be able to determine:
-
-* what was executed
-* why it was executed
-* what assumptions were used
-* what evidence was generated
-
-Reproducibility is considered a first-class architectural objective.
-
----
-
-## Provenance
-
-ROOST maintains provenance throughout the analytical workflow.
-
-Examples include:
-
-* household inputs
-* execution plans
-* overrides
-* generated evidence
-* reports
-* comparison artifacts
-
-Artifacts should preserve sufficient metadata to reconstruct how they were created.
-
----
-
-## Explainability
-
-Every meaningful observation should be explainable.
-
-ROOST prefers semantic observations over opaque implementation details.
-
-Where possible, observations should include:
-
-* descriptions
-* provenance
-* definitions
-* rationale
-
-Explainability supports:
-
-* users
-* educators
-* researchers
-* advisors
-* LLMs
-
----
-
-## Definitions and Realizations
-
-ROOST distinguishes reusable definitions from realized artifacts.
-
-Examples include:
-
-```text
-Study
-    ↓
-Evidence Package
-
-Execution Plan
-    ↓
-Runs
-
-Display View
-    ↓
-Rendered Table
-```
-
-Definitions describe intent.
-
-Realizations describe execution.
-
-This distinction improves reuse while preserving provenance.
-
----
-
-## Composability
-
-ROOST favors composition over monolithic implementations.
-
-Small reusable capabilities should be combined into larger workflows.
-
-Examples include:
-
-```text
-Review
-
-    Phase
-
-        Activity
-
-            Checks
-
-            Actions
-```
-
-Each level has a single responsibility.
-
-Complex workflows should emerge from composing simple pieces.
-
----
-
-## Extensibility
+# Extensibility
 
 Subsystems should be extended through registration rather than modification.
 
-Typical subsystem organization includes:
+Architectural extension points should remain open while subsystem responsibilities remain stable.
 
-```text
-bootstrap.py
-
-registry.py
-
-specs.py
-
-plugins/
-```
-
-Plugins contribute capabilities.
-
-Registries organize capabilities.
-
-Bootstraps assemble complete subsystems.
-
-Hard-coded lists should be avoided whenever practical.
+New analytical capabilities should normally be introduced without modifying existing subsystem behavior.
 
 ---
 
-## Semantic Resolution
+# Documentation
 
-Subsystems should communicate through semantic observations rather than direct access to implementation details.
+Documentation is considered an architectural outcome.
 
-Conceptually:
+ROOST should generate evidence that is understandable, reviewable, reproducible, and shareable.
 
-```text
-Observation
+Documentation should explain both:
 
-        ↓
+* Analytical intent
+* Generated evidence
 
-Resolution
-
-        ↓
-
-Workspace
-
-Metrics
-
-Comparison
-
-Inputs
-
-Display Functions
-```
-
-Consumers should request observations.
-
-They should not need to know where those observations originate.
-
-This decouples workflows from storage.
+Documentation is part of the evidence-generation process rather than an afterthought.
 
 ---
 
-## Review as Orchestration
+# Architectural Invariants
 
-Review is responsible for orchestrating retirement planning workflows.
+The following concepts are foundational to ROOST.
 
-Review does not own analytical knowledge.
+These concepts should remain stable unless intentionally redesigned.
 
-Instead, Review composes capabilities from other subsystems.
+## Households are the primary analytical context.
 
-Examples include:
-
-* Workspace checks
-* Study levers
-* Execution planning
-* Evidence generation
-* Comparison
-* Reporting
-
-Review owns sequence.
-
-Subsystems own expertise.
+Every investigation begins with a household.
 
 ---
 
-## Power Users and Guided Users
+## Characterization precedes analysis.
 
-ROOST supports multiple styles of interaction.
-
-Power users may invoke individual tools directly.
-
-For example:
-
-```text
-roost workspace
-
-roost build
-
-roost run
-
-roost results
-
-roost reports
-```
-
-Other users may prefer guided workflows.
-
-For example:
-
-```text
-roost review
-```
-
-Both interaction styles should use the same underlying services.
-
-No functionality should exist exclusively within the CLI.
+ROOST first understands the current planning situation before determining applicable analytical workflows.
 
 ---
 
-## Evidence Before Interpretation
+## Levers characterize the planning situation.
+
+Levers are semantic observations that determine analytical applicability and constrain available transitions.
+
+---
+
+## Transitions represent candidate change.
+
+ROOST evaluates transitions.
+
+ROOST does not recommend them.
+
+---
+
+## Evaluation environments represent possible futures.
+
+Transitions are evaluated under one or more future environments.
+
+Environments remain independent of retiree decisions.
+
+---
+
+## Experiments generate evidence.
+
+Experiments define reproducible methodologies.
+
+Evidence packages describe their results.
+
+---
+
+## Definitions remain distinct from realizations.
+
+Analytical definitions describe intent.
+
+Execution artifacts record realized evidence.
+
+---
+
+## Evidence generation and interpretation remain separate.
 
 ROOST generates evidence.
 
-Interpretation is intentionally separate.
+Consumers interpret evidence.
 
-Interpretation may be performed by:
+Recommendation logic remains outside the architectural boundary.
 
-* users
-* advisors
-* researchers
-* educators
-* LLMs
+---
 
-ROOST should clearly distinguish generated evidence from subsequent interpretation.
+## Subsystems own concepts.
+
+Subsystems own knowledge.
+
+Higher-level workflows compose subsystem capabilities.
+
+Subsystems should avoid owning each other's responsibilities.
+
+---
+
+## Semantic interfaces are preferred.
+
+Subsystems communicate through semantic observations rather than implementation details.
+
+---
+
+## Documentation is a first-class architectural artifact.
+
+Generated evidence should remain understandable, reproducible, and explainable.
 
 ---
 
 # Architectural Goal
 
-ROOST should evolve as a coherent collection of independent, composable, deterministic subsystems.
+ROOST should evolve as a coherent collection of independent, composable subsystems that together form a deterministic evidence-generation engine.
 
-Every subsystem should remain understandable in isolation.
+Each subsystem should remain understandable in isolation.
 
-Higher-level workflows should emerge through composition rather than duplication.
-
-The architecture should support future interfaces, future workflows, and future analytical capabilities without requiring fundamental redesign.
+The architecture should support new workflows, new analytical methodologies, and new user interfaces without requiring fundamental redesign.
 
 The guiding philosophy is simple:
 
-> Define capabilities once.
+> Characterize the present.
 >
-> Compose them many ways.
+> Evaluate meaningful transitions.
 >
-> Preserve provenance always.
+> Generate trustworthy evidence.
+>
+> Preserve explainability always.
