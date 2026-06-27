@@ -19,7 +19,6 @@ import click
 
 from ..core.info import (
     get_installation_info,
-    get_installation_value,
 )
 from ..version import __version__
 from .cmd_build import cmd_build
@@ -47,9 +46,9 @@ def cli(
     log_level,
 ):
     """
-    OWL-ROOST v2 CLI (in development).
+    ROOST CLI (in development).
 
-    documentation in owlroost/cli/_main.py
+    See main project README.md
     """
 
     # ----------------------------------------
@@ -62,32 +61,20 @@ def cli(
 
 @cli.command()
 @click.pass_context
-@click.option(
-    "--path",
-    default=None,
-    type=click.Choice(
-        [
-            "makefile",
-            "templates",
-            "conf",
-        ]
-    ),
+@click.argument(
+    "key",
+    required=False,
 )
-def info(ctx, path):
-    """Show OWL-Station and OWL solver version information."""
-
-    if path:
-        click.echo(
-            get_installation_value(
-                path,
-            )
-        )
-        return
+def info(ctx, key):
+    """Show ROOST installation information."""
 
     info = get_installation_info()
 
-    for key, value in info.items():
-        click.echo(f"{key}: {value}")
+    if key is None:
+        for k, v in info.items():
+            click.echo(f"{k}: {v}")
+    else:
+        click.echo(info[key])
 
 
 #    solver = get_owl_solver_info()

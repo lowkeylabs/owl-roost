@@ -24,6 +24,12 @@ def get_roost_root():
     return Path(__file__).resolve().parents[1]
 
 
+def get_owl_version():
+    from owlplanner.version import __version__ as owl_version
+
+    return owl_version
+
+
 def get_conf_dir():
     return get_roost_root() / "conf"
 
@@ -51,7 +57,8 @@ def get_installation_info():
     """
 
     return {
-        "version": __version__,
+        "roost_version": __version__,
+        "owl_version": get_owl_version(),
         "root": get_roost_root(),
         "conf": get_conf_dir(),
         "workspace": get_workspace_dir(),
