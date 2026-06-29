@@ -32,3 +32,13 @@ def normalize_module_path(
 
     except ValueError:
         return p.name
+
+
+def mosek_available():
+    import importlib.util
+    import os
+
+    return (
+        importlib.util.find_spec("mosek") is not None
+        and os.environ.get("MOSEKLM_LICENSE_FILE") is not None
+    )

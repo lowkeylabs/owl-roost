@@ -21,17 +21,9 @@ from pathlib import Path
 
 import numpy as np
 
+from owlroost.core.utils import mosek_available
+
 SCHEMA_VERSION = "roost.metrics.v1"
-
-
-def _mosek_available():
-    import importlib.util
-    import os
-
-    return (
-        importlib.util.find_spec("mosek") is not None
-        and os.environ.get("MOSEKLM_LICENSE_FILE") is not None
-    )
 
 
 def normalize_timestamp(ts) -> str:
@@ -1239,7 +1231,7 @@ def write_metrics_json(
 
         solver = solver_opts.get("solver", default_solver)
         if solver == "default":
-            solver = "MOSEK" if _mosek_available() else "HiGHS"
+            solver = "MOSEK" if mosek_available() else "HiGHS"
 
         identity = {
             "plan_name": (context or {}).get("case_name") or getattr(plan, "_name", "unknown")

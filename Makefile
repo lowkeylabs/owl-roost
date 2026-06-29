@@ -94,6 +94,23 @@ verify-mode:
 	uv run python -c "import subprocess, pathlib; p=pathlib.Path('../owl-planner'); print(subprocess.check_output(['git','branch','--show-current'], cwd=p).decode().strip())"
 
 # ==========================================================
+# Fresh ROOST install - build necessary files
+# ==========================================================
+
+rebuild-roost:
+	uv sync --extra dev
+
+	uv run src/owlroost/tools/generate_hydra_conf.py
+
+	uv run scripts/sync_owl_examples.py
+
+	uv run scripts/sync_owl_parameters_md.py
+	uv run src/owlroost/tools/generate_explain_metadata.py
+
+	uv run pytest
+
+
+# ==========================================================
 # OWL Upgrade / Regeneration
 # ==========================================================
 
@@ -114,17 +131,8 @@ owl-upgrade:
 	@echo ""
 
 	uv run scripts/update_owl_pin.py
+	make rebuild-roost
 
-	uv sync --extra dev
-
-	uv run src/owlroost/tools/generate_hydra_conf.py
-
-	uv run scripts/sync_owl_examples.py
-
-	uv run scripts/sync_owl_parameters_md.py
-	uv run src/owlroost/tools/generate_explain_metadata.py
-
-	uv run pytest
 
 # ==========================================================
 # Release Versioning
