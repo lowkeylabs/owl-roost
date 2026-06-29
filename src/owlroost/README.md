@@ -22,7 +22,7 @@ Each major subsystem owns one conceptual responsibility.
 
 Subsystems expose reusable services and semantic observations.
 
-Higher-level workflows emerge through composition rather than direct coupling.
+Higher-level workflows emerge through the composition of stable architectural concepts rather than direct coupling between implementations.
 
 No subsystem should require knowledge of another subsystem's internal implementation.
 
@@ -33,18 +33,20 @@ No subsystem should require knowledge of another subsystem's internal implementa
 Conceptually, ROOST follows the workflow described in `ARCHITECTURE.md`.
 
 ```text
-Household
-    ↓
+Household Definition
+        ↓
+Workspace
+        ↓
 Characterization
-    ↓
+        ↓
 Levers
-    ↓
+        ↓
 Transition Discovery
-    ↓
+        ↓
 Experiments
-    ↓
+        ↓
 Evidence
-    ↓
+        ↓
 Evidence Package
 ```
 
@@ -56,20 +58,43 @@ The current source tree realizes that workflow through a collection of cooperati
 
 Each major package owns one architectural concept.
 
-## workspace/
+## household/
 
-Owns characterization of the current analytical context.
+Owns the canonical definition and construction of households.
 
 Responsibilities include:
 
+* household registration
+* household providers
+* canonical household definitions
+* household construction
+* household export
+
+The household subsystem defines the enduring planning subject.
+
+It does not characterize the current planning situation.
+
+---
+
+## workspace/
+
+Owns realization and characterization of the current analytical context.
+
+Responsibilities include:
+
+* realized planning state
 * workspace organization
 * inventory
 * semantic levers
 * transition applicability
 * execution materialization
-* sessions, runs, and trials
+* sessions
+* runs
+* trials
 
-The workspace understands the current planning situation.
+The workspace realizes the current planning state of a household.
+
+It does not define the household.
 
 It does not generate evidence.
 
@@ -200,13 +225,19 @@ Subsystem READMEs describe these responsibilities in greater detail.
 
 # Subsystem Independence
 
-Subsystems should communicate through semantic services rather than implementation details.
+Subsystems communicate through semantic services rather than implementation details.
 
 Subsystems should not directly manipulate another subsystem's internal state.
 
 Ownership remains local.
 
 Composition occurs above subsystem boundaries.
+
+The preferred direction is:
+
+* Define stable architectural concepts.
+* Compose those concepts into workflows.
+* Avoid duplication of responsibilities.
 
 ---
 
@@ -223,16 +254,18 @@ registry.py
 
 specs.py
 
-plugins/
+providers/
 ```
 
 Registries organize capabilities.
 
-Plugins contribute capabilities.
+Providers contribute capabilities.
 
 Bootstraps assemble complete subsystem instances.
 
 Registration allows new functionality to be introduced without modifying existing subsystem behavior.
+
+Individual subsystems may use more specialized organizational patterns where appropriate.
 
 ---
 
@@ -266,6 +299,8 @@ As implementation evolves, packages may change.
 
 Architectural responsibilities should remain stable.
 
+Every subsystem should answer one architectural question.
+
 The preferred direction is always:
 
 > One subsystem.
@@ -273,3 +308,5 @@ The preferred direction is always:
 > One responsibility.
 >
 > One clear architectural owner.
+>
+> One well-defined role within the analytical workflow.

@@ -76,7 +76,7 @@ while supporting many different decision-making styles.
 
 # The Household is the Primary Context
 
-Every ROOST investigation begins with a household.
+Every ROOST investigation begins with a household in its current realized planning state.
 
 A household represents the current financial planning situation.
 
