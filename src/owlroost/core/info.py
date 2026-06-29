@@ -27,11 +27,11 @@ def get_roost_root():
 
 def get_mosek_info():
     report = {
-        "mosek_license_path": "Not Set",
         "mosek_package_installed": False,
         "mosek_package_version": "Unknown",
-        "mosek_status": False,
+        "mosek_license_path": "Not Set",
         "mosek_status_message": "Disabled - requires license",
+        "mosek_available": False,
     }
 
     # Check Package Installation & Version
@@ -73,7 +73,7 @@ def get_mosek_info():
             with mosek.Env() as env:
                 # Explicitly attempts an environment checkout initialization
                 with env.Task():
-                    report["mosek_status"] = True
+                    report["mosek_available"] = True
                     report["mosek_status_message"] = (
                         "MOSEK available.  License is verified and active."
                     )
