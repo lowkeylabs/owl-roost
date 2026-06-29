@@ -1,0 +1,26 @@
+#
+# Minimum Household Project
+#
+# Copyright (c) 2026 John Leonard
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+id = "minimum"
+
+title = "Minimum Household"
+
+description = """
+Smallest valid Household Project.
+
+This project exists primarily as an architectural
+fixture used by the ROOST household subsystem,
+documentation, and regression tests.
+"""
+
+tags = [
+    "builtin",
+    "synthetic",
+    "minimum",
+]
+
+manifest_version = 1
