@@ -1,48 +1,51 @@
 # Household Subsystem
 
-The `household/` subsystem owns the canonical definition, construction, and registration of households within ROOST.
+The `household/` subsystem owns the lifecycle of canonical households within ROOST.
 
-Every analytical investigation performed by ROOST begins with a household.
+Every analytical investigation begins with one or more canonical households.
 
-A household represents the enduring subject of retirement planning rather than a particular point in time.
+A canonical household represents the financial state of an individual or family at a particular point in time independently of how that state was produced.
 
-The household subsystem provides a consistent mechanism for discovering, constructing, validating, and exporting households regardless of how those households were originally created.
+Internally, canonical households may be constructed, imported, discovered, generated programmatically, or restored from previous planning activities.
+
+Externally, every canonical household presents the same analytical interface.
+
+The household subsystem provides consistent discovery, registration, construction, import, export, and lifecycle management for canonical households while remaining independent of analytical methodology.
 
 This document complements the project `README.md` and `ARCHITECTURE.md` by describing the architectural responsibilities owned by the household subsystem.
-
 ---
 
 # Architectural Role
 
-Within the overall ROOST architecture, the household subsystem provides the canonical planning context.
+Within the overall ROOST architecture, the household subsystem owns canonical planning subjects.
 
 Conceptually:
 
 ```text
-Household Provider
-        ↓
-Household Registry
-        ↓
-Household Definition
-        ↓
-Workspace
-        ↓
-Realized Planning State
-        ↓
+Household Sources
+        │
+        ▼
+Canonical Household
+        │
+        ▼
+Planning Investigation
+        │
+        ▼
 Characterization
-        ↓
-Levers
-        ↓
-Experiments
+        │
+        ▼
+Evidence Generation
 ```
 
-The household subsystem owns the definition of households.
+The household subsystem owns canonical household definitions.
 
-The workspace owns the current realized planning state of a household.
+It does not own planning investigations.
 
-The household subsystem does not own analytical methodology.
+It does not characterize households.
 
 It does not generate evidence.
+
+Its responsibility ends once a canonical household has been produced.
 
 ---
 
@@ -71,25 +74,28 @@ Consumers should not inspect the filesystem directly.
 
 ---
 
-## Household Construction
+## Canonical Household Lifecycle
 
-The subsystem constructs canonical household definitions.
+The household subsystem manages the lifecycle of canonical households.
 
-Construction is intentionally separated from storage.
-
-A household may originate from many sources while producing an equivalent analytical definition.
+Canonical households may originate from many sources while presenting a consistent analytical interface.
 
 Examples include:
 
-* Programmatically generated households
-* Imported OWL household definitions
-* Educational examples
-* Published research cases
-* Future external data sources
+* programmatically generated households
+* imported OWL household definitions
+* household library snapshots
+* educational examples
+* published research cases
+* future external providers
 
-Consumers request a household.
+Construction is one mechanism within the lifecycle.
 
-They do not request a particular storage representation.
+Import, export, registration, storage, and discovery are equally important responsibilities.
+
+Consumers request canonical households.
+
+They do not request particular construction mechanisms.
 
 ---
 
@@ -115,19 +121,16 @@ The registry aggregates providers into a single semantic collection.
 
 ## Household Export
 
-The subsystem exports households into operational forms required by downstream workflows.
+The household subsystem exports canonical households into forms required by downstream workflows.
 
-Examples include:
+Today the canonical export consists of:
 
-* ROOST workspaces
-* OWL configuration files
-* Household Financial Profile workbooks
-* Future notebook generation
-* Future graphical editors
+* OWL `case.toml`
+* optional Household Financial Profile (`HFP.xlsx`)
 
-Export is distinct from construction.
+Future export formats may include notebooks, editors, or additional interchange formats.
 
-A single household definition may be exported into many different representations.
+Export remains independent of household construction.
 
 ---
 
@@ -173,14 +176,14 @@ This allows households to remain reproducible while avoiding unnecessary duplica
 
 ---
 
-# Definition versus Realization
+# Canonical Households and Realizations
 
-The household subsystem distinguishes between a household definition and the operational artifacts derived from it.
+The household subsystem distinguishes canonical household definitions from their realizations.
 
 Conceptually:
 
 ```text
-Household Definition
+Canonical Household
         ↓
 Realization
 ```
@@ -188,28 +191,26 @@ Realization
 Examples include:
 
 ```text
-Household Definition
+Canonical Household
         ↓
-Workspace
+Planning Investigation
 
-Household Definition
+Canonical Household
         ↓
 OWL Plan
 
-Household Definition
+Canonical Household
         ↓
-Configuration File
-
-Household Definition
-        ↓
-Household Financial Profile
+Execution Artifacts
 ```
 
-The household definition represents the enduring planning subject.
+Canonical households describe financial state.
 
-Operational artifacts represent particular realizations of that household for execution, editing, persistence, or interoperability.
+Realizations apply that state within a particular analytical context.
 
-The workspace realizes the current planning state of a household by combining its canonical definition with the accumulated realized changes that have occurred over time.
+The household subsystem owns canonical households.
+
+Other subsystems own their respective realizations.
 
 ---
 
@@ -275,11 +276,13 @@ Executable examples should be preferred over duplicated test fixtures whenever p
 
 ### Workspace
 
-The workspace realizes the current planning state of a household.
+The workspace organizes planning investigations around one or more canonical households.
 
-A workspace combines a canonical household definition with the accumulated realized changes describing the household at the time of review.
+Workspaces preserve planning intent, characterization, analytical organization, and reproducibility.
 
-Characterization, lever computation, transition discovery, and execution planning operate on this realized planning state.
+The household subsystem provides canonical households.
+
+The workspace determines how those households are investigated.
 
 ---
 
@@ -319,9 +322,11 @@ The household subsystem does not generate evidence.
 
 The following concepts should remain stable.
 
-## Every investigation begins with a household.
+## Every investigation begins with one or more canonical households.
 
-The household is the enduring analytical context within ROOST.
+Canonical households are the enduring planning subjects within ROOST.
+
+Planning investigations, execution artifacts, and evidence are derived from canonical households without modifying their definition.
 
 ---
 
@@ -349,11 +354,15 @@ New household sources should normally be introduced through additional providers
 
 ---
 
-## Household definitions are stable.
+## Canonical households remain independent of planning investigations.
 
-The household definition describes the enduring planning subject.
+Canonical households describe financial state.
 
-Current planning state belongs to the workspace.
+Planning investigations organize analytical intent.
+
+Execution artifacts preserve realized analyses.
+
+Each concept has a distinct architectural owner.
 
 ---
 
@@ -375,22 +384,22 @@ The household subsystem coordinates household construction while OWL remains res
 
 # Long-Term Direction
 
-The household subsystem is evolving toward the canonical entry point for retirement planning within ROOST.
+The household subsystem is evolving toward the canonical lifecycle manager for households within ROOST.
 
 Future capabilities are expected to include:
 
-* Richer household metadata
-* Additional household providers
-* Programmatic household generation
-* Improved import and export workflows
-* Automated workspace creation
-* Round-trip serialization
-* Enhanced validation
-* Executable regression suites
-* Longitudinal household evolution through repeated planning reviews
+* richer household metadata
+* additional import providers
+* additional export providers
+* programmatic household generation
+* household library management
+* improved validation
+* snapshot creation
+* longitudinal household histories
+* enhanced reproducibility
 
-The household subsystem should increasingly answer a single architectural question:
+Regardless of internal implementation, the subsystem should continue to answer one architectural question:
 
-> **What households are available, how can they be constructed, and how can they serve as the enduring planning context for analytical investigation?**
+> **Which canonical households exist, how are they obtained, and how can they be represented consistently for analytical investigation?**
 
-Every subsequent stage of the ROOST workflow builds upon that foundation.
+Everything beyond the canonical household belongs to other architectural subsystems.

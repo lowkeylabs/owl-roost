@@ -43,7 +43,7 @@ from owlroost.core.utils import (
     normalize_module_path,
 )
 from owlroost.workspace.materializers import (
-    workspace_lookup,
+    row_lookup,
 )
 from owlroost.workspace.specs import (
     WorkspaceSpec,
@@ -55,7 +55,7 @@ from owlroost.workspace.specs import (
 
 WORKSPACE_VARIABLE: dict[str, Any] = dict(
     owner="ROOST",
-    semantic_domain="execution",
+    semantic_domain="planning",
     value_origin="roost-computed",
     projection_kind="canonical",
     analytic_kind="primary",
@@ -113,7 +113,7 @@ def register_inventory(
             WorkspaceSpec(
                 name=name,
                 dtype=str,
-                compute_fn=workspace_lookup(
+                compute_fn=row_lookup(
                     name,
                 ),
                 description=description,

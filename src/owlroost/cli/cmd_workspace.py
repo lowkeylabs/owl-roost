@@ -66,10 +66,13 @@ from owlroost.display.operations.table_ops import (
     inject_id_column,
 )
 from owlroost.workspace.loaders import (
+    load_context_row,
     load_workspace_row,
     load_workspace_rows,
 )
 from owlroost.workspace.materializers import (
+    materialize_context,
+    materialize_context_tree,
     materialize_study,
     materialize_study_tree,
     materialize_workspace,
@@ -87,6 +90,7 @@ DEFAULT_VIEW = "workspace"
 
 
 @click.command("workspace")
+@click.pass_context
 @click.argument(
     "selectors",
     nargs=-1,
@@ -161,6 +165,7 @@ DEFAULT_VIEW = "workspace"
     is_flag=True,
 )
 def cmd_workspace(
+    ctx,
     selectors,
     view,
     markdown,
@@ -200,8 +205,16 @@ def cmd_workspace(
         roost workspace 0 --rename bar
     """
 
+    # =====================================================
+    # Invocation Mode
+    # =====================================================
+
+    invoked_as = ctx.info_name
+
+    command_mode = "context" if invoked_as == "." else "workspace"
+
     if view is None:
-        view = DEFAULT_VIEW
+        view = command_mode
 
     explain_facets, explain_errors = parse_explain_request(
         explain,
@@ -241,7 +254,13 @@ def cmd_workspace(
 
         return
 
-    if not is_workspace("."):
+    #
+    # "workspace" requires an initialized workspace.
+    #
+    # "." characterizes whatever planning context exists.
+    #
+
+    if command_mode == "workspace" and not is_workspace(root):
         raise click.ClickException("Current directory is not a workspace.")
 
     # =====================================================
@@ -274,16 +293,24 @@ def cmd_workspace(
     # Load rows
     # =====================================================
 
-    rows = load_workspace_rows(
-        root,
-    )
-
-    if not rows:
-        rows = [load_workspace_row(".")]
+    if command_mode == "workspace":
+        rows = load_workspace_rows(root)
 
         if not rows:
-            print("No workspaces found in subfolders or this folder")
-            return
+            rows = [load_workspace_row(root)]
+
+    else:
+        #
+        # Characterize the current planning context.
+        #
+        rows = [load_context_row(root)]
+
+    if not rows:
+        click.echo("No planning context found.")
+        return
+
+    rows = [materialize_context(row, catalog.workspace_registry) for row in rows]
+    rows = [materialize_context_tree(row, catalog.workspace_registry) for row in rows]
 
     rows = [materialize_workspace(row, catalog.workspace_registry) for row in rows]
     rows = [materialize_workspace_tree(row, catalog.workspace_registry) for row in rows]
@@ -299,7 +326,7 @@ def cmd_workspace(
     rows = attach_row_ids(rows)
 
     if not rows:
-        click.echo("No workspaces found.")
+        click.echo("No matching rows.")
 
         return
 
@@ -362,13 +389,17 @@ def cmd_workspace(
             table,
             selected_rows,
         )
+    #    print("--- selected_rows ---")
+    #    print(selected_rows)
 
-    print("rows: -----")
-    print(selected_rows)
-    print("table columns: -----")
-    print(table.columns)
-    print("table rows: -----")
-    print(table.rows)
+    if 0:
+        for namespace in ["_context"]:
+            print(f"--- {namespace} ---")
+            print([row[f"{namespace}"] for row in selected_rows])
+            print(f"--- {namespace}_tree ---")
+            print([row[f"{namespace}_tree"] for row in selected_rows])
+
+        print("---")
 
     output = render_table(
         table,

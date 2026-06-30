@@ -93,5 +93,7 @@ cli.add_command(cmd_reports)
 cli.add_command(cmd_results)
 
 cli.add_command(cmd_vars, name="vars")
-cli.add_command(cmd_workspace)
+cli.add_command(cmd_workspace, name="workspace")
+cli.add_command(cmd_workspace, name=".")
+
 cli.add_command(cmd_household)

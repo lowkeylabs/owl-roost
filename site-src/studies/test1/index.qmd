@@ -1,0 +1,135 @@
+---
+title: "{{< var var_workspace_title >}}"
+---
+
+
+```{python}
+#| echo: false
+# this will all disapper inside the study class
+
+from IPython.display import Markdown
+
+from owlroost.catalog.context import build_catalog_context
+from owlroost.display.loaders import load_case_rows, load_run_rows
+from owlroost.display.materializers.compare import materialize_compare_table
+from owlroost.display.materializers.materialize import materialize_view
+from owlroost.display.renderers.markdown_table import render_markdown_table
+from owlroost.display.operations.table_ops import inject_id_column
+
+from owlroost.workspace.loaders import (
+    load_workspace_row,
+)
+
+(
+    schema_registry,
+    metrics_registry,
+    workspace_registry,
+    display_registry,
+    catalog_rows,
+    catalog_index,
+) = build_catalog_context()
+
+workspace_row = load_workspace_row( "." )
+
+CASE_FOLDER = workspace_row.get("cases_dir",".")
+
+```
+
+```{python}
+#| echo: false
+description = workspace_row.get("workspace_description","")
+print(description)
+
+```
+
+<!--
+
+## List of Work Products
+
+```text
+list goes here
+```
+-->
+
+
+## Cases Listing
+
+```{python}
+#| echo: false
+#| output: asis
+
+# this gets replaced with study.list_cases( view )  # what engine?
+
+rows = load_case_rows(CASE_FOLDER, metrics_registry=metrics_registry)
+
+if rows:
+
+    pivot = False
+    level = "case"
+    view = "cases"
+    explain_facets = None
+
+    table = materialize_view(
+        rows=rows,
+        registry=display_registry,
+        catalog_index=catalog_index,
+        level=level,
+        view_name=view,
+        mode="pivot" if pivot else "table",
+        explain_facets=explain_facets,
+    )
+
+    print("Below is a list of cases found in this workspace.\n\n")
+
+    output = render_markdown_table( table )
+    print(output)
+
+else:
+    print("""
+No case files were found in this workspace.  Run OWL and save the resulting
+TOML to this folder.
+""")
+```
+
+<!--
+## Overrides listing
+
+```text
+list goes here
+```
+-->
+
+## Results listing
+
+```{python}
+#| echo: false
+#| output: asis
+
+# this gets replaced with study.list_runs( view )
+
+rows = load_run_rows( metrics_registry=metrics_registry,results_root="results" )
+
+if rows:
+    pivot = False
+    level = "run"
+    view = "results"
+    explain_facets = None
+
+    table = materialize_view(
+        rows=rows,
+        registry=display_registry,
+        catalog_index=catalog_index,
+        level=level,
+        view_name=view,
+        mode="pivot" if pivot else "table",
+        explain_facets=explain_facets,
+    )
+
+    print("Below is a list of run results found in this workspace.")
+    output = render_markdown_table( table )
+    print("\n\n"+output)
+else:
+    print("""
+No results were found in this workspace.  Run "roost build" to create results.
+""")
+```

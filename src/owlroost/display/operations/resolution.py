@@ -5,12 +5,38 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Display value resolution.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Resolves semantic display values from
+materialized rows.
+
+Architectural Invariant
+-----------------------
+
+Semantic namespaces follow the convention:
+
+    namespace.field.subfield
+
+which resolves against:
+
+    row["_namespace"]["field"]["subfield"]
+
+Examples
+--------
+
+    context.case_count
+        -> row["_context"]["case_count"]
+
+    workspace.identity.name
+        -> row["_workspace"]["identity"]["name"]
+
+    study.scenario_families
+        -> row["_study"]["scenario_families"]
+
+Resolvers therefore require no knowledge
+of individual semantic namespaces.
 """
 
 from __future__ import annotations
@@ -25,7 +51,7 @@ def extract_path(
     path,
 ):
     """
-    Extract dotted path from nested dictionaries.
+    Extract a dotted path from nested dictionaries.
     """
 
     if data is None:
@@ -36,11 +62,14 @@ def extract_path(
 
     cur = data
 
-    for p in path.split("."):
-        if not isinstance(cur, dict):
+    for part in path.split("."):
+        if not isinstance(
+            cur,
+            dict,
+        ):
             return None
 
-        cur = cur.get(p)
+        cur = cur.get(part)
 
         if cur is None:
             return None
@@ -59,15 +88,18 @@ def resolve_field_value(
     display_field=None,
 ):
     """
-    Resolve semantic field value from row.
+    Resolve a semantic field value.
 
-    Resolution order:
-        1. display_fn
-        2. explicit display path
-        3. _metrics
-        4. _meta
-        5. _inputs
-        6. top-level row
+    Resolution order
+    ----------------
+
+    1. display_fn
+    2. explicit display path
+    3. _metrics
+    4. _meta
+    5. semantic namespace (_context, _workspace, ...)
+    6. _inputs
+    7. top-level row
     """
 
     # =====================================================
@@ -75,7 +107,9 @@ def resolve_field_value(
     # =====================================================
 
     if display_field is not None and display_field.display_fn:
-        return display_field.display_fn(row)
+        return display_field.display_fn(
+            row,
+        )
 
     # =====================================================
     # Explicit display path
@@ -94,7 +128,10 @@ def resolve_field_value(
     # Metrics
     # =====================================================
 
-    metrics = row.get("_metrics", {})
+    metrics = row.get(
+        "_metrics",
+        {},
+    )
 
     if field_name in metrics:
         return metrics[field_name]
@@ -103,53 +140,43 @@ def resolve_field_value(
     # Meta
     # =====================================================
 
-    meta = row.get("_meta", {})
+    meta = row.get(
+        "_meta",
+        {},
+    )
 
     if field_name in meta:
         return meta[field_name]
 
     # =====================================================
-    # Workspace
+    # Semantic namespaces
     # =====================================================
 
-    if field_name.startswith(
-        "workspace.",
-    ):
-        value = extract_path(
-            row.get(
-                "_workspace",
-                {},
-            ),
-            ".".join(field_name.split(".")[1:]),
+    head, sep, tail = field_name.partition(".")
+
+    if sep:
+        semantic_root = row.get(
+            f"_{head}",
         )
 
-        if value is not None:
-            return value
+        if semantic_root is not None:
+            value = extract_path(
+                semantic_root,
+                tail,
+            )
 
-    # =====================================================
-    # Comparison
-    # =====================================================
-
-    if field_name.startswith(
-        "comparison.",
-    ):
-        value = extract_path(
-            row.get(
-                "_comparison",
-                {},
-            ),
-            ".".join(field_name.split(".")[1:]),
-        )
-
-        if value is not None:
-            return value
+            if value is not None:
+                return value
 
     # =====================================================
     # Inputs
     # =====================================================
 
     value = extract_path(
-        row.get("_inputs", {}),
+        row.get(
+            "_inputs",
+            {},
+        ),
         field_name,
     )
 
@@ -160,7 +187,9 @@ def resolve_field_value(
     # Top-level row
     # =====================================================
 
-    return row.get(field_name)
+    return row.get(
+        field_name,
+    )
 
 
 # =========================================================
@@ -173,13 +202,17 @@ def resolve_row_value(
     key,
 ):
     """
-    Resolve value from operational row.
+    Resolve an operational row value.
 
-    Search order:
-        _meta
-        _metrics
-        top-level row
-        _inputs
+    Resolution order
+    ----------------
+
+    1. synthetic aliases
+    2. _meta
+    3. _metrics
+    4. semantic namespaces
+    5. top-level row
+    6. _inputs
     """
 
     # =====================================================
@@ -192,7 +225,7 @@ def resolve_row_value(
         )
 
     # =====================================================
-    # _meta
+    # Meta
     # =====================================================
 
     meta = row.get(
@@ -204,7 +237,7 @@ def resolve_row_value(
         return meta[key]
 
     # =====================================================
-    # _metrics
+    # Metrics
     # =====================================================
 
     metrics = row.get(
@@ -216,6 +249,26 @@ def resolve_row_value(
         return metrics[key]
 
     # =====================================================
+    # Semantic namespaces
+    # =====================================================
+
+    head, sep, tail = key.partition(".")
+
+    if sep:
+        semantic_root = row.get(
+            f"_{head}",
+        )
+
+        if semantic_root is not None:
+            value = extract_path(
+                semantic_root,
+                tail,
+            )
+
+            if value is not None:
+                return value
+
+    # =====================================================
     # Top-level row
     # =====================================================
 
@@ -223,24 +276,13 @@ def resolve_row_value(
         return row[key]
 
     # =====================================================
-    # _inputs dotted-path lookup
+    # _inputs
     # =====================================================
 
-    current = row.get(
-        "_inputs",
-        {},
+    return extract_path(
+        row.get(
+            "_inputs",
+            {},
+        ),
+        key,
     )
-
-    for part in key.split("."):
-        if not isinstance(
-            current,
-            dict,
-        ):
-            return None
-
-        if part not in current:
-            return None
-
-        current = current[part]
-
-    return current

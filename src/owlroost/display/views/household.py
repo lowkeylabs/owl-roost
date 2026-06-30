@@ -47,22 +47,13 @@ def register_display_views(
                 ("section", "Identity"),
                 "id",
                 "title",
-                "description",
+                # ("description",{"mode":"pivot"}),
                 "tags",
                 # =====================================
                 # Project
                 # =====================================
-                ("section", "Project"),
-                "root",
-                "artifact_count",
-                (
-                    "artifact_names",
-                    {
-                        "modes": [
-                            "pivot",
-                        ],
-                    },
-                ),
+                # ("section", "Project"),
+                # "root",
             ],
             description=(
                 "Canonical Household Project view. "

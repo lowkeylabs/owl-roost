@@ -34,7 +34,15 @@ Documentation
 Visualizations
 ```
 
-Display communicates evidence.
+Display communicates information owned by other architectural subsystems.
+
+Typical observations include:
+
+* household summaries
+* workspace characterization
+* execution artifacts
+* analytical evidence
+* comparative analyses
 
 It does not generate evidence.
 

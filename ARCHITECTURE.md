@@ -81,22 +81,28 @@ This separation is fundamental.
 Conceptually, every investigation follows the same workflow.
 
 ```text
-Household
-    ↓
+Canonical Household(s)
+        ↓
+Planning Investigation
+        ↓
 Characterization
-    ↓
+        ↓
 Levers
-    ↓
+        ↓
 Applicable Transition Families
-    ↓
+        ↓
 Transitions
-    ↓
+        ↓
 Experiments
-    ↓
+        ↓
 Evidence
-    ↓
+        ↓
 Evidence Package
 ```
+
+A planning investigation may involve one or more canonical households.
+
+Characterization identifies the analytical opportunities available within that investigation.
 
 Every subsystem contributes to one or more stages of this workflow.
 
@@ -106,9 +112,9 @@ No subsystem owns the entire workflow.
 
 # Characterization
 
-Characterization is the process of understanding the current planning situation.
+Characterization is the process of understanding the current planning investigation.
 
-Rather than exposing raw inputs directly, ROOST computes semantic observations describing the household and analytical context.
+Rather than exposing raw household information directly, ROOST computes semantic observations describing the planning context and analytical opportunities.
 
 These observations are called **Levers**.
 
@@ -119,7 +125,7 @@ Levers may be:
 * Continuous
 * Derived
 
-Levers characterize the current planning situation.
+Levers characterize the investigation.
 
 They determine which transition families are applicable and constrain the valid transitions available for exploration.
 
@@ -192,7 +198,7 @@ Evidence packages describe results.
 
 # Definitions and Realizations
 
-ROOST distinguishes reusable analytical definitions from realized execution artifacts.
+ROOST distinguishes reusable analytical definitions from realized analytical artifacts.
 
 Conceptually:
 
@@ -205,13 +211,17 @@ Realization
 Examples include:
 
 ```text
+Canonical Household
+        ↓
+Realized Household
+
 Transition Family
         ↓
 Transitions
 
 Experiment
         ↓
-Session
+Execution Artifacts
 
 Display View
         ↓
@@ -220,9 +230,9 @@ Rendered Presentation
 
 Definitions describe analytical intent.
 
-Realizations preserve execution history.
+Realizations preserve the exact artifacts generated from those definitions.
 
-Maintaining this distinction improves reuse while preserving provenance.
+Maintaining this distinction improves reuse while preserving provenance and reproducibility.
 
 ---
 
@@ -298,6 +308,32 @@ Provenance explains:
 * Which evidence was produced
 
 Artifacts should preserve sufficient information to reproduce and explain their creation.
+
+---
+
+# Planning Intent
+
+ROOST distinguishes planning intent from execution provenance.
+
+Planning intent explains why an investigation exists.
+
+It captures:
+
+* planning objectives
+* applicable analytical methodologies
+* selected transitions
+* analytical organization
+
+Execution provenance explains how evidence was generated.
+
+It captures:
+
+* realized analytical artifacts
+* execution configuration
+* evaluation environments
+* generated evidence
+
+Preserving both allows investigations to be reproduced mechanically while also preserving the reasoning that motivated them.
 
 ---
 
@@ -380,15 +416,17 @@ The following concepts are foundational to ROOST.
 
 These concepts should remain stable unless intentionally redesigned.
 
-## Households are the primary analytical context.
+## Canonical households define the planning subject.
 
-Every investigation begins with a household.
+Every investigation begins with one or more canonical households.
+
+Canonical households describe financial state independently of how they were created.
 
 ---
 
-## Characterization precedes analysis.
+## Characterization precedes experimentation.
 
-ROOST first understands the current planning situation before determining applicable analytical workflows.
+ROOST first characterizes the planning investigation before determining applicable analytical workflows and experiments.
 
 ---
 
@@ -472,10 +510,12 @@ The architecture should support new workflows, new analytical methodologies, and
 
 The guiding philosophy is simple:
 
-> Characterize the present.
+> Understand the current planning investigation.
+>
+> Characterize analytical opportunities.
 >
 > Evaluate meaningful transitions.
 >
 > Generate trustworthy evidence.
 >
-> Preserve explainability always.
+> Preserve intent, provenance, and explainability.

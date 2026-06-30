@@ -10,23 +10,28 @@ Workspace loaders.
 Notes
 -----
 Owns discovery and loading of
-workspace definitions.
+planning contexts and workspace
+definitions.
 
-A workspace is currently defined as
-a directory containing:
+A planning context always exists.
+
+A workspace is an optional planning
+artifact represented by:
 
     workspace.toml
 
 Responsibilities
 ----------------
 * Discover workspaces
-* Load workspace metadata
-* Materialize workspace rows
+* Load planning contexts
+* Load workspace definitions
+* Materialize canonical planning rows
 
 Does NOT
 ---------
 * Render output
 * Materialize tables
+* Populate inventory
 * Perform workspace operations
 """
 
@@ -36,6 +41,10 @@ import tomllib
 from pathlib import Path
 
 from owlroost.exceptions import RoostError
+
+# =========================================================
+# Helpers
+# =========================================================
 
 
 def _load_workspace_toml(
@@ -47,7 +56,6 @@ def _load_workspace_toml(
     Returns
     -------
     dict
-        Parsed TOML.
 
     Empty dict on failure.
     """
@@ -61,16 +69,51 @@ def _load_workspace_toml(
         return {}
 
 
-def _workspace_row(
+# =========================================================
+# Row Builders
+# =========================================================
+
+
+def _build_context_row(
+    root: Path,
+):
+    """
+    Build the canonical planning context.
+
+    Every directory has a planning
+    context regardless of whether an
+    initialized workspace exists.
+    """
+
+    return {
+        "_path": root.resolve(),
+        "_meta": {
+            "level": "workspace",
+        },
+        "_context": {
+            "root": str(
+                root.resolve(),
+            ),
+        },
+    }
+
+
+def _materialize_workspace(
+    row,
     workspace_dir: Path,
 ):
     """
-    Build canonical workspace row.
+    Attach workspace information to an
+    existing planning context.
 
     Parameters
     ----------
+    row
+        Context row.
+
     workspace_dir
-        Directory containing workspace.toml.
+        Directory containing
+        workspace.toml.
     """
 
     workspace_file = workspace_dir / "workspace.toml"
@@ -79,126 +122,92 @@ def _workspace_row(
         workspace_file,
     )
 
-    cases_dir = (
-        workspace_dir
-        / workspace.get(
-            "cases_dir",
-            ("cases" if (workspace_dir / "cases").exists() else "."),
-        )
-    ).resolve()
-
-    results_dir = (
-        workspace_dir
-        / workspace.get(
-            "results_dir",
-            "results",
-        )
-    ).resolve()
-
-    inventory = {
-        "studies": [],
-        "experiments": [],
-        "cases": [],
-        "sessions": [],
-        "runs": [],
-        "trials": [],
-    }
-
-    return {
-        "_path": workspace_dir.resolve(),
-        "_meta": {
-            "level": "workspace",
-        },
-        "_workspace": {
-            # ---------------------------------------------
-            # Identity
-            # ---------------------------------------------
-            "identity": {
-                "name": workspace.get(
-                    "name",
-                    workspace_dir.name,
-                ),
-                "title": workspace.get(
-                    "title",
-                    "",
-                ),
-                "description": (
-                    workspace.get(
-                        "description",
-                        "",
-                    )
-                    .replace(
-                        "\n",
-                        " ",
-                    )
-                    .strip()
-                ),
-            },
-            # ---------------------------------------------
-            # Definition
-            # ---------------------------------------------
-            "definition": workspace,
-            "definition_file": str(
-                workspace_file.resolve(),
+    row["_workspace"] = {
+        # ---------------------------------------------
+        # Identity
+        # ---------------------------------------------
+        "identity": {
+            "name": workspace.get(
+                "name",
+                workspace_dir.name,
             ),
-            # ---------------------------------------------
-            # Filesystem Layout
-            # ---------------------------------------------
-            "paths": {
-                "workspace": str(
-                    workspace_dir.resolve(),
-                ),
-                "cases": str(
-                    cases_dir,
-                ),
-                "results": str(
-                    results_dir,
-                ),
-            },
-            # ---------------------------------------------
-            # Inventory Summary
-            #
-            # Materialized inventory metrics
-            # populate this structure.
-            #
-            # Seed values only.
-            # ---------------------------------------------
-            "summary": {
-                "has_cases": len(inventory.get("cases", [])) > 0,
-                "has_results": len(inventory.get("runs", [])) > 0,
-            },
-            # ---------------------------------------------
-            # Inventory
-            #
-            # Detailed realizations discovered
-            # from the workspace.
-            #
-            # Inventory materializers own
-            # population of these collections.
-            # ---------------------------------------------
-            "inventory": inventory,
+            "title": workspace.get(
+                "title",
+                "",
+            ),
+            "description": (
+                workspace.get(
+                    "description",
+                    "",
+                )
+                .replace(
+                    "\n",
+                    " ",
+                )
+                .strip()
+            ),
+        },
+        # ---------------------------------------------
+        # Definition
+        # ---------------------------------------------
+        "definition": workspace,
+        "definition_file": str(
+            workspace_file.resolve(),
+        ),
+        # ---------------------------------------------
+        # Workspace Layout
+        # ---------------------------------------------
+        "paths": {
+            "workspace": str(
+                workspace_dir.resolve(),
+            ),
+            "cases": str(
+                (
+                    workspace_dir
+                    / workspace.get(
+                        "cases_dir",
+                        ("cases" if (workspace_dir / "cases").exists() else "."),
+                    )
+                ).resolve()
+            ),
+            "results": str(
+                (
+                    workspace_dir
+                    / workspace.get(
+                        "results_dir",
+                        "results",
+                    )
+                ).resolve()
+            ),
+            "reports": str(
+                (
+                    workspace_dir
+                    / workspace.get(
+                        "reports_dir",
+                        "reports",
+                    )
+                ).resolve()
+            ),
         },
     }
+
+    return row
+
+
+# =========================================================
+# Discovery
+# =========================================================
 
 
 def find_workspaces(
     source=".",
 ):
     """
-    Discover workspaces.
+    Discover initialized workspaces.
 
     A workspace is any immediate
-    subdirectory containing workspace.toml.
-
-    Parameters
-    ----------
-    source
-        Root directory containing
-        workspaces.
-
-    Returns
-    -------
-    list[Path]
+    subdirectory containing
+    workspace.toml.
     """
 
     source = Path(
@@ -214,10 +223,7 @@ def find_workspaces(
         source.iterdir(),
         key=lambda p: p.name.lower(),
     ):
-        if not child.is_dir():
-            continue
-
-        if (child / "workspace.toml").exists():
+        if child.is_dir() and (child / "workspace.toml").exists():
             workspaces.append(
                 child,
             )
@@ -225,11 +231,47 @@ def find_workspaces(
     return workspaces
 
 
+# =========================================================
+# Public Loaders
+# =========================================================
+
+
+def load_context_row(
+    root=".",
+):
+    """
+    Load a planning context.
+
+    A planning context always exists.
+
+    If the directory contains an
+    initialized workspace, workspace
+    information is attached.
+    """
+
+    root = Path(
+        root,
+    ).resolve()
+
+    row = _build_context_row(
+        root,
+    )
+
+    if (root / "workspace.toml").exists():
+        _materialize_workspace(
+            row,
+            root,
+        )
+
+    return row
+
+
 def load_workspace_row(
     workspace_dir=".",
 ):
     """
-    Load a single workspace row.
+    Load a single initialized
+    workspace.
     """
 
     workspace_dir = Path(
@@ -241,26 +283,23 @@ def load_workspace_row(
     if not workspace_file.exists():
         raise RoostError(f"Missing workspace.toml: {workspace_file}")
 
-    return _workspace_row(
+    row = _build_context_row(
         workspace_dir,
     )
+
+    _materialize_workspace(
+        row,
+        workspace_dir,
+    )
+
+    return row
 
 
 def load_workspace_rows(
     source=".",
 ):
     """
-    Load workspace rows.
-
-    Parameters
-    ----------
-    source
-        Directory containing
-        workspaces.
-
-    Returns
-    -------
-    list[dict]
+    Load discovered workspaces.
     """
 
     rows = []

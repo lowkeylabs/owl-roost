@@ -83,3 +83,24 @@ def register_display_views(
             **SHARED_VIEW_ONTOLOGY,
         )
     )
+
+    reg.register_view(
+        DisplayView(
+            level="workspace",
+            name="context",
+            entries=[
+                # =====================================
+                # Workspace context
+                # =====================================
+                ("tree", {"root": "context_tree", "depth": 2, "label": "."}),
+            ],
+            description=(
+                "Summarizes the current "
+                "workspace, its readiness "
+                "for retirement planning, "
+                "and available analytical "
+                "artifacts."
+            ),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )

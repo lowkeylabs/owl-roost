@@ -29,18 +29,20 @@ ROOST exists to support that process.
 Conceptually:
 
 ```text
-Household
-    ↓
+Canonical Household
+        ↓
+Planning Investigation
+        ↓
 Characterization
-    ↓
+        ↓
 Transitions
-    ↓
+        ↓
 Evidence Generation
-    ↓
+        ↓
 Evidence Package
-    ↓
+        ↓
 Interpretation
-    ↓
+        ↓
 Decision
 ```
 
@@ -76,7 +78,11 @@ while supporting many different decision-making styles.
 
 # The Household is the Primary Context
 
-Every ROOST investigation begins with a household in its current realized planning state.
+Every ROOST investigation begins with one or more canonical household definitions.
+
+A household captures the current financial state of an individual or family at a particular point in time.
+
+ROOST organizes planning investigations around those households, evaluates alternative transitions, and generates evidence describing the consequences of those alternatives.
 
 A household represents the current financial planning situation.
 
@@ -107,7 +113,7 @@ Financial concepts become meaningful only when evaluated for a particular househ
 
 # Characterization
 
-The first responsibility of ROOST is to characterize the current planning situation.
+The first responsibility of ROOST is to characterize the planning investigation.
 
 Rather than exposing raw inputs and outputs directly, ROOST computes semantic observations describing the household and its current planning context.
 
@@ -232,7 +238,7 @@ Experiments are:
 * Repeatable
 * Inspectable
 
-Experiments describe **how** evidence will be generated.
+Experiments are realized into concrete execution artifacts that preserve the exact household state, analytical assumptions, and execution configuration used to generate the resulting evidence. This separation allows planning intent to remain distinct from execution provenance.
 
 They do not interpret that evidence.
 
@@ -474,28 +480,28 @@ Conceptually:
            ROOST Boundary
 ═══════════════════════════════════════
 
-Household
-     │
-     ▼
+Canonical Household(s)
+        │
+        ▼
+Planning Investigation
+        │
+        ▼
 Characterization
-     │
-     ▼
+        │
+        ▼
 Levers
-     │
-     ▼
-Applicable Transition Families
-     │
-     ▼
+        │
+        ▼
 Transitions
-     │
-     ▼
+        │
+        ▼
 Experiments
-     │
-     ▼
+        │
+        ▼
+Execution
+        │
+        ▼
 Evidence
-     │
-     ▼
-Evidence Package
 
 ═══════════════════════════════════════
 ```

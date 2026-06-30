@@ -1,0 +1,157 @@
+# src/owlroost/workspace/levers/workspace.py
+#
+# Copyright (c) 2026 John Leonard
+# SPDX-License-Identifier: GPL-3.0-or-later
+# See LICENSE file in repository root.
+
+"""
+Workspace levers.
+
+Notes
+-----
+Defines semantic observations describing
+the planning workspace itself.
+
+Unlike context levers, workspace levers
+describe the workspace definition rather
+than the surrounding planning context.
+
+These levers answer questions such as:
+
+* Has the workspace been named?
+* Has it been documented?
+* Does it organize multiple households?
+
+They do not describe the filesystem or
+execution state.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from owlroost.catalog.ontology import (
+    CatalogNodeType,
+)
+from owlroost.core.utils import (
+    normalize_module_path,
+)
+from owlroost.workspace.specs import (
+    WorkspaceSpec,
+)
+
+# =========================================================
+# Ontology
+# =========================================================
+
+WORKSPACE_LEVER: dict[str, Any] = dict(
+    owner="ROOST",
+    semantic_domain="design",
+    value_origin="roost-computed",
+    projection_kind="canonical",
+    analytic_kind="primary",
+    materialization_level="workspace",
+    node_type=CatalogNodeType.VARIABLE,
+    defined_in=normalize_module_path(__file__),
+)
+
+# =========================================================
+# Lever Implementations
+# =========================================================
+
+
+def has_name(row):
+    return bool(
+        row.get("_workspace", {})
+        .get("identity", {})
+        .get("name")
+    )
+
+
+def has_title(row):
+    return bool(
+        row.get("_workspace", {})
+        .get("identity", {})
+        .get("title")
+    )
+
+
+def has_description(row):
+    return bool(
+        row.get("_workspace", {})
+        .get("identity", {})
+        .get("description")
+    )
+
+
+def household_count(row):
+    return len(
+        row.get("_workspace", {})
+        .get("inventory", {})
+        .get("cases", [])
+    )
+
+
+def is_multi_household(row):
+    return household_count(row) > 1
+
+
+# =========================================================
+# Lever Definitions
+# =========================================================
+
+WORKSPACE_LEVERS = [
+    dict(
+        name="has_name",
+        dtype=bool,
+        compute_fn=has_name,
+        description="Workspace has a name.",
+    ),
+    dict(
+        name="has_title",
+        dtype=bool,
+        compute_fn=has_title,
+        description="Workspace has a title.",
+    ),
+    dict(
+        name="has_description",
+        dtype=bool,
+        compute_fn=has_description,
+        description="Workspace has a description.",
+    ),
+    dict(
+        name="household_count",
+        dtype=int,
+        compute_fn=household_count,
+        description="Number of households organized by the workspace.",
+    ),
+    dict(
+        name="is_multi_household",
+        dtype=bool,
+        compute_fn=is_multi_household,
+        description="Workspace organizes multiple households.",
+    ),
+]
+
+# =========================================================
+# Registration
+# =========================================================
+
+
+def register_levers(
+    reg,
+):
+    """
+    Register workspace levers.
+    """
+
+    for lever in WORKSPACE_LEVERS:
+        reg.register(
+            WorkspaceSpec(
+                name=f"workspace.{lever['name']}",
+                dtype=lever["dtype"],
+                compute_fn=lever["compute_fn"],
+                description=lever["description"],
+                **WORKSPACE_LEVER,
+            )
+        )
