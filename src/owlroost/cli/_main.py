@@ -17,6 +17,13 @@ from __future__ import annotations
 
 import click
 
+from owlroost.guide.bootstrap import (
+    build_guide_registry,
+)
+from owlroost.guide.render import (
+    render_welcome,
+)
+
 from ..core.info import (
     get_installation_info,
 )
@@ -58,6 +65,19 @@ def cli(
     log_level = log_level.upper()
 
     ctx.ensure_object(dict)
+    #
+    # No subcommand?
+    #
+    if ctx.invoked_subcommand is None:
+        guide = build_guide_registry()
+
+        click.echo(
+            render_welcome(
+                guide,
+            )
+        )
+
+        return
 
 
 @cli.command()

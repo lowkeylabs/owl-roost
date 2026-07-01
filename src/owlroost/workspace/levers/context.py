@@ -37,6 +37,7 @@ from owlplanner.config.plan_bridge import config_to_plan
 from owlplanner.config.toml_io import load_toml
 
 from owlroost.catalog.ontology import (
+    ONTOLOGY_DIMENSIONS,
     CatalogNodeType,
 )
 from owlroost.core.utils import (
@@ -180,12 +181,14 @@ LEVERS = [
     dict(
         name="case_count",
         dtype=int,
+        analytic_kind="primary",
         compute_fn=case_count,
         description="Count of OWL case files in planning context.",
     ),
     dict(
         name="valid_case_count",
         dtype=int,
+        analytic_kind="primary",
         compute_fn=valid_case_count,
         description="Count of loadable OWL case files in planning context.",
     ),
@@ -193,14 +196,16 @@ LEVERS = [
     # Workflow readiness
     # ---------------------------------------------
     dict(
-        name="workspace_initialzed",
+        name="workspace_initialized",
         dtype=bool,
+        analytic_kind="primary",
         compute_fn=workspace_initialized,
         description="Planning context is an initialized workspace.",
     ),
     dict(
         name="has_valid_case",
         dtype=bool,
+        analytic_kind="derived",
         compute_fn=has_valid_case,
         description="Planning context contains at least one valid case.",
     ),
@@ -219,6 +224,14 @@ def register_levers(
     """
 
     for lever in LEVERS:
+        ontology = dict(LEVER_ONTOLOGY)
+
+        for dimension in ONTOLOGY_DIMENSIONS:
+            field = dimension.field_name
+
+            if field in lever:
+                ontology[field] = lever[field]
+
         reg.register(
             WorkspaceSpec(
                 name=f"context.{lever['name']}",
@@ -227,6 +240,6 @@ def register_levers(
                     row["_path"],
                 ),
                 description=lever["description"],
-                **LEVER_ONTOLOGY,
+                **ontology,
             )
         )

@@ -641,6 +641,9 @@ def load_case_rows(
 
     source = Path(source)
 
+    if not source.exists():
+        return []
+
     # =====================================================
     # Directory → discover TOML files
     # =====================================================

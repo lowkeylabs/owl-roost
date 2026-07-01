@@ -92,7 +92,7 @@ def register_display_views(
                 # =====================================
                 # Workspace context
                 # =====================================
-                ("tree", {"root": "context_tree", "depth": 2, "label": "."}),
+                ("tree", {"root": "context_tree", "depth": 2, "label": None}),
             ],
             description=(
                 "Summarizes the current "

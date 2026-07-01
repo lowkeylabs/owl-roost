@@ -71,6 +71,13 @@ def register_display_fields(
                     width="auto",
                     min_width=8,
                     max_width=35,
+                    wrap=True,
+                ),
+                "pivot": DisplayProfile(
+                    label="Metric",
+                    width="auto",
+                    min_width=22,
+                    max_width=50,
                     wrap=False,
                 ),
             },

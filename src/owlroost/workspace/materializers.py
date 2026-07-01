@@ -172,6 +172,10 @@ def materialize_context(
         ):
             continue
 
+        # only display "primary" fields.
+        if field.analytic_kind != "primary":
+            continue
+
         try:
             value = field.compute_fn(
                 row,
@@ -201,8 +205,9 @@ def materialize_context_tree(
 
         row["_context_tree"]
 
-    Only variables within the
-    'context.' namespace participate.
+    The tree is built from the already
+    materialized semantic context rather
+    than recomputing observations.
     """
 
     level = row.get(
@@ -223,36 +228,26 @@ def materialize_context_tree(
 
     row["_context_tree"] = root
 
-    #
-    # Cache of section nodes so multiple
-    # fields in the same group share the
-    # same parent.
-    #
     sections = {}
 
     for field in workspace_registry.all():
-        if field.compute_fn is None:
-            continue
-
         if not field.name.startswith(
             "context.",
         ):
             continue
 
-        try:
-            value = field.compute_fn(
-                row,
-            )
+        value = row_value(
+            row,
+            field.name,
+        )
 
-        except Exception:
+        #
+        # Variable was not materialized.
+        #
+        if value is None:
             continue
 
-        parts = field.name.split(".")
-
-        #
-        # Skip the leading "context".
-        #
-        path = parts[1:]
+        path = field.name.split(".")[1:]
 
         parent = root
 
@@ -350,6 +345,10 @@ def materialize_workspace(
         ):
             continue
 
+        # only display "primary" fields.
+        if field.analytic_kind != "primary":
+            continue
+
         try:
             value = field.compute_fn(
                 row,
@@ -379,12 +378,9 @@ def materialize_workspace_tree(
 
         row["_workspace_tree"]
 
-    Only variables within the
-    'workspace.' namespace participate.
-
-    If the planning context does not
-    contain an initialized workspace,
-    no tree is generated.
+    The tree is built from the already
+    materialized workspace model rather
+    than recomputing observations.
     """
 
     level = row.get(
@@ -397,9 +393,6 @@ def materialize_workspace_tree(
     if level != "workspace":
         return row
 
-    #
-    # No initialized workspace.
-    #
     if "_workspace" not in row:
         return row
 
@@ -411,36 +404,26 @@ def materialize_workspace_tree(
 
     row["_workspace_tree"] = root
 
-    #
-    # Cache of section nodes so multiple
-    # fields in the same group share
-    # the same parent.
-    #
     sections = {}
 
     for field in workspace_registry.all():
-        if field.compute_fn is None:
-            continue
-
         if not field.name.startswith(
             "workspace.",
         ):
             continue
 
-        try:
-            value = field.compute_fn(
-                row,
-            )
+        value = row_value(
+            row,
+            field.name,
+        )
 
-        except Exception:
+        #
+        # Variable was not materialized.
+        #
+        if value is None:
             continue
 
-        parts = field.name.split(".")
-
-        #
-        # Skip the leading "workspace".
-        #
-        path = parts[1:]
+        path = field.name.split(".")[1:]
 
         parent = root
 
