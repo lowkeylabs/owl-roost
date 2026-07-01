@@ -46,6 +46,7 @@ def load_catalog_rows(
     schema_registry,
     metrics_registry,
     workspace_registry,
+    guide_registry,
     comparison_registry,
     display_registry,
     # -----------------------------------------------------
@@ -108,6 +109,7 @@ def load_catalog_rows(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
+        guide_registry=guide_registry,
         comparison_registry=comparison_registry,
         display_registry=display_registry,
     )

@@ -6,6 +6,6 @@ from owlroost.guide.bootstrap import (
 def test_registered_names_are_unique():
     reg = build_guide_registry()
 
-    names = [s.name for s in reg.suggestions()]
+    names = [guide.name for guide in reg.all()]
 
     assert len(names) == len(set(names))

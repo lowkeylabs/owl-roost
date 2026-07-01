@@ -316,6 +316,72 @@ def build_workspace_rows(
 
 
 # =========================================================
+# Guide Registry
+# =========================================================
+
+
+def build_guide_rows(
+    guide_registry,
+):
+    """
+    Build canonical catalog rows from
+    workflow guide ontology.
+
+    Notes
+    -----
+    Guide fields represent semantic
+    workflow transformations available
+    within the current planning context.
+
+    Guide values materialize into
+
+        row["_guide"]
+
+    and participate in catalog synthesis
+    exactly like workspace observations.
+    """
+
+    rows = []
+
+    for guide in guide_registry.all():
+        spec = CatalogSpec(
+            field_name=f"guide.{guide.name}",
+            node_type=guide.node_type,
+            owner=guide.owner,
+            semantic_domain=guide.semantic_domain,
+            value_origin=guide.value_origin,
+            projection_kind=guide.projection_kind,
+            analytic_kind=guide.analytic_kind,
+            materialization_level=guide.materialization_level,
+            source="_guide",
+            path=guide.name,
+            description=guide.description,
+            derived_from=list(
+                getattr(
+                    guide,
+                    "derived_from",
+                    [],
+                )
+            ),
+            provenance_chain=_build_provenance(
+                stage="guide",
+                operation=ProvenanceOperation.REGISTERED,
+                source=guide,
+            ),
+        )
+
+        rows.append(
+            build_catalog_row(
+                spec=spec,
+                layer="guide",
+                semantic_field=guide,
+            )
+        )
+
+    return rows
+
+
+# =========================================================
 # Comparison Registry
 # =========================================================
 

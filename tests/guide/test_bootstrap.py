@@ -6,9 +6,9 @@ from owlroost.guide.bootstrap import (
 def test_bootstrap_builds_registry():
     reg = build_guide_registry()
 
-    suggestions = reg.suggestions()
+    guides = reg.all()
 
-    assert len(suggestions) > 0
+    assert len(guides) > 0
 
 
 def test_welcome_provider_registered():

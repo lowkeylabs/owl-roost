@@ -1,33 +1,36 @@
+# tests/guide/test_registry.py
+
 from owlroost.guide.registry import (
     GuideRegistry,
 )
 from owlroost.guide.specs import (
-    SuggestionSpec,
+    GuideSpec,
 )
 
 
-def test_register_single_suggestion():
+def test_register_single_guide():
     reg = GuideRegistry()
 
     reg.register(
-        SuggestionSpec(
+        GuideSpec(
             name="x",
             title="X",
             description="desc",
         )
     )
 
-    suggestions = reg.suggestions()
+    guides = reg.all()
 
-    assert len(suggestions) == 1
-    assert suggestions[0].name == "x"
+    assert len(guides) == 1
+
+    assert guides[0].name == "x"
 
 
 def test_registry_sorted_by_priority():
     reg = GuideRegistry()
 
     reg.register(
-        SuggestionSpec(
+        GuideSpec(
             name="b",
             title="B",
             description="",
@@ -36,7 +39,7 @@ def test_registry_sorted_by_priority():
     )
 
     reg.register(
-        SuggestionSpec(
+        GuideSpec(
             name="a",
             title="A",
             description="",
@@ -44,7 +47,7 @@ def test_registry_sorted_by_priority():
         )
     )
 
-    names = [s.name for s in reg.suggestions()]
+    names = [guide.name for guide in reg.all()]
 
     assert names == [
         "a",
@@ -55,17 +58,17 @@ def test_registry_sorted_by_priority():
 def test_get_returns_registered_item():
     reg = GuideRegistry()
 
-    suggestion = SuggestionSpec(
+    guide = GuideSpec(
         name="hello",
         title="Hello",
         description="",
     )
 
     reg.register(
-        suggestion,
+        guide,
     )
 
-    assert reg.get("hello") is suggestion
+    assert reg.get("hello") is guide
 
 
 def test_get_unknown_returns_none():

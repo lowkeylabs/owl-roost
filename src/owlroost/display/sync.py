@@ -331,6 +331,46 @@ def sync_workspace_registry(
 
 
 # =========================================================
+# Guide Overlay Sync
+# =========================================================
+
+
+# =========================================================
+# Guide Overlay Sync
+# =========================================================
+
+
+def sync_guide_registry(
+    guide_registry,
+    display_registry,
+):
+    """
+    Generate default display overlays for
+    registered workflow guides.
+    """
+
+    for guide in guide_registry.all():
+        _register_field_if_missing(
+            field_name=f"guide.{guide.name}",
+            description=guide.description,
+            display_registry=display_registry,
+            profiles={
+                "table": DisplayProfile(
+                    label=guide.title,
+                    wrap=True,
+                    content_align="left",
+                ),
+                "pivot": DisplayProfile(
+                    label=guide.title,
+                    wrap=True,
+                    content_align="left",
+                ),
+            },
+            defined_in=getattr(guide, "defined_in", None),
+        )
+
+
+# =========================================================
 # Comparison Overlay Sync
 # =========================================================
 

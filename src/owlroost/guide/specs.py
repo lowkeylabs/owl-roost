@@ -5,24 +5,30 @@
 # See LICENSE file in repository root.
 
 """
-Guide subsystem specifications.
+Guide semantic specifications.
 
 Notes
 -----
 Guide specifications describe workflow
 knowledge rather than execution logic.
 
-Providers register SuggestionSpec objects.
+Guide providers register GuideSpec
+objects.
 
 The guide engine evaluates those
-suggestions against the current planning
-context and produces EvaluationResult
-objects describing the evaluation.
+workflow definitions against the
+current planning context and produces
+GuideEvaluation objects describing the
+evaluation.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+
+from owlroost.catalog.ontology import (
+    OntologySpec,
+)
 
 # =========================================================
 # Guide Specifications
@@ -42,17 +48,29 @@ class Requirement:
     value: object = True
 
 
-@dataclass(slots=True)
-class SuggestionSpec:
-    """
-    Registered workflow suggestion.
-    """
+@dataclass(kw_only=True)
+class GuideSpec(
+    OntologySpec,
+):
+    #
+    # Identity
+    #
 
     name: str
 
     title: str
 
-    description: str
+    description: str = ""
+
+    #
+    # Authoring
+    #
+
+    defined_in: str | None = None
+
+    #
+    # Workflow
+    #
 
     command: str | None = None
 
@@ -84,12 +102,12 @@ class RequirementResult:
 
 
 @dataclass(slots=True)
-class SuggestionResult:
+class GuideResult:
     """
-    Result of evaluating one suggestion.
+    Result of evaluating one guide.
     """
 
-    suggestion: SuggestionSpec
+    guide: GuideSpec
 
     applicable: bool
 
@@ -99,29 +117,38 @@ class SuggestionResult:
 
 
 @dataclass(slots=True)
-class EvaluationResult:
+class GuideEvaluation:
     """
     Complete guide evaluation.
 
     Notes
     -----
-    Retains the complete evaluation
-    together with convenient subsets
-    used by guide renderers and
-    explain facets.
+    Retains the complete workflow
+    evaluation together with useful
+    subsets consumed by display,
+    explain, and future workflow
+    tooling.
     """
 
-    all_suggestions: list[SuggestionResult] = field(
+    # =====================================================
+    # Guide Results
+    # =====================================================
+
+    all_guides: list[GuideResult] = field(
         default_factory=list,
     )
 
-    applicable_suggestions: list[SuggestionResult] = field(
+    applicable_guides: list[GuideResult] = field(
         default_factory=list,
     )
 
-    rejected_suggestions: list[SuggestionResult] = field(
+    rejected_guides: list[GuideResult] = field(
         default_factory=list,
     )
+
+    # =====================================================
+    # Coverage
+    # =====================================================
 
     observed_variables: set[str] = field(
         default_factory=set,
@@ -134,12 +161,3 @@ class EvaluationResult:
     unused_variables: set[str] = field(
         default_factory=set,
     )
-
-
-@dataclass(slots=True)
-class GuideStats:
-    suggestion_count: int
-
-    top_suggestion: str | None
-
-    has_suggestions: bool

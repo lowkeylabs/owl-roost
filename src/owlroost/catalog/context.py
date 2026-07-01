@@ -132,6 +132,7 @@ def build_catalog_context() -> CatalogContext:
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
+        guide_registry=guide_registry,
         comparison_registry=comparison_registry,
     )
 
@@ -143,6 +144,7 @@ def build_catalog_context() -> CatalogContext:
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
+        guide_registry=guide_registry,
         comparison_registry=comparison_registry,
         display_registry=display_registry,
     )

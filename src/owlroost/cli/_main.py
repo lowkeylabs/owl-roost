@@ -20,9 +20,6 @@ import click
 from owlroost.guide.bootstrap import (
     build_guide_registry,
 )
-from owlroost.guide.render import (
-    render_welcome,
-)
 
 from ..core.info import (
     get_installation_info,
@@ -35,6 +32,10 @@ from .cmd_results import cmd_results
 from .cmd_run import cmd_run
 from .cmd_vars import cmd_vars
 from .cmd_workspace import cmd_workspace
+
+
+def render_welcome(guide):
+    print("welcome")
 
 
 @click.group(invoke_without_command=True)

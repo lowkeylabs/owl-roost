@@ -5,38 +5,147 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Planning context workflow guides.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Registers the workflow guides that
+describe how a user progresses from an
+empty planning context toward an
+initialized ROOST workspace.
+
+Each guide consumes semantic variables
+already materialized by the workspace
+subsystem.
+
+Provider discovery automatically imports
+this module and invokes:
+
+    register(reg)
 """
 
 from __future__ import annotations
 
-from owlroost.guide.specs import (
-    Requirement,
-    SuggestionSpec,
+from typing import Any
+
+from owlroost.catalog.ontology import (
+    ONTOLOGY_DIMENSIONS,
+    CatalogNodeType,
 )
+from owlroost.core.utils import (
+    normalize_module_path,
+)
+from owlroost.guide.specs import (
+    GuideSpec,
+    Requirement,
+)
+
+# =========================================================
+# Ontology
+# =========================================================
+
+GUIDE_ONTOLOGY: dict[str, Any] = dict(
+    owner="ROOST",
+    semantic_domain="planning",
+    value_origin="roost-computed",
+    projection_kind="canonical",
+    analytic_kind="primary",
+    materialization_level="context",
+    node_type=CatalogNodeType.VARIABLE,
+    defined_in=normalize_module_path(__file__),
+)
+
+# =========================================================
+# Workflow Guides
+# =========================================================
+
+TRANSFORMATIONS = [
+    # -----------------------------------------------------
+    # Always available
+    # -----------------------------------------------------
+    dict(
+        name="welcome",
+        title="Getting Started",
+        description="Display the current planning context.",
+        command="roost .",
+        priority=10,
+    ),
+    # -----------------------------------------------------
+    # Workspace lifecycle
+    # -----------------------------------------------------
+    dict(
+        name="workspace.initialize",
+        title="Initialize Workspace",
+        description="Create a planning workspace in the current directory.",
+        command="roost workspace --init",
+        priority=20,
+        requirements=[
+            Requirement(
+                "context.workspace_initialized",
+                "==",
+                False,
+            ),
+        ],
+    ),
+    dict(
+        name="workspace.view",
+        title="Review Workspace",
+        description="Inspect the initialized workspace.",
+        command="roost workspace .",
+        priority=40,
+        requirements=[
+            Requirement(
+                "context.workspace_initialized",
+                "==",
+                True,
+            ),
+        ],
+    ),
+    # -----------------------------------------------------
+    # Case workflow
+    # -----------------------------------------------------
+    dict(
+        name="cases.review",
+        title="Review Cases",
+        description="Review available planning cases.",
+        command="roost cases",
+        priority=30,
+        requirements=[
+            Requirement(
+                "context.valid_case_count",
+                ">",
+                0,
+            ),
+        ],
+    ),
+]
+
+# =========================================================
+# Registration
+# =========================================================
 
 
 def register(
     reg,
 ):
-    reg.register(
-        SuggestionSpec(
-            name="workspace.initialize",
-            title="Initialize Workspace",
-            description=("Create a planning workspace in the current directory."),
-            command="roost workspace --init",
-            priority=20,
-            requirements=[
-                Requirement(
-                    "context.workspace_initialized",
-                    "==",
-                    False,
-                ),
-            ],
+    """
+    Register planning workflow guides.
+    """
+
+    for transformation in TRANSFORMATIONS:
+        ontology = dict(
+            GUIDE_ONTOLOGY,
         )
-    )
+
+        for dimension in ONTOLOGY_DIMENSIONS:
+            field = dimension.field_name
+
+            if field in transformation:
+                ontology[field] = transformation[field]
+
+        reg.register(
+            GuideSpec(
+                **transformation,
+                **ontology,
+            )
+        )

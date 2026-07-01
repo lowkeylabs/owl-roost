@@ -34,6 +34,7 @@ from owlroost.catalog.builders import (
     build_comparison_rows,
     build_display_declaration_rows,
     build_display_overlay_rows,
+    build_guide_rows,
     build_metric_rows,
     build_schema_rows,
     build_workspace_rows,
@@ -230,6 +231,7 @@ def load_catalog(
     schema_registry,
     metrics_registry,
     workspace_registry,
+    guide_registry,
     comparison_registry,
     display_registry,
 ):
@@ -300,6 +302,18 @@ def load_catalog(
 
     for row in build_workspace_rows(
         workspace_registry,
+    ):
+        _merge_row(
+            entities,
+            row,
+        )
+
+    # =====================================================
+    # Guide Ontology
+    # =====================================================
+
+    for row in build_guide_rows(
+        guide_registry,
     ):
         _merge_row(
             entities,

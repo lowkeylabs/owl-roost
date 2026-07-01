@@ -12,10 +12,10 @@ Notes
 Owns registration and evaluation of
 workflow guidance.
 
-Guide providers register SuggestionSpec
+Guide providers register GuideSpec
 objects.
 
-The registry evaluates those suggestions
+The registry evaluates those guides
 against a planning context and returns
 a semantic EvaluationResult.
 
@@ -32,26 +32,45 @@ from owlroost.guide.engine import (
 
 class GuideRegistry:
     """
-    Registered guide suggestions.
+    Registered workflow guides.
     """
 
-    def __init__(self):
-        self._suggestions = {}
+    def __init__(
+        self,
+    ):
+        self._guides = {}
+
+    # =====================================================
+    # Registration
+    # =====================================================
 
     def register(
         self,
-        suggestion,
+        guide,
     ):
-        self._suggestions[suggestion.name] = suggestion
+        """
+        Register one workflow guide.
+        """
 
-    def suggestions(
+        self._guides[guide.name] = guide
+
+    # =====================================================
+    # Lookup
+    # =====================================================
+
+    def all(
         self,
     ):
+        """
+        Return all registered guides in
+        presentation order.
+        """
+
         return sorted(
-            self._suggestions.values(),
-            key=lambda s: (
-                s.priority,
-                s.title.lower(),
+            self._guides.values(),
+            key=lambda guide: (
+                guide.priority,
+                guide.title.lower(),
             ),
         )
 
@@ -59,9 +78,17 @@ class GuideRegistry:
         self,
         name,
     ):
-        return self._suggestions.get(
+        """
+        Return one registered guide.
+        """
+
+        return self._guides.get(
             name,
         )
+
+    # =====================================================
+    # Evaluation
+    # =====================================================
 
     def evaluate(
         self,
@@ -69,8 +96,8 @@ class GuideRegistry:
         row,
     ):
         """
-        Evaluate all registered guide
-        suggestions for one planning row.
+        Evaluate all registered guides
+        for one planning row.
         """
 
         return evaluate(

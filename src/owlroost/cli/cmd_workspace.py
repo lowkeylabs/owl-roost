@@ -399,15 +399,15 @@ def cmd_workspace(
     #    print("--- selected_rows ---")
     #    print(selected_rows)
 
-    if 1:
+    if 0:
         for namespace in ["_guide"]:
             print(f"--- {namespace} ---")
             print([row[f"{namespace}"] for row in selected_rows])
             print(f"--- {namespace}_tree ---")
             print([row[f"{namespace}_tree"] for row in selected_rows])
-            if namespace == "_guide":
-                print(f"--- {namespace}_stats ---")
-                print([row[f"{namespace}_stats"] for row in selected_rows])
+        #            if namespace == "_guide":
+        #                print(f"--- {namespace}_stats ---")
+        #                print([row[f"{namespace}_stats"] for row in selected_rows])
 
         print("---")
 

@@ -1,3 +1,5 @@
+# tests/guide/test_engine.py
+
 from owlroost.guide.engine import (
     evaluate,
 )
@@ -5,8 +7,8 @@ from owlroost.guide.registry import (
     GuideRegistry,
 )
 from owlroost.guide.specs import (
+    GuideSpec,
     Requirement,
-    SuggestionSpec,
 )
 
 
@@ -19,16 +21,22 @@ def make_row():
     }
 
 
-def make_registry(suggestion):
+def make_registry(
+    guide,
+):
     registry = GuideRegistry()
-    registry.register(suggestion)
+
+    registry.register(
+        guide,
+    )
+
     return registry
 
 
 def test_no_requirements_is_applicable():
     row = make_row()
 
-    suggestion = SuggestionSpec(
+    guide = GuideSpec(
         name="x",
         title="X",
         description="",
@@ -36,17 +44,20 @@ def test_no_requirements_is_applicable():
 
     evaluation = evaluate(
         row=row,
-        registry=make_registry(suggestion),
+        registry=make_registry(
+            guide,
+        ),
     )
 
-    assert len(evaluation.applicable_suggestions) == 1
-    assert evaluation.applicable_suggestions[0].applicable
+    assert len(evaluation.applicable_guides) == 1
+
+    assert evaluation.applicable_guides[0].applicable
 
 
 def test_equal_requirement():
     row = make_row()
 
-    suggestion = SuggestionSpec(
+    guide = GuideSpec(
         name="x",
         title="X",
         description="",
@@ -61,17 +72,20 @@ def test_equal_requirement():
 
     evaluation = evaluate(
         row=row,
-        registry=make_registry(suggestion),
+        registry=make_registry(
+            guide,
+        ),
     )
 
-    assert len(evaluation.applicable_suggestions) == 1
-    assert evaluation.applicable_suggestions[0].applicable
+    assert len(evaluation.applicable_guides) == 1
+
+    assert evaluation.applicable_guides[0].applicable
 
 
 def test_greater_than_requirement():
     row = make_row()
 
-    suggestion = SuggestionSpec(
+    guide = GuideSpec(
         name="x",
         title="X",
         description="",
@@ -86,17 +100,20 @@ def test_greater_than_requirement():
 
     evaluation = evaluate(
         row=row,
-        registry=make_registry(suggestion),
+        registry=make_registry(
+            guide,
+        ),
     )
 
-    assert len(evaluation.applicable_suggestions) == 1
-    assert evaluation.applicable_suggestions[0].applicable
+    assert len(evaluation.applicable_guides) == 1
+
+    assert evaluation.applicable_guides[0].applicable
 
 
 def test_failed_requirement():
     row = make_row()
 
-    suggestion = SuggestionSpec(
+    guide = GuideSpec(
         name="x",
         title="X",
         description="",
@@ -111,18 +128,22 @@ def test_failed_requirement():
 
     evaluation = evaluate(
         row=row,
-        registry=make_registry(suggestion),
+        registry=make_registry(
+            guide,
+        ),
     )
 
-    assert len(evaluation.applicable_suggestions) == 0
-    assert len(evaluation.rejected_suggestions) == 1
-    assert not evaluation.rejected_suggestions[0].applicable
+    assert len(evaluation.applicable_guides) == 0
+
+    assert len(evaluation.rejected_guides) == 1
+
+    assert not (evaluation.rejected_guides[0].applicable)
 
 
 def test_requirement_results_are_recorded():
     row = make_row()
 
-    suggestion = SuggestionSpec(
+    guide = GuideSpec(
         name="x",
         title="X",
         description="",
@@ -137,14 +158,17 @@ def test_requirement_results_are_recorded():
 
     evaluation = evaluate(
         row=row,
-        registry=make_registry(suggestion),
+        registry=make_registry(
+            guide,
+        ),
     )
 
-    result = evaluation.applicable_suggestions[0]
+    result = evaluation.applicable_guides[0]
 
     assert len(result.requirement_results) == 1
 
-    req = result.requirement_results[0]
+    requirement = result.requirement_results[0]
 
-    assert req.actual == 2
-    assert req.satisfied
+    assert requirement.actual == 2
+
+    assert requirement.satisfied

@@ -10,13 +10,13 @@ Guide evaluation engine.
 Notes
 -----
 Evaluates every registered workflow
-suggestion against the current planning
+guide against the current planning
 context.
 
-Produces a complete EvaluationResult
-describing both applicable and rejected
-suggestions together with evaluation
-coverage.
+Produces a complete GuideEvaluation
+describing both applicable and
+rejected guides together with
+evaluation coverage.
 """
 
 from __future__ import annotations
@@ -25,9 +25,9 @@ from owlroost.display.operations.resolution import (
     resolve_field_value,
 )
 from owlroost.guide.specs import (
-    EvaluationResult,
+    GuideEvaluation,
+    GuideResult,
     RequirementResult,
-    SuggestionResult,
 )
 
 # =========================================================
@@ -43,7 +43,6 @@ OPS = {
     "<=": lambda a, b: a <= b,
 }
 
-
 # =========================================================
 # Evaluation
 # =========================================================
@@ -55,26 +54,27 @@ def evaluate(
     registry,
 ):
     """
-    Evaluate every registered guide suggestion.
+    Evaluate every registered guide.
     """
 
-    all_results = []
+    all_guides = []
 
-    applicable_results = []
+    applicable_guides = []
 
-    rejected_results = []
+    rejected_guides = []
 
     required_variables = set()
 
-    #
-    # Evaluate every suggestion.
-    #
-    for suggestion in registry.suggestions():
+    # -----------------------------------------------------
+    # Evaluate every registered guide.
+    # -----------------------------------------------------
+
+    for guide in registry.all():
         applicable = True
 
         requirement_results = []
 
-        for requirement in suggestion.requirements:
+        for requirement in guide.requirements:
             required_variables.add(
                 requirement.variable,
             )
@@ -100,59 +100,62 @@ def evaluate(
                 )
             )
 
-        result = SuggestionResult(
-            suggestion=suggestion,
+        result = GuideResult(
+            guide=guide,
             applicable=applicable,
             requirement_results=requirement_results,
         )
 
-        all_results.append(
+        all_guides.append(
             result,
         )
 
         if applicable:
-            applicable_results.append(
+            applicable_guides.append(
                 result,
             )
         else:
-            rejected_results.append(
+            rejected_guides.append(
                 result,
             )
 
-    #
-    # Highest priority first.
-    #
-    applicable_results.sort(
+    # -----------------------------------------------------
+    # Highest-priority guides first.
+    # -----------------------------------------------------
+
+    applicable_guides.sort(
         key=lambda r: (
-            r.suggestion.priority,
-            r.suggestion.title,
-        )
+            r.guide.priority,
+            r.guide.title.lower(),
+        ),
     )
 
-    rejected_results.sort(
+    rejected_guides.sort(
         key=lambda r: (
-            r.suggestion.priority,
-            r.suggestion.title,
-        )
+            r.guide.priority,
+            r.guide.title.lower(),
+        ),
     )
 
+    # -----------------------------------------------------
+    # Coverage
+    # -----------------------------------------------------
     #
-    # Coverage.
+    # Currently every non-private row
+    # field is considered observed.
+    # Future implementations should
+    # derive observed semantic variables
+    # from the catalog.
     #
-    # We currently treat every row field as
-    # "observed". Future versions will use
-    # catalog metadata to distinguish
-    # semantic variables from implementation
-    # fields.
-    #
-    observed_variables = {k for k in row if not k.startswith("_")}
+
+    observed_variables = {key for key in row if not key.startswith("_")}
 
     unused_variables = observed_variables - required_variables
 
-    return EvaluationResult(
-        all_suggestions=all_results,
-        applicable_suggestions=applicable_results,
-        rejected_suggestions=rejected_results,
+    return GuideEvaluation(
+        all_guides=all_guides,
+        applicable_guides=applicable_guides,
+        rejected_guides=rejected_guides,
         observed_variables=observed_variables,
         required_variables=required_variables,
         unused_variables=unused_variables,

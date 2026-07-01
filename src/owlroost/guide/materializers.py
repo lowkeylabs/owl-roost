@@ -12,21 +12,87 @@ Notes
 Materializes workflow guidance onto
 operational rows.
 
-Guide materialization evaluates the
-registered workflow suggestions for
-the current row and attaches both the
-semantic evaluation and lightweight
-summary structures.
+Guide materialization intentionally
+produces two representations.
 
-Rendering is intentionally owned by
-the display subsystem.
+    _guide_eval
+
+        Rich evaluation object used by
+        explanation, coverage analysis,
+        and future guide reasoning.
+
+    _guide
+
+        Semantic namespace consumed by
+        the display subsystem exactly
+        like _context, _workspace, and
+        _study.
+
+Rendering is owned entirely by the
+display subsystem.
 """
 
 from __future__ import annotations
 
-from owlroost.guide.specs import (
-    GuideStats,
-)
+# =========================================================
+# Helpers
+# =========================================================
+
+
+def _build_guide_namespace(
+    evaluation,
+):
+    """
+    Convert a GuideEvaluation into the
+    semantic guide namespace.
+    """
+
+    guide = {
+        "summary": {
+            "guide_count": len(
+                evaluation.applicable_guides,
+            ),
+            "top_guide": (
+                evaluation.applicable_guides[0].guide.title
+                if evaluation.applicable_guides
+                else None
+            ),
+            "has_guides": bool(
+                evaluation.applicable_guides,
+            ),
+        },
+    }
+
+    #
+    # Materialize applicable guides into
+    # nested semantic namespaces.
+    #
+    # Example
+    #
+    #     workspace.initialize
+    #
+    # becomes
+    #
+    #     guide.workspace.initialize
+    #
+
+    for result in evaluation.applicable_guides:
+        guide_spec = result.guide
+
+        current = guide
+
+        parts = guide_spec.name.split(".")
+
+        for part in parts[:-1]:
+            current = current.setdefault(
+                part,
+                {},
+            )
+
+        current[parts[-1]] = guide_spec.command
+
+    return guide
+
 
 # =========================================================
 # Guide Materialization
@@ -38,28 +104,24 @@ def materialize_guide(
     registry,
 ):
     """
-    Attach guide evaluation and summary
-    to a row.
+    Attach guide evaluation and semantic
+    guide namespace to a row.
     """
 
     evaluation = registry.evaluate(
         row=row,
     )
 
-    row["_guide"] = evaluation
+    #
+    # Rich internal evaluation.
+    #
+    row["_guide_eval"] = evaluation
 
-    row["_guide_stats"] = GuideStats(
-        suggestion_count=len(
-            evaluation.applicable_suggestions,
-        ),
-        top_suggestion=(
-            evaluation.applicable_suggestions[0].suggestion.title
-            if evaluation.applicable_suggestions
-            else None
-        ),
-        has_suggestions=bool(
-            evaluation.applicable_suggestions,
-        ),
+    #
+    # Semantic namespace.
+    #
+    row["_guide"] = _build_guide_namespace(
+        evaluation,
     )
 
     return row
@@ -75,18 +137,18 @@ def materialize_guide_tree(
     registry=None,
 ):
     """
-    Materialize applicable guide
-    suggestions into a semantic tree.
+    Materialize applicable guides into a
+    semantic tree.
 
-    Explanation, requirement evaluation,
-    and coverage remain attached to the
-    guide evaluation object and are
-    rendered later by the display
-    subsystem.
+    The tree is intentionally structural.
+
+    Values are resolved later by the
+    display subsystem using the guide
+    semantic namespace.
     """
 
     evaluation = row.get(
-        "_guide",
+        "_guide_eval",
     )
 
     tree = {
@@ -99,15 +161,14 @@ def materialize_guide_tree(
         row["_guide_tree"] = tree
         return row
 
-    for result in evaluation.applicable_suggestions:
-        suggestion = result.suggestion
+    for result in evaluation.applicable_guides:
+        guide = result.guide
 
         tree["children"].append(
             {
                 "kind": "section",
-                "label": suggestion.title,
-                "field": f"guide.{suggestion.name}",
-                "value": suggestion.command,
+                "label": guide.title,
+                "field": f"guide.{guide.name}",
                 "children": [],
             }
         )
