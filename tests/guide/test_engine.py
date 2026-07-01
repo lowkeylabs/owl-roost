@@ -117,3 +117,34 @@ def test_failed_requirement():
     assert len(evaluation.applicable_suggestions) == 0
     assert len(evaluation.rejected_suggestions) == 1
     assert not evaluation.rejected_suggestions[0].applicable
+
+
+def test_requirement_results_are_recorded():
+    row = make_row()
+
+    suggestion = SuggestionSpec(
+        name="x",
+        title="X",
+        description="",
+        requirements=[
+            Requirement(
+                "context.valid_case_count",
+                ">",
+                0,
+            )
+        ],
+    )
+
+    evaluation = evaluate(
+        row=row,
+        registry=make_registry(suggestion),
+    )
+
+    result = evaluation.applicable_suggestions[0]
+
+    assert len(result.requirement_results) == 1
+
+    req = result.requirement_results[0]
+
+    assert req.actual == 2
+    assert req.satisfied
