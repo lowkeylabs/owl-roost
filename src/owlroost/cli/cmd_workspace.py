@@ -410,3 +410,16 @@ def cmd_workspace(
         click.echo(
             output,
         )
+
+    #
+    # Context-sensitive guidance.
+    #
+    if command_mode == "context":
+        text = catalog.guide_registry.render(
+            mode="context",
+            row=selected_rows[0],
+        )
+
+        if text:
+            click.echo()
+            click.echo(text)

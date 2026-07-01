@@ -15,6 +15,13 @@ and architectural role.
 
 from __future__ import annotations
 
+from owlroost.guide.engine import (
+    applicable_suggestions,
+)
+from owlroost.guide.render import (
+    render_context,
+)
+
 
 class GuideRegistry:
     """
@@ -50,3 +57,25 @@ class GuideRegistry:
         return self._suggestions.get(
             name,
         )
+
+    def applicable(
+        self,
+        row,
+    ):
+        return applicable_suggestions(
+            row,
+            self,
+        )
+
+    def render(
+        self,
+        *,
+        mode,
+        row,
+    ):
+        if mode == "context":
+            return render_context(
+                self.applicable(row),
+            )
+
+        raise ValueError(f"Unknown guide mode: {mode}")

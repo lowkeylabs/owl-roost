@@ -48,3 +48,28 @@ def render_welcome(
     return "\n".join(
         lines,
     )
+
+
+def render_context(
+    suggestions,
+):
+    """
+    Render context-sensitive guide suggestions.
+    """
+
+    if not suggestions:
+        return ""
+
+    lines = []
+
+    lines.append("Suggested next steps")
+    lines.append("--------------------")
+    lines.append("")
+
+    for suggestion in suggestions:
+        if suggestion.command is None:
+            continue
+
+        lines.append(f"  {suggestion.command:<28}{suggestion.description}")
+
+    return "\n".join(lines)
