@@ -5,21 +5,28 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Guide registry.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Owns registration and evaluation of
+workflow guidance.
+
+Guide providers register SuggestionSpec
+objects.
+
+The registry evaluates those suggestions
+against a planning context and returns
+a semantic EvaluationResult.
+
+Rendering is owned by the display
+subsystem.
 """
 
 from __future__ import annotations
 
 from owlroost.guide.engine import (
-    applicable_suggestions,
-)
-from owlroost.guide.render import (
-    render_context,
+    evaluate,
 )
 
 
@@ -40,14 +47,12 @@ class GuideRegistry:
     def suggestions(
         self,
     ):
-        return list(
-            sorted(
-                self._suggestions.values(),
-                key=lambda s: (
-                    s.priority,
-                    s.title.lower(),
-                ),
-            )
+        return sorted(
+            self._suggestions.values(),
+            key=lambda s: (
+                s.priority,
+                s.title.lower(),
+            ),
         )
 
     def get(
@@ -58,24 +63,17 @@ class GuideRegistry:
             name,
         )
 
-    def applicable(
-        self,
-        row,
-    ):
-        return applicable_suggestions(
-            row,
-            self,
-        )
-
-    def render(
+    def evaluate(
         self,
         *,
-        mode,
         row,
     ):
-        if mode == "context":
-            return render_context(
-                self.applicable(row),
-            )
+        """
+        Evaluate all registered guide
+        suggestions for one planning row.
+        """
 
-        raise ValueError(f"Unknown guide mode: {mode}")
+        return evaluate(
+            row=row,
+            registry=self,
+        )

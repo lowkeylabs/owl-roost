@@ -1,5 +1,8 @@
 from owlroost.guide.engine import (
-    applicable,
+    evaluate,
+)
+from owlroost.guide.registry import (
+    GuideRegistry,
 )
 from owlroost.guide.specs import (
     Requirement,
@@ -16,6 +19,12 @@ def make_row():
     }
 
 
+def make_registry(suggestion):
+    registry = GuideRegistry()
+    registry.register(suggestion)
+    return registry
+
+
 def test_no_requirements_is_applicable():
     row = make_row()
 
@@ -25,10 +34,13 @@ def test_no_requirements_is_applicable():
         description="",
     )
 
-    assert applicable(
-        row,
-        suggestion,
+    evaluation = evaluate(
+        row=row,
+        registry=make_registry(suggestion),
     )
+
+    assert len(evaluation.applicable_suggestions) == 1
+    assert evaluation.applicable_suggestions[0].applicable
 
 
 def test_equal_requirement():
@@ -47,10 +59,13 @@ def test_equal_requirement():
         ],
     )
 
-    assert applicable(
-        row,
-        suggestion,
+    evaluation = evaluate(
+        row=row,
+        registry=make_registry(suggestion),
     )
+
+    assert len(evaluation.applicable_suggestions) == 1
+    assert evaluation.applicable_suggestions[0].applicable
 
 
 def test_greater_than_requirement():
@@ -69,10 +84,13 @@ def test_greater_than_requirement():
         ],
     )
 
-    assert applicable(
-        row,
-        suggestion,
+    evaluation = evaluate(
+        row=row,
+        registry=make_registry(suggestion),
     )
+
+    assert len(evaluation.applicable_suggestions) == 1
+    assert evaluation.applicable_suggestions[0].applicable
 
 
 def test_failed_requirement():
@@ -91,7 +109,11 @@ def test_failed_requirement():
         ],
     )
 
-    assert not applicable(
-        row,
-        suggestion,
+    evaluation = evaluate(
+        row=row,
+        registry=make_registry(suggestion),
     )
+
+    assert len(evaluation.applicable_suggestions) == 0
+    assert len(evaluation.rejected_suggestions) == 1
+    assert not evaluation.rejected_suggestions[0].applicable

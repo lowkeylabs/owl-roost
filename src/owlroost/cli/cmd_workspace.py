@@ -65,6 +65,10 @@ from owlroost.display.operations.sorting import (
 from owlroost.display.operations.table_ops import (
     inject_id_column,
 )
+from owlroost.guide.materializers import (
+    materialize_guide,
+    materialize_guide_tree,
+)
 from owlroost.workspace.loaders import (
     load_context_row,
     load_workspace_row,
@@ -318,6 +322,9 @@ def cmd_workspace(
     rows = [materialize_study(row, catalog.study_registry) for row in rows]
     rows = [materialize_study_tree(row, catalog.study_registry) for row in rows]
 
+    rows = [materialize_guide(row, catalog.guide_registry) for row in rows]
+    rows = [materialize_guide_tree(row, catalog.guide_registry) for row in rows]
+
     rows = apply_canonical_sort(rows)
     rows = apply_filters(rows, filters)
     rows = apply_sort(rows, sort)
@@ -392,12 +399,15 @@ def cmd_workspace(
     #    print("--- selected_rows ---")
     #    print(selected_rows)
 
-    if 0:
-        for namespace in ["_context"]:
+    if 1:
+        for namespace in ["_guide"]:
             print(f"--- {namespace} ---")
             print([row[f"{namespace}"] for row in selected_rows])
             print(f"--- {namespace}_tree ---")
             print([row[f"{namespace}_tree"] for row in selected_rows])
+            if namespace == "_guide":
+                print(f"--- {namespace}_stats ---")
+                print([row[f"{namespace}_stats"] for row in selected_rows])
 
         print("---")
 
@@ -410,16 +420,3 @@ def cmd_workspace(
         click.echo(
             output,
         )
-
-    #
-    # Context-sensitive guidance.
-    #
-    if command_mode == "context":
-        text = catalog.guide_registry.render(
-            mode="context",
-            row=selected_rows[0],
-        )
-
-        if text:
-            click.echo()
-            click.echo(text)
