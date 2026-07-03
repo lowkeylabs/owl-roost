@@ -64,11 +64,42 @@ TRANSFORMS = [
     # Always available
     # -----------------------------------------------------
     dict(
-        name="welcome",
-        title="Getting Started",
+        name="current.context",
+        title="Where am I?",
         description="Display the current planning context.",
         command="roost .",
         priority=10,
+    ),
+    # -----------------------------------------------------
+    # Directory preparation
+    # -----------------------------------------------------
+    dict(
+        name="folder.create",
+        title="Create New Folder",
+        description=("Create an empty directory before starting a new ROOST workspace."),
+        command="mkdir my-study",
+        priority=20,
+        requirements=[
+            Requirement(
+                "context.workspace_suitable",
+                "==",
+                False,
+            ),
+        ],
+    ),
+    dict(
+        name="folder.change",
+        title="Change Into New Folder",
+        description=("Move into the newly created directory before initializing a workspace."),
+        command="cd my-study",
+        priority=21,
+        requirements=[
+            Requirement(
+                "context.workspace_suitable",
+                "==",
+                False,
+            ),
+        ],
     ),
     # -----------------------------------------------------
     # Workspace lifecycle
@@ -76,14 +107,32 @@ TRANSFORMS = [
     dict(
         name="workspace.initialize",
         title="Initialize Workspace",
-        description="Create a planning workspace in the current directory.",
+        description=("Create a planning workspace in the current directory."),
         command="roost workspace --init",
-        priority=20,
+        priority=30,
         requirements=[
             Requirement(
                 "context.workspace_initialized",
                 "==",
                 False,
+            ),
+            Requirement(
+                "context.workspace_parent_count",
+                "==",
+                0,
+            ),
+            Requirement(
+                "context.workspace_child_count",
+                "==",
+                0,
+            ),
+            Requirement(
+                "context.directory_kind",
+                "in",
+                [
+                    "empty",
+                    "planning",
+                ],
             ),
         ],
     ),
@@ -109,7 +158,7 @@ TRANSFORMS = [
         title="Review Cases",
         description="Review available planning cases.",
         command="roost cases",
-        priority=30,
+        priority=50,
         requirements=[
             Requirement(
                 "context.valid_case_count",

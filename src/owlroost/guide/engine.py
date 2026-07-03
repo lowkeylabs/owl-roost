@@ -41,6 +41,11 @@ OPS = {
     ">=": lambda a, b: a >= b,
     "<": lambda a, b: a < b,
     "<=": lambda a, b: a <= b,
+    #
+    # Membership
+    #
+    "in": lambda a, b: a in b,
+    "not in": lambda a, b: a not in b,
 }
 
 # =========================================================
@@ -84,7 +89,14 @@ def evaluate(
                 requirement.variable,
             )
 
-            satisfied = OPS[requirement.operator](
+            op = OPS.get(
+                requirement.operator,
+            )
+
+            if op is None:
+                raise ValueError(f"Unknown guide operator: {requirement.operator!r}")
+
+            satisfied = op(
                 actual,
                 requirement.value,
             )

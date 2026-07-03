@@ -15,6 +15,7 @@ and architectural role.
 
 from __future__ import annotations
 
+from enum import StrEnum
 from functools import cache
 from io import StringIO
 from pathlib import Path
@@ -53,22 +54,113 @@ LEVER_ONTOLOGY: dict[str, Any] = dict(
     defined_in=normalize_module_path(__file__),
 )
 
+# =========================================================
+# Directory Characterization
+# =========================================================
 
-class FilesystemCharacterization(TypedDict):
+
+class DirectoryKind(StrEnum):
+    """
+    Semantic characterization of the
+    current directory.
+
+    This classification is independent
+    of workflow recommendations.
+
+    It answers:
+
+        "What kind of directory is this?"
+    """
+
+    EMPTY = "empty"
+
+    PLANNING = "planning"
+
+    WORKSPACE = "workspace"
+
+    MIXED = "mixed"
+
+    FOREIGN = "foreign"
+
+
+# =========================================================
+# File System Inventory
+# =========================================================
+
+
+class FilesystemInventory(TypedDict):
+    """
+    Direct observations gathered from one
+    filesystem location.
+
+    Inventory contains no interpretation.
+    """
+
+    # =====================================================
+    # Identity
+    # =====================================================
+
     root: Path
+
     directory_name: str
 
+    # =====================================================
+    # Inventory
+    # =====================================================
+
     files: list[Path]
+
     directories: list[Path]
 
     case_files: list[Path]
+
     valid_case_files: list[Path]
+
     hfp_files: list[Path]
 
+    # =====================================================
+    # Workspace Inventory
+    # =====================================================
+
     workspace_initialized: bool
+
     workspace_parent_count: int
+
     workspace_child_count: int
+
     workspace_children: list[Path]
+
+
+# =========================================================
+# File System Characterization
+# =========================================================
+
+
+class FilesystemCharacterization(
+    FilesystemInventory,
+):
+    """
+    Semantic interpretation of a
+    filesystem inventory.
+
+    Characterization adds meaning and
+    workflow readiness to the observed
+    inventory.
+    """
+
+    # =====================================================
+    # Characterization
+    # =====================================================
+
+    directory_kind: DirectoryKind
+
+    # =====================================================
+    # Workflow Readiness
+    # =====================================================
+
+    can_initialize_workspace: bool
+
+    can_create_workspace: bool
 
 
 # =========================================================
@@ -119,26 +211,200 @@ def is_valid_case(
 
 
 # =========================================================
-# Filesystem Characterization
+# Planning Artifacts
+# =========================================================
+
+
+def is_planning_artifact(
+    path: Path,
+) -> bool:
+    """
+    Determine whether a filesystem entry
+    naturally belongs within a ROOST
+    planning directory.
+
+    Planning artifacts include inputs,
+    documentation, generated reports,
+    Quarto support files, and workspace
+    metadata.
+    """
+
+    name = path.name
+
+    #
+    # Hidden support directories.
+    #
+    if path.is_dir():
+        return name in {
+            ".quarto",
+            "cases",
+            "studies",
+            "results",
+            "reports",
+            "docs",
+        }
+
+    #
+    # Workspace metadata.
+    #
+    if name in {
+        "workspace.toml",
+        "study.toml",
+        "_quarto.yml",
+        "_variables.yml",
+        "README.md",
+    }:
+        return True
+
+    #
+    # Quarto documents.
+    #
+    if path.suffix.lower() == ".qmd":
+        return True
+
+    #
+    # Makefiles.
+    #
+    if name == "Makefile" or name.startswith("makefile"):
+        return True
+
+    #
+    # Case definitions.
+    #
+    if path.suffix.lower() == ".toml" and name.lower().startswith("case"):
+        return True
+
+    #
+    # Household Financial Profile.
+    #
+    if path.suffix.lower() == ".xlsx" and name.lower().startswith("hfp"):
+        return True
+
+    return False
+
+
+# =========================================================
+# Directory Characterization
+# =========================================================
+
+
+def characterize_directory_kind(
+    fs: FilesystemInventory,
+) -> DirectoryKind:
+    """
+    Classify the semantic purpose of the
+    current directory.
+
+    The classification intentionally
+    describes what the directory is,
+    rather than recommending any
+    particular workflow.
+    """
+
+    #
+    # Already initialized.
+    #
+    if fs["workspace_initialized"]:
+        return DirectoryKind.WORKSPACE
+
+    #
+    # Empty.
+    #
+    if not fs["files"] and not fs["directories"]:
+        return DirectoryKind.EMPTY
+
+    planning = 0
+    foreign = 0
+
+    #
+    # Count recognized artifacts.
+    #
+    for path in fs["files"] + fs["directories"]:
+        if is_planning_artifact(
+            path,
+        ):
+            planning += 1
+        else:
+            foreign += 1
+
+    #
+    # Entirely planning content.
+    #
+    if planning > 0 and foreign == 0:
+        return DirectoryKind.PLANNING
+
+    #
+    # Mixture of planning and
+    # unrelated content.
+    #
+    if planning > 0 and foreign > 0:
+        return DirectoryKind.MIXED
+
+    #
+    # Nothing recognizable as a
+    # planning directory.
+    #
+    return DirectoryKind.FOREIGN
+
+
+# =========================================================
+# Workflow Readiness
+# =========================================================
+
+
+def characterize_can_initialize_workspace(
+    inventory: FilesystemInventory,
+    directory_kind: DirectoryKind,
+) -> bool:
+    """
+    Determine whether the current
+    directory can be initialized as a
+    workspace.
+    """
+
+    if inventory["workspace_initialized"]:
+        return False
+
+    if inventory["workspace_parent_count"] > 0:
+        return False
+
+    if inventory["workspace_child_count"] > 0:
+        return False
+
+    return directory_kind in {
+        DirectoryKind.EMPTY,
+        DirectoryKind.PLANNING,
+    }
+
+
+def characterize_can_create_workspace(
+    inventory: FilesystemInventory,
+) -> bool:
+    return inventory["workspace_parent_count"] == 0
+
+
+# =========================================================
+# Filesystem Inventory
 # =========================================================
 
 
 @cache
-def characterize_filesystem(
+def inventory_filesystem(
     root=".",
-) -> FilesystemCharacterization:
+) -> FilesystemInventory:
     """
-    Characterize the current planning
-    context.
+    Collect direct observations about one
+    filesystem location.
 
-    The filesystem is intentionally
-    traversed exactly once.
+    Inventory intentionally performs no
+    semantic interpretation.
 
-    Every context lever derives from
-    this characterization.
+    It gathers only observable facts.
     """
 
-    root = _root(root)
+    root = _root(
+        root,
+    )
 
     workspace_file = root / "workspace.toml"
 
@@ -154,12 +420,18 @@ def characterize_filesystem(
         p for p in files if (p.name.lower().startswith("c") and p.suffix.lower() == ".toml")
     ]
 
-    valid_case_files = [p for p in case_files if is_valid_case(p)]
+    valid_case_files = [
+        p
+        for p in case_files
+        if is_valid_case(
+            p,
+        )
+    ]
 
     hfp_files = [p for p in files if p.suffix.lower() == ".xlsx"]
 
     # -----------------------------------------------------
-    # Parent workspace
+    # Parent workspaces
     # -----------------------------------------------------
 
     parent_count = 0
@@ -178,7 +450,11 @@ def characterize_filesystem(
 
     child_workspaces = [d for d in directories if (d / "workspace.toml").exists()]
 
-    return FilesystemCharacterization(
+    # -----------------------------------------------------
+    # Inventory
+    # -----------------------------------------------------
+
+    return FilesystemInventory(
         root=root,
         directory_name=root.name,
         files=files,
@@ -192,6 +468,40 @@ def characterize_filesystem(
             child_workspaces,
         ),
         workspace_children=child_workspaces,
+    )
+
+
+# =========================================================
+# Filesystem Characterization
+# =========================================================
+
+
+@cache
+def characterize_filesystem(
+    root=".",
+) -> FilesystemCharacterization:
+    inventory = inventory_filesystem(
+        root,
+    )
+
+    directory_kind = characterize_directory_kind(
+        inventory,
+    )
+
+    return FilesystemCharacterization(
+        **inventory,
+        directory_kind=directory_kind,
+        can_initialize_workspace=(
+            characterize_can_initialize_workspace(
+                inventory,
+                directory_kind,
+            )
+        ),
+        can_create_workspace=(
+            characterize_can_create_workspace(
+                inventory,
+            )
+        ),
     )
 
 
@@ -284,36 +594,25 @@ def has_valid_case(
 def can_initialize_workspace(
     root=".",
 ):
-    """
-    Current directory satisfies all
-    workspace initialization
-    invariants.
-    """
-
-    fs = characterize_filesystem(
+    return characterize_filesystem(
         root,
-    )
-
-    return (
-        not fs["workspace_initialized"]
-        and fs["workspace_parent_count"] == 0
-        and fs["workspace_child_count"] == 0
-    )
+    )["can_initialize_workspace"]
 
 
 def can_create_workspace(
     root=".",
 ):
-    """
-    A child workspace may be created
-    beneath this directory.
-    """
-
-    fs = characterize_filesystem(
+    return characterize_filesystem(
         root,
-    )
+    )["can_create_workspace"]
 
-    return fs["workspace_parent_count"] == 0
+
+def directory_kind(
+    root=".",
+):
+    return characterize_filesystem(
+        root,
+    )["directory_kind"]
 
 
 # =========================================================
@@ -355,7 +654,7 @@ LEVERS = [
         description="Current directory is an initialized workspace.",
     ),
     dict(
-        name="workspace_parant_count",
+        name="workspace_parent_count",
         dtype=int,
         compute_fn=workspace_parent_count,
         description="Number of parent workspaces above current subdirectory.",
@@ -389,6 +688,12 @@ LEVERS = [
         analytic_kind="derived",
         compute_fn=can_create_workspace,
         description="A new child workspace may be created beneath the current directory.",
+    ),
+    dict(
+        name="directory_kind",
+        dtype=str,
+        compute_fn=directory_kind,
+        description="Semantic classification of the current directory.",
     ),
 ]
 

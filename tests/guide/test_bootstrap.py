@@ -11,12 +11,6 @@ def test_bootstrap_builds_registry():
     assert len(guides) > 0
 
 
-def test_welcome_provider_registered():
-    reg = build_guide_registry()
-
-    assert reg.get("welcome") is not None
-
-
 def test_workspace_provider_registered():
     reg = build_guide_registry()
 

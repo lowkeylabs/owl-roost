@@ -66,7 +66,7 @@ case_dir = "."
 '''
 
 MINIMAL_MAKEFILE = """\
--include $(shell roost info --path=makefile)
+-include $(shell roost info makefile)
 -include ./makefile.mk
 
 # Add additional makefile targets

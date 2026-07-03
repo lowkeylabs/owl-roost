@@ -147,6 +147,11 @@ from owlroost.workspace.operations import (
     "--force",
     is_flag=True,
 )
+@click.option(
+    "--ignore",
+    is_flag=True,
+    help="Ignore workspace suitability checks.",
+)
 @click.option("--assist", flag_value="", help="Append guidance to display.")
 @click.option("--discover", is_flag=True, help="Append guidance to display.")
 def cmd_workspace(
@@ -164,6 +169,7 @@ def cmd_workspace(
     init,
     sync_results_catalog_flag,
     force,
+    ignore,
     assist,
     discover,
 ):
@@ -223,10 +229,13 @@ def cmd_workspace(
         return
 
     if init:
-        if not resolve(
+        if not ignore and not resolve(
             "context.can_initialize_workspace",
         ):
-            raise click.ClickException("Current directory cannot be initialized as a workspace.")
+            raise click.ClickException(
+                "Current directory cannot be initialized as a workspace. "
+                "Use --ignore to initialize anyway."
+            )
 
         workspace_dir = init_workspace(
             root,
