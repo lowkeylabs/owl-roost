@@ -1,4 +1,4 @@
-# src/owlroost/guide/providers/transforms.py
+# src/owlroost/guide/providers/folder_setup.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later

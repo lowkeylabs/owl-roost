@@ -18,6 +18,13 @@ This document complements the project `README.md`, `ARCHITECTURE.md`, and the wo
 
 Guide evaluates fully materialized planning contexts.
 
+Guide produces both semantic guidance values and semantic workflow objects.
+
+Semantic values summarize applicable workflow recommendations.
+
+Semantic objects expose rich workflow metadata—including descriptions, commands, applicability requirements, and future extensible properties—which may be consumed directly by the Display subsystem through semantic object resolution.
+
+
 Conceptually:
 
 ```text
@@ -33,10 +40,13 @@ Semantic Row
 Guide Evaluation
         │
         ▼
-Guide Views
-        │
-        ▼
-Display
+Guide Materialization
+      ┌──────┴────────┐
+      ▼               ▼
+Semantic Namespace  Guide Trees
+      └──────┬────────┘
+             ▼
+          Display
 ```
 
 Guide does not characterize the planning context.
@@ -67,7 +77,9 @@ Examples include:
 
 Guide never performs these activities.
 
-It merely recommends them.
+Instead, it produces semantic workflow knowledge describing recommended activities.
+
+Presentation and execution remain responsibilities of other subsystems.
 
 ---
 
@@ -91,7 +103,7 @@ Guide never inspects the filesystem directly.
 
 ## Assistance
 
-Guide supplies contextual assistance that supplements normal displays.
+Guide supplies contextual assistance by materializing semantic guidance that supplements normal displays.
 
 Guidance is computed from:
 
@@ -108,6 +120,12 @@ The same planning context may therefore produce different guidance depending upo
 
 Guide recommendations should always be explainable.
 
+Guide explanations are themselves semantic.
+
+Workflow descriptions, commands, applicability conditions, and evaluation results are exposed as semantic object properties rather than embedded presentation logic.
+
+This allows explanations to be generated dynamically without requiring separate documentation registrations for every workflow property.
+
 Users should be able to determine:
 
 * why a recommendation appears
@@ -119,9 +137,13 @@ Guide therefore follows the same explainability principles used throughout ROOST
 
 ---
 
-# Semantic Variables
+# Semantic Observations
 
-Guide operates entirely from semantic variables.
+Guide operates entirely from semantic observations.
+
+Most observations are represented as semantic variables.
+
+Guide itself additionally materializes semantic workflow objects that describe workflow knowledge independently of presentation.
 
 Guide does not inspect files directly.
 
@@ -145,19 +167,84 @@ Guide therefore remains independent of implementation details.
 
 # Guide Definitions
 
-Workflow guidance is registered declaratively.
+Guide definitions contain workflow knowledge rather than presentation logic.
 
-Each guide definition typically describes:
+One guide definition may simultaneously contribute to:
+
+* semantic namespace values
+* semantic object properties
+* multiple guide trees
+* multiple display views
+
+Guide definitions become semantic objects during materialization.
+
+These objects expose workflow metadata such as:
 
 * title
 * description
-* suggested command
-* applicability requirements
+* command
+* category
 * priority
+* requirements
 
-Guide definitions contain workflow knowledge rather than presentation logic.
+Display resolves these properties dynamically through the semantic object resolver.
 
-One guide definition may contribute to multiple guidance views.
+---
+
+# Semantic Namespace
+
+Guide materializes a semantic namespace alongside its evaluation results.
+
+The namespace contains both semantic values and semantic workflow objects.
+
+Semantic values represent workflow recommendations directly.
+
+For example:
+
+```text
+guide.workspace.initialize
+```
+
+may resolve to:
+
+```text
+roost workspace --init
+```
+
+The namespace also retains the underlying semantic workflow objects used to resolve richer workflow metadata.
+
+For example:
+
+```text
+guide.workspace.initialize.command
+guide.workspace.initialize.description
+guide.workspace.initialize.priority
+guide.workspace.initialize.category
+```
+
+all resolve dynamically from the same underlying `GuideSpec` object.
+
+Conceptually:
+
+```text
+Guide Evaluation
+        │
+        ▼
+Guide Namespace
+      ┌──────┴────────┐
+      ▼               ▼
+Semantic Values   Semantic Objects
+```
+
+The semantic namespace is presentation-independent.
+
+It contains no display formatting and no rendering logic.
+
+Instead, it serves as the semantic interface between the Guide subsystem and the Display subsystem.
+
+Display resolves workflow properties dynamically without requiring individual catalog registrations for every workflow attribute.
+
+Future semantic object subsystems are expected to follow the same architectural pattern.
 
 ---
 
@@ -168,16 +255,19 @@ Recommendations become applicable when all applicability requirements evaluate t
 Conceptually:
 
 ```text
-Semantic Variables
+Semantic Observations
         │
         ▼
-Guide Definition
+Guide Definitions
         │
         ▼
 Requirement Evaluation
         │
         ▼
-Applicable Guide
+Guide Evaluation
+        │
+        ▼
+Semantic Guidance
 ```
 
 Requirements may compare:
@@ -194,9 +284,11 @@ Guide remains independent of how those observations were produced.
 
 # Guidance Views
 
-Guide produces semantic guidance.
+Guide materializes multiple semantic guidance trees.
 
-Display determines how that guidance is rendered.
+Each tree materializes one aspect of workflow knowledge for consumption by the Display subsystem.
+
+Display determines how those trees are rendered.
 
 Current and planned guidance views include:
 
@@ -212,6 +304,27 @@ Current and planned guidance views include:
 
 Not every interface must expose every guidance view.
 
+---
+
+# Semantic Object Resolution
+
+Guide materializes semantic workflow objects alongside ordinary semantic values.
+
+Workflow objects are stored within the Guide semantic namespace and resolved dynamically by the Display subsystem.
+
+For example:
+
+    guide.workspace.initialize.command
+
+resolves to the command property of the corresponding GuideSpec object.
+
+This mechanism allows workflow metadata to evolve naturally without requiring individual catalog registrations for every property exposed by Guide.
+
+Display is intentionally unaware of GuideSpec.
+
+It resolves semantic object properties generically by traversing semantic namespaces and object registries embedded within the materialized row.
+
+Future semantic object subsystems are expected to follow the same architectural pattern.
 ---
 
 # Rendering
@@ -245,6 +358,17 @@ Case Summary
 
 Suggested Next Actions
 ```
+Guide tree nodes reference semantic object properties directly.
+
+For example:
+
+    guide.workspace.initialize.command
+
+or
+
+    guide.workspace.initialize.description
+
+Display resolves these properties dynamically at render time without requiring individual catalog registrations.
 
 Future interfaces may render different guidance views without modifying guide definitions.
 
@@ -282,9 +406,11 @@ Guide recommends appropriate execution activities.
 
 ### Display
 
-Display renders guidance.
+Display renders semantic guidance.
 
-Guide computes semantic guidance.
+Guide computes semantic workflow knowledge.
+
+Display resolves semantic values and semantic object properties supplied by Guide.
 
 ---
 
@@ -292,13 +418,15 @@ Guide computes semantic guidance.
 
 Catalog provides semantic identity.
 
-Guide consumes semantic variables registered within the catalog.
+Guide consumes semantic observations produced throughout ROOST. Catalog provides the semantic vocabulary used to define many of those observations.
 
 ---
 
 # Architectural Invariants
 
 The following concepts should remain stable.
+
+---
 
 ## Guide computes semantic guidance.
 
@@ -308,13 +436,21 @@ It never performs planning activities.
 
 ---
 
+## Guide owns workflow knowledge.
+
+Workflow definitions are represented as semantic objects.
+
+Descriptions, commands, applicability rules, and future workflow metadata should remain properties of those semantic objects rather than becoming embedded within presentation code.
+
+---
+
 ## Guide consumes semantic observations.
 
-Guide never computes planning state directly.
+Guide consumes semantic observations produced by other subsystems.
 
-Other subsystems own characterization.
+Guide never characterizes planning state itself.
 
-Guide consumes those observations.
+Guide contributes new semantic workflow objects describing workflow knowledge.
 
 ---
 
@@ -346,6 +482,17 @@ Guide produces semantic guidance that may be rendered by:
 * graphical interfaces
 * future LLM assistants
 
+Semantic workflow objects may be consumed by:
+
+* Display
+* documentation
+* developer tooling
+* notebooks
+* dashboards
+* future LLM assistants
+
+without modification to Guide itself.
+
 ---
 
 ## Guidance is additive.
@@ -366,7 +513,12 @@ Recommendations that are not applicable should also be explainable.
 
 ## Guide definitions should remain reusable.
 
-One guide definition may contribute to multiple guidance views.
+One semantic guide definition may contribute simultaneously to:
+
+* semantic variables
+* semantic object properties
+* multiple guidance trees
+* future workflow interfaces
 
 Presentation should never be embedded within workflow definitions.
 
@@ -380,7 +532,9 @@ As new planning capabilities are added, Guide should recommend them automaticall
 
 # Long-Term Direction
 
-Guide is evolving toward ROOST's semantic workflow engine.
+Guide is evolving toward ROOST's semantic workflow knowledge subsystem.
+
+Guide increasingly serves as the authoritative semantic repository of workflow knowledge.
 
 Future capabilities are expected to include:
 
