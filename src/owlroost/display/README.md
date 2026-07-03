@@ -2,7 +2,7 @@
 
 The `display/` subsystem owns the presentation of information within ROOST.
 
-Display transforms semantic observations and analytical evidence into representations suitable for people.
+Display transforms semantic observations, semantic objects, and analytical evidence into representations suitable for people.
 
 The display subsystem determines **how** information is communicated.
 
@@ -34,7 +34,7 @@ Documentation
 Visualizations
 ```
 
-Display communicates information owned by other architectural subsystems.
+Display communicates semantic information owned by other architectural subsystems, regardless of whether that information is represented as semantic values, semantic objects, or analytical evidence.
 
 Typical observations include:
 
@@ -81,7 +81,7 @@ Examples include:
 * Transition comparisons
 * Evidence summaries
 
-Views organize information without changing its meaning.
+Views organize semantic values, semantic object properties, and analytical evidence without changing their meaning.
 
 ---
 
@@ -122,7 +122,7 @@ Communication should preserve analytical meaning while improving accessibility.
 
 # Display Philosophy
 
-Display separates presentation from analytical meaning.
+Display separates presentation from semantic meaning.
 
 The display subsystem should never redefine analytical concepts.
 
@@ -132,15 +132,21 @@ Conceptually:
 
 ```text
 Catalog
-        ↓
-Semantic Meaning
+        │
+        ▼
+Semantic Vocabulary
 
-Metrics
-        ↓
-Evidence
-
+Subsystems
+        │
+        ▼
+Semantic Values
+Semantic Objects
+Analytical Evidence
+        │
+        ▼
 Display
-        ↓
+        │
+        ▼
 Presentation
 ```
 
@@ -165,6 +171,8 @@ Examples include:
 
 Display fields describe presentation.
 
+Display fields may be registered explicitly or resolved dynamically from semantic objects during materialization.
+
 They do not own analytical meaning.
 
 ---
@@ -186,6 +194,48 @@ Examples include:
 Views define communication.
 
 They do not generate evidence.
+
+Views may combine:
+
+* registered display fields
+* runtime semantic fields
+* semantic object properties
+* structural presentation nodes
+
+into a single presentation.
+
+Display views therefore remain independent of how semantic information is materialized.
+
+---
+
+# Semantic Object Resolution
+
+Display resolves semantic information dynamically.
+
+Most displayed observations originate as semantic values.
+
+Some observations instead reference semantic object properties.
+
+For example:
+
+```text
+guide.workspace.initialize.command
+```
+or
+
+```text
+guide.workspace.initialize.description
+```
+
+These properties are resolved directly from semantic objects embedded within the materialized row.
+
+Display therefore presents semantic object metadata without requiring explicit display-field registrations for every property.
+
+Semantic object resolution is generic.
+
+Display does not depend upon GuideSpec or any other specific semantic object type.
+
+Future semantic object subsystems should become displayable without modifying the Display subsystem itself.
 
 ---
 
@@ -210,7 +260,9 @@ Presentation profiles allow the same analytical observation to be reused across 
 
 Display supports explainability.
 
-Explainability itself belongs to the semantic model.
+Explainability belongs to the semantic model.
+
+Display renders explanations from semantic values, catalog metadata, and semantic object properties without duplicating semantic knowledge.
 
 The display subsystem communicates available explainability information.
 
@@ -232,7 +284,7 @@ The display subsystem depends upon other architectural subsystems.
 
 ### Catalog
 
-The catalog defines semantic identity.
+The catalog defines the semantic vocabulary. Display uses that vocabulary together with runtime semantic objects to construct presentations.
 
 Display presents that identity.
 
@@ -282,9 +334,11 @@ views/
 formatters/
 ```
 
-Fields define presentation.
+Fields define registered presentation metadata.
 
 Views organize presentation.
+
+Materializers combine semantic values, semantic objects, and registered display metadata into renderer-facing tables.
 
 Formatters render presentation.
 
@@ -311,6 +365,16 @@ Analytical meaning belongs to the catalog.
 Evidence belongs to metrics.
 
 Display communicates both.
+
+---
+
+## Display resolves semantics generically.
+
+Display understands semantic values and semantic object properties.
+
+It does not depend upon the implementation details of individual semantic object types.
+
+New semantic object subsystems should become displayable without changes to Display itself.
 
 ---
 
@@ -352,6 +416,7 @@ Future capabilities are expected to include:
 
 * Richer dashboards
 * Interactive exploration
+* Generic semantic object visualization
 * Adaptive layouts
 * Personalized views
 * Educational presentations
