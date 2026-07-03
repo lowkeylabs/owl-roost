@@ -47,6 +47,30 @@ class Requirement:
 
     value: object = True
 
+    _PROPERTY_DESCRIPTIONS = {
+        "variable": "Semantic variable evaluated.",
+        "operator": "Comparison operator used when evaluating the requirement.",
+        "value": "Expected value for the semantic variable.",
+    }
+
+    def describe_property(
+        self,
+        property_name,
+    ):
+        return self._PROPERTY_DESCRIPTIONS.get(
+            property_name,
+            "",
+        )
+
+    def label_property(
+        self,
+        property_name,
+    ):
+        return property_name.replace(
+            "_",
+            " ",
+        ).title()
+
 
 @dataclass(kw_only=True)
 class GuideSpec(
@@ -82,6 +106,32 @@ class GuideSpec(
         default_factory=list,
     )
 
+    _PROPERTY_DESCRIPTIONS = {
+        "title": "Human-readable guide title.",
+        "description": "Explanation of what this workflow step accomplishes.",
+        "command": "Command to execute this workflow step.",
+        "priority": "Evaluation order for workflow guidance.",
+        "category": "Workflow category.",
+    }
+
+    def describe_property(
+        self,
+        property_name,
+    ):
+        return self._PROPERTY_DESCRIPTIONS.get(
+            property_name,
+            "",
+        )
+
+    def label_property(
+        self,
+        property_name,
+    ):
+        return property_name.replace(
+            "_",
+            " ",
+        ).title()
+
 
 # =========================================================
 # Evaluation Results
@@ -100,6 +150,39 @@ class RequirementResult:
 
     satisfied: bool
 
+    _PROPERTY_DESCRIPTIONS = {
+        "actual": "Observed value of the semantic variable.",
+        "satisfied": "Whether the requirement evaluated successfully.",
+    }
+
+    def describe_property(
+        self,
+        property_name,
+    ):
+        if property_name.startswith(
+            "requirement.",
+        ):
+            return self.requirement.describe_property(property_name.removeprefix("requirement."))
+
+        return self._PROPERTY_DESCRIPTIONS.get(
+            property_name,
+            "",
+        )
+
+    def label_property(
+        self,
+        property_name,
+    ):
+        if property_name.startswith(
+            "requirement.",
+        ):
+            return self.requirement.label_property(property_name.removeprefix("requirement."))
+
+        return property_name.replace(
+            "_",
+            " ",
+        ).title()
+
 
 @dataclass(slots=True)
 class GuideResult:
@@ -114,6 +197,38 @@ class GuideResult:
     requirement_results: list[RequirementResult] = field(
         default_factory=list,
     )
+
+    _PROPERTY_DESCRIPTIONS = {
+        "applicable": "Whether this guide is currently applicable.",
+    }
+
+    def describe_property(
+        self,
+        property_name,
+    ):
+        if property_name.startswith(
+            "guide.",
+        ):
+            return self.guide.describe_property(property_name.removeprefix("guide."))
+
+        return self._PROPERTY_DESCRIPTIONS.get(
+            property_name,
+            "",
+        )
+
+    def label_property(
+        self,
+        property_name,
+    ):
+        if property_name.startswith(
+            "guide.",
+        ):
+            return self.guide.label_property(property_name.removeprefix("guide."))
+
+        return property_name.replace(
+            "_",
+            " ",
+        ).title()
 
 
 @dataclass(slots=True)

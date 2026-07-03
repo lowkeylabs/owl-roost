@@ -77,6 +77,30 @@ def extract_path(
     return cur
 
 
+def extract_object_path(
+    obj,
+    path,
+):
+    """
+    Extract a dotted attribute path from
+    nested Python objects.
+    """
+
+    cur = obj
+
+    for part in path.split("."):
+        if cur is None:
+            return None
+
+        cur = getattr(
+            cur,
+            part,
+            None,
+        )
+
+    return cur
+
+
 # =========================================================
 # Semantic Field Resolution
 # =========================================================
@@ -97,16 +121,17 @@ def resolve_field_value(
     2. explicit display path
     3. _metrics
     4. _meta
-    5. semantic namespace (_context, _workspace, ...)
-    6. _inputs
-    7. top-level row
+    5. semantic namespaces
+    6. semantic object registries
+    7. _inputs
+    8. top-level row
     """
 
     # =====================================================
     # Display-derived value
     # =====================================================
 
-    if display_field is not None and display_field.display_fn:
+    if display_field is not None and display_field.display_fn is not None:
         return display_field.display_fn(
             row,
         )
@@ -149,16 +174,25 @@ def resolve_field_value(
         return meta[field_name]
 
     # =====================================================
-    # Semantic namespaces
+    # Parse semantic field
     # =====================================================
 
-    head, sep, tail = field_name.partition(".")
+    head, sep, tail = field_name.partition(
+        ".",
+    )
+
+    semantic_root = None
 
     if sep:
         semantic_root = row.get(
             f"_{head}",
         )
 
+    # =====================================================
+    # Semantic namespaces
+    # =====================================================
+
+    if sep:
         if semantic_root is not None:
             value = extract_path(
                 semantic_root,
@@ -167,6 +201,37 @@ def resolve_field_value(
 
             if value is not None:
                 return value
+
+    # =====================================================
+    # Semantic object lookup
+    #
+    # Field syntax:
+    #
+    #     guide.workspace.initialize.command
+    #
+    # Object storage:
+    #
+    #     row["_guide"]["_objects"]
+    # =====================================================
+
+    if sep:
+        if semantic_root is not None:
+            obj, property_path = resolve_field_object(
+                row,
+                field_name,
+            )
+
+            if obj is not None:
+                if not property_path:
+                    return obj
+
+                value = extract_object_path(
+                    obj,
+                    property_path,
+                )
+
+                if value is not None:
+                    return value
 
     # =====================================================
     # Inputs
@@ -285,4 +350,147 @@ def resolve_row_value(
             {},
         ),
         key,
+    )
+
+
+# =========================================================
+# Runtime DisplayField Resolution
+# =========================================================
+
+
+def resolve_display_field(
+    registry,
+    entry,
+):
+    """
+    Resolve the DisplayField associated
+    with one materialized view entry.
+
+    Returns
+    -------
+    DisplayField | None
+
+        None indicates that the field is
+        resolved dynamically rather than
+        through the DisplayRegistry.
+    """
+
+    try:
+        return registry.get_display_field(
+            entry["field"],
+        )
+
+    except KeyError:
+        return None
+
+
+def resolve_field_object(
+    row,
+    field_name,
+):
+    """
+    Resolve the semantic object and
+    remaining property path associated
+    with a field.
+
+    Example
+    -------
+
+        guide.workspace.initialize.command
+
+    returns
+
+        (
+            GuideSpec(...),
+            "command",
+        )
+    """
+
+    head, sep, tail = field_name.partition(".")
+
+    if not sep:
+        return (
+            None,
+            None,
+        )
+
+    semantic_root = row.get(
+        f"_{head}",
+    )
+
+    if semantic_root is None:
+        return (
+            None,
+            None,
+        )
+
+    objects = semantic_root.get(
+        "_objects",
+        {},
+    )
+
+    parts = tail.split(".")
+
+    for i in range(
+        len(parts),
+        0,
+        -1,
+    ):
+        object_name = ".".join(
+            parts[:i],
+        )
+
+        obj = objects.get(
+            object_name,
+        )
+
+        if obj is None:
+            continue
+
+        property_path = ".".join(
+            parts[i:],
+        )
+
+        return (
+            obj,
+            property_path,
+        )
+
+    return (
+        None,
+        None,
+    )
+
+
+def resolve_field_description(
+    row,
+    field_name,
+):
+    """
+    Resolve documentation associated with
+    a semantic field.
+    """
+
+    obj, property_path = resolve_field_object(
+        row,
+        field_name,
+    )
+
+    if obj is None or not property_path:
+        return ""
+
+    describe = getattr(
+        obj,
+        "describe_property",
+        None,
+    )
+
+    if describe is None:
+        return ""
+
+    return (
+        describe(
+            property_path,
+        )
+        or ""
     )

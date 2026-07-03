@@ -17,6 +17,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from owlroost.guide.materializers import materialize_guide, materialize_guide_trees
+
 
 def row_lookup(
     field_name: str,
@@ -694,5 +696,94 @@ def materialize_study_tree(
         root["children"].append(
             family_section,
         )
+
+    return row
+
+
+# =========================================================
+# Planning Context
+# =========================================================
+
+
+def materialize_planning_context(
+    row,
+    catalog,
+):
+    """
+    Materialize a complete planning context.
+
+    This computes every semantic namespace
+    currently owned by ROOST.
+
+    The input row is always a planning
+    context. If the planning context
+    contains an initialized workspace,
+    workspace observations are also
+    materialized.
+
+    Parameters
+    ----------
+    row
+        Planning context row.
+
+    catalog
+        CatalogContext returned by
+        build_catalog_context().
+    """
+
+    #
+    # Context
+    #
+
+    row = materialize_context(
+        row,
+        catalog.workspace_registry,
+    )
+
+    row = materialize_context_tree(
+        row,
+        catalog.workspace_registry,
+    )
+
+    #
+    # Workspace
+    #
+
+    row = materialize_workspace(
+        row,
+        catalog.workspace_registry,
+    )
+
+    row = materialize_workspace_tree(
+        row,
+        catalog.workspace_registry,
+    )
+
+    #
+    # Study
+    #
+
+    row = materialize_study(
+        row,
+        catalog.study_registry,
+    )
+
+    row = materialize_study_tree(
+        row,
+        catalog.study_registry,
+    )
+
+    #
+    # Guide
+    #
+
+    row = materialize_guide(
+        row,
+        catalog.guide_registry,
+    )
+
+    row = materialize_guide_trees(
+        row,
+    )
 
     return row

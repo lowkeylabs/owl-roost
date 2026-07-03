@@ -22,6 +22,7 @@ def render(
     *,
     display_field,
     catalog_row,
+    row,
     row_values,
 ) -> str:
     if display_field is None:

@@ -20,8 +20,10 @@ FACET_NAME = "provenance"
 
 def render(
     *,
+    field_name,
     display_field,
     catalog_row,
+    row,
     row_values,
 ) -> str:
     if catalog_row is None:

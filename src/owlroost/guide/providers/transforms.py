@@ -1,4 +1,4 @@
-# src/owlroost/guide/providers/workspace.py
+# src/owlroost/guide/providers/transforms.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -59,7 +59,7 @@ GUIDE_ONTOLOGY: dict[str, Any] = dict(
 # Workflow Guides
 # =========================================================
 
-TRANSFORMATIONS = [
+TRANSFORMS = [
     # -----------------------------------------------------
     # Always available
     # -----------------------------------------------------
@@ -132,7 +132,7 @@ def register(
     Register planning workflow guides.
     """
 
-    for transformation in TRANSFORMATIONS:
+    for transform in TRANSFORMS:
         ontology = dict(
             GUIDE_ONTOLOGY,
         )
@@ -140,12 +140,12 @@ def register(
         for dimension in ONTOLOGY_DIMENSIONS:
             field = dimension.field_name
 
-            if field in transformation:
-                ontology[field] = transformation[field]
+            if field in transform:
+                ontology[field] = transform[field]
 
         reg.register(
             GuideSpec(
-                **transformation,
+                **transform,
                 **ontology,
             )
         )

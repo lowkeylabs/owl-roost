@@ -26,6 +26,7 @@ from ..core.info import (
 )
 from ..version import __version__
 from .cmd_build import cmd_build
+from .cmd_context import cmd_context
 from .cmd_household import cmd_household
 from .cmd_reports import cmd_reports
 from .cmd_results import cmd_results
@@ -115,6 +116,8 @@ cli.add_command(cmd_results)
 
 cli.add_command(cmd_vars, name="vars")
 cli.add_command(cmd_workspace, name="workspace")
-cli.add_command(cmd_workspace, name=".")
+
+cli.add_command(cmd_context, name="context")
+cli.add_command(cmd_context, name=".")
 
 cli.add_command(cmd_household)

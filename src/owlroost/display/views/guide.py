@@ -34,13 +34,118 @@ def register_display_views(
 
     reg.register_view(
         DisplayView(
-            level="workspace",
-            name="guide",
+            level="guide",
+            name="suggestions",
             entries=[
                 # =====================================
                 # Workspace Inventory
                 # =====================================
-                ("tree", {"root": "guide_tree", "depth": 2}),
+                ("tree", {"root": "guide_suggestions", "depth": 5}),
+            ],
+            description=(
+                "Summarizes the current "
+                "workspace, its readiness "
+                "for retirement planning, "
+                "and available analytical "
+                "artifacts."
+            ),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    reg.register_view(
+        DisplayView(
+            level="guide",
+            name="details",
+            entries=[
+                # =====================================
+                # Workspace Inventory
+                # =====================================
+                ("tree", {"root": "guide_details", "depth": 5}),
+            ],
+            description=(
+                "Summarizes the current "
+                "workspace, its readiness "
+                "for retirement planning, "
+                "and available analytical "
+                "artifacts."
+            ),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    reg.register_view(
+        DisplayView(
+            level="guide",
+            name="workflows",
+            entries=[
+                # =====================================
+                # Workspace Inventory
+                # =====================================
+                ("tree", {"root": "guide_workflows", "depth": 5}),
+            ],
+            description=(
+                "Summarizes the current "
+                "workspace, its readiness "
+                "for retirement planning, "
+                "and available analytical "
+                "artifacts."
+            ),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    reg.register_view(
+        DisplayView(
+            level="guide",
+            name="reasoning",
+            entries=[
+                # =====================================
+                # Workspace Inventory
+                # =====================================
+                ("tree", {"root": "guide_reasoning", "depth": 99}),
+            ],
+            description=(
+                "Summarizes the current "
+                "workspace, its readiness "
+                "for retirement planning, "
+                "and available analytical "
+                "artifacts."
+            ),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    reg.register_view(
+        DisplayView(
+            level="guide",
+            name="variables",
+            entries=[
+                # =====================================
+                # Workspace Inventory
+                # =====================================
+                ("tree", {"root": "guide_variables", "depth": 5}),
+            ],
+            description=(
+                "Summarizes the current "
+                "workspace, its readiness "
+                "for retirement planning, "
+                "and available analytical "
+                "artifacts."
+            ),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    reg.register_view(
+        DisplayView(
+            level="guide",
+            name="diagnostics",
+            entries=[
+                # =====================================
+                # Workspace Inventory
+                # =====================================
+                ("tree", {"root": "guide_diagnostics", "depth": 5}),
             ],
             description=(
                 "Summarizes the current "

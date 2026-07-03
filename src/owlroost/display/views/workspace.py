@@ -35,7 +35,7 @@ def register_display_views(
     reg.register_view(
         DisplayView(
             level="workspace",
-            name="workspace",
+            name="workspace2",
             entries=[
                 # =====================================
                 # Workspace Inventory
@@ -72,12 +72,13 @@ def register_display_views(
     reg.register_view(
         DisplayView(
             level="workspace",
-            name="summary",
+            name="workspace",
             entries=[
                 # =====================================
                 # Identity
                 # =====================================
-                "workspace.identity.name",
+                "context.directory_name",
+                "context.workspace_initialized",
             ],
             description=("Summary view of workspace status"),
             **SHARED_VIEW_ONTOLOGY,

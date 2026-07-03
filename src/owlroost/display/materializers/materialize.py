@@ -22,6 +22,7 @@ from owlroost.display.operations.profiles import (
     resolve_display_profile,
 )
 from owlroost.display.operations.resolution import (
+    resolve_display_field,
     resolve_field_value,
 )
 from owlroost.display.registry import DisplayRegistry
@@ -29,6 +30,7 @@ from owlroost.display.renderers.specs import (
     RoostTable,
     TableColumn,
 )
+from owlroost.display.specs import DisplayProfile
 
 # =========================================================
 # Entry Normalization
@@ -550,6 +552,8 @@ def pivot_table(
     explain_facets=None,
     catalog_index=None,
     visible_entries=None,
+    show_header=True,
+    title=None,
 ):
     """
     Flip rows/columns for pivot display.
@@ -636,12 +640,39 @@ def pivot_table(
         new_columns.append(
             TableColumn(
                 key=str(idx),
-                label=str(idx),
-                wrap=(value_profile.wrap if value_profile else True),
-                content_align=(value_profile.content_align if value_profile else "right"),
-                width=(value_profile.width if value_profile else 80),
-                min_width=(value_profile.min_width if value_profile else None),
-                max_width=(value_profile.max_width if value_profile else None),
+                label=(
+                    getattr(
+                        value_profile,
+                        "label",
+                        None,
+                    )
+                    or str(idx)
+                ),
+                wrap=getattr(
+                    value_profile,
+                    "wrap",
+                    True,
+                ),
+                content_align=getattr(
+                    value_profile,
+                    "content_align",
+                    "right",
+                ),
+                width=getattr(
+                    value_profile,
+                    "width",
+                    80,
+                ),
+                min_width=getattr(
+                    value_profile,
+                    "min_width",
+                    None,
+                ),
+                max_width=getattr(
+                    value_profile,
+                    "max_width",
+                    None,
+                ),
             )
         )
 
@@ -736,17 +767,19 @@ def pivot_table(
         ]
 
         row_values = []
+        source_rows = []
 
-        for original_row in table.rows:
+        for row_index, original_row in enumerate(
+            table.rows,
+        ):
             value = original_row[field_column - 1]
-
             row.append(
                 value,
             )
-
             row_values.append(
                 value,
             )
+            source_rows.append(table.row_meta[row_index]["row"])
 
         if explain_enabled:
             row.append(
@@ -755,6 +788,7 @@ def pivot_table(
                     registry=registry,
                     catalog_index=catalog_index,
                     explain_facets=explain_facets,
+                    row=(source_rows[0] if source_rows else None),
                     row_values=row_values,
                 )
             )
@@ -781,6 +815,8 @@ def pivot_table(
         columns=new_columns,
         rows=new_rows,
         row_meta=new_row_meta,
+        show_header=show_header,
+        title=title,
     )
 
 
@@ -798,6 +834,8 @@ def materialize_view(
     level="case",
     mode="table",
     explain_facets=None,
+    show_header=True,
+    title=None,
 ):
     """
     Materialize rows + view into a RoostTable.
@@ -890,49 +928,62 @@ def materialize_view(
 
         field_name = entry["field"]
 
-        display_field = registry.get_display_field(
-            field_name,
+        display_field = resolve_display_field(
+            registry,
+            entry,
         )
 
-        profile = resolve_display_profile(
-            display_field,
-            mode=mode,
+        override = entry.get(
+            "profiles",
+            {},
+        ).get(
+            mode,
+            {},
         )
 
-        override = entry.get("profiles", {}).get(mode, {})
+        #
+        # Registered DisplayField?
+        #
+        if display_field is None:
+            profile = DisplayProfile()
 
-        columns.append(
-            TableColumn(
-                key=field_name,
-                field_name=field_name,
-                label=override.get(
-                    "label",
-                    profile.label or field_name,
-                ),
-                label_align=override.get(
-                    "label_align",
-                    profile.label_align,
-                ),
-                content_align=override.get(
-                    "content_align",
-                    profile.content_align,
-                ),
-                fmt=override.get(
-                    "fmt",
-                    profile.fmt,
-                ),
-                width=override.get(
-                    "width",
-                    profile.width,
-                ),
-                wrap=override.get(
-                    "wrap",
-                    profile.wrap,
-                ),
-                display_field=display_field,
+        else:
+            profile = resolve_display_profile(
+                display_field,
+                mode=mode,
             )
+
+        column = TableColumn(
+            key=field_name,
+            field_name=field_name,
+            label=override.get(
+                "label",
+                profile.label or field_name,
+            ),
+            label_align=override.get(
+                "label_align",
+                profile.label_align,
+            ),
+            content_align=override.get(
+                "content_align",
+                profile.content_align,
+            ),
+            fmt=override.get(
+                "fmt",
+                profile.fmt,
+            ),
+            width=override.get(
+                "width",
+                profile.width,
+            ),
+            wrap=override.get(
+                "wrap",
+                profile.wrap,
+            ),
+            display_field=display_field,
         )
-        entry["column"] = columns[-1]
+        columns.append(column)
+        entry["column"] = column
 
     # =====================================================
     # Rows
@@ -951,9 +1002,13 @@ def materialize_view(
 
             field_name = entry["field"]
 
-            display_field = registry.get_display_field(
-                field_name,
-            )
+            # display_field = resolve_display_field(
+            #    registry,
+            #    entry,
+            # )
+            # display_field was computed and stored above.  Reuse it.
+
+            display_field = entry["column"].display_field
 
             value = resolve_field_value(
                 row=source_row,
@@ -993,6 +1048,8 @@ def materialize_view(
         columns=columns,
         rows=materialized_rows,
         row_meta=row_meta,
+        show_header=show_header,
+        title=title,
     )
 
     # =====================================================
@@ -1006,6 +1063,8 @@ def materialize_view(
             explain_facets=explain_facets,
             catalog_index=catalog_index,
             visible_entries=visible_entries,
+            show_header=show_header,
+            title=title,
         )
 
     return table

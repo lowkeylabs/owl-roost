@@ -39,7 +39,6 @@ from owlroost.catalog.context import (
     build_catalog_context,
 )
 from owlroost.cli.utils import (
-    is_workspace,
     render_available_views,
     render_table,
     resolve_renderer,
@@ -65,22 +64,13 @@ from owlroost.display.operations.sorting import (
 from owlroost.display.operations.table_ops import (
     inject_id_column,
 )
-from owlroost.guide.materializers import (
-    materialize_guide,
-    materialize_guide_tree,
-)
+from owlroost.operations.resolve import build_resolver
 from owlroost.workspace.loaders import (
     load_context_row,
-    load_workspace_row,
     load_workspace_rows,
 )
 from owlroost.workspace.materializers import (
-    materialize_context,
-    materialize_context_tree,
-    materialize_study,
-    materialize_study_tree,
-    materialize_workspace,
-    materialize_workspace_tree,
+    materialize_planning_context,
 )
 from owlroost.workspace.operations import (
     create_workspace,
@@ -88,9 +78,6 @@ from owlroost.workspace.operations import (
     rename_workspace,
     sync_results_catalog,
 )
-
-DEFAULT_LEVEL = "workspace"
-DEFAULT_VIEW = "workspace"
 
 
 @click.command("workspace")
@@ -102,14 +89,6 @@ DEFAULT_VIEW = "workspace"
 @click.option(
     "--view",
     default=None,
-)
-@click.option(
-    "--markdown",
-    is_flag=True,
-)
-@click.option(
-    "--latex",
-    is_flag=True,
 )
 @click.option(
     "--filter",
@@ -168,12 +147,12 @@ DEFAULT_VIEW = "workspace"
     "--force",
     is_flag=True,
 )
+@click.option("--assist", flag_value="", help="Append guidance to display.")
+@click.option("--discover", is_flag=True, help="Append guidance to display.")
 def cmd_workspace(
     ctx,
     selectors,
     view,
-    markdown,
-    latex,
     filters,
     sort,
     top,
@@ -185,43 +164,43 @@ def cmd_workspace(
     init,
     sync_results_catalog_flag,
     force,
+    assist,
+    discover,
 ):
     """
     List and manage workspaces.
-
-    Examples
-    --------
-
-    List workspaces:
-
-        roost workspace
-
-    Show workspace:
-
-        roost workspace 0
-
-    Create workspace:
-
-        roost workspace --create foo
-
-    Rename workspace:
-
-        roost workspace 0 --rename bar
     """
 
     # =====================================================
-    # Invocation Mode
+    # Invocation
     # =====================================================
 
-    invoked_as = ctx.info_name
+    level = "context" if ctx.info_name == "." else "workspace"
 
-    command_mode = "context" if invoked_as == "." else "workspace"
-
-    if view is None:
-        view = command_mode
+    view = view or level
 
     explain_facets, explain_errors = parse_explain_request(
         explain,
+    )
+
+    # =====================================================
+    # Catalog
+    # =====================================================
+
+    catalog = build_catalog_context()
+
+    # =====================================================
+    # Current planning context
+    # =====================================================
+
+    planning_context = materialize_planning_context(
+        load_context_row(root),
+        catalog,
+    )
+
+    resolve = build_resolver(
+        catalog,
+        planning_context,
     )
 
     # =====================================================
@@ -229,6 +208,11 @@ def cmd_workspace(
     # =====================================================
 
     if create:
+        if not resolve(
+            "context.can_create_workspace",
+        ):
+            raise click.ClickException("Cannot create a workspace here.")
+
         workspace_dir = create_workspace(
             create,
             parent=root,
@@ -239,6 +223,11 @@ def cmd_workspace(
         return
 
     if init:
+        if not resolve(
+            "context.can_initialize_workspace",
+        ):
+            raise click.ClickException("Current directory cannot be initialized as a workspace.")
+
         workspace_dir = init_workspace(
             root,
             force=force,
@@ -258,27 +247,9 @@ def cmd_workspace(
 
         return
 
-    #
-    # "workspace" requires an initialized workspace.
-    #
-    # "." characterizes whatever planning context exists.
-    #
-
-    if command_mode == "workspace" and not is_workspace(root):
-        raise click.ClickException("Current directory is not a workspace.")
-
     # =====================================================
-    # Context
+    # View validation
     # =====================================================
-
-    catalog = build_catalog_context()
-
-    # =====================================================
-    # Validate view
-    # =====================================================
-
-    level = DEFAULT_LEVEL
-    pivot = True
 
     if not catalog.display_registry.has_view_for_level(
         level,
@@ -294,47 +265,65 @@ def cmd_workspace(
         return
 
     # =====================================================
-    # Load rows
+    # Build row set
     # =====================================================
 
-    if command_mode == "workspace":
-        rows = load_workspace_rows(root)
+    if resolve(
+        "context.workspace_initialized",
+    ):
+        rows = load_workspace_rows(
+            root,
+        )
 
         if not rows:
-            rows = [load_workspace_row(root)]
+            rows = [
+                load_context_row(
+                    root,
+                )
+            ]
 
     else:
-        #
-        # Characterize the current planning context.
-        #
-        rows = [load_context_row(root)]
+        rows = [
+            planning_context,
+        ]
 
-    if not rows:
-        click.echo("No planning context found.")
-        return
+    rows = [
+        materialize_planning_context(
+            row,
+            catalog,
+        )
+        for row in rows
+    ]
 
-    rows = [materialize_context(row, catalog.workspace_registry) for row in rows]
-    rows = [materialize_context_tree(row, catalog.workspace_registry) for row in rows]
+    # =====================================================
+    # Row operations
+    # =====================================================
 
-    rows = [materialize_workspace(row, catalog.workspace_registry) for row in rows]
-    rows = [materialize_workspace_tree(row, catalog.workspace_registry) for row in rows]
+    rows = apply_canonical_sort(
+        rows,
+    )
 
-    rows = [materialize_study(row, catalog.study_registry) for row in rows]
-    rows = [materialize_study_tree(row, catalog.study_registry) for row in rows]
+    rows = apply_filters(
+        rows,
+        filters,
+    )
 
-    rows = [materialize_guide(row, catalog.guide_registry) for row in rows]
-    rows = [materialize_guide_tree(row, catalog.guide_registry) for row in rows]
+    rows = apply_sort(
+        rows,
+        sort,
+    )
 
-    rows = apply_canonical_sort(rows)
-    rows = apply_filters(rows, filters)
-    rows = apply_sort(rows, sort)
-    rows = apply_top(rows, top)
+    rows = apply_top(
+        rows,
+        top,
+    )
 
-    rows = attach_row_ids(rows)
+    rows = attach_row_ids(
+        rows,
+    )
 
     if not rows:
         click.echo("No matching rows.")
-
         return
 
     # =====================================================
@@ -357,25 +346,14 @@ def cmd_workspace(
         if len(selected_rows) != 1:
             raise click.ClickException("--rename requires exactly one workspace.")
 
-        workspace_path = selected_rows[0]["_path"]
-
         renamed = rename_workspace(
-            workspace_path,
+            selected_rows[0]["_path"],
             rename,
         )
 
         click.echo(f"Renamed workspace to: {renamed.name}")
 
         return
-
-    # =====================================================
-    # Renderer
-    # =====================================================
-
-    renderer = resolve_renderer(
-        markdown,
-        latex,
-    )
 
     # =====================================================
     # Display
@@ -396,24 +374,13 @@ def cmd_workspace(
             table,
             selected_rows,
         )
-    #    print("--- selected_rows ---")
-    #    print(selected_rows)
-
-    if 0:
-        for namespace in ["_guide"]:
-            print(f"--- {namespace} ---")
-            print([row[f"{namespace}"] for row in selected_rows])
-            print(f"--- {namespace}_tree ---")
-            print([row[f"{namespace}_tree"] for row in selected_rows])
-        #            if namespace == "_guide":
-        #                print(f"--- {namespace}_stats ---")
-        #                print([row[f"{namespace}_stats"] for row in selected_rows])
-
-        print("---")
 
     output = render_table(
         table,
-        renderer,
+        resolve_renderer(
+            False,
+            False,
+        ),
     )
 
     if output:

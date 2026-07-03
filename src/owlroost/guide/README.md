@@ -1,14 +1,14 @@
 # Guide Subsystem
 
-The `guide/` subsystem owns user guidance within ROOST.
+The `guide/` subsystem owns semantic user guidance within ROOST.
 
 Guide helps users understand what they can do next.
 
-Rather than embedding workflow logic throughout the codebase, Guide evaluates the current planning context and produces explainable recommendations describing applicable commands, workflows, studies, and planning activities.
+Rather than embedding workflow logic throughout the codebase, Guide evaluates the current planning context and produces semantic guidance describing applicable commands, workflows, studies, and planning activities.
 
-Guide answers:
+Guide answers one architectural question:
 
-> **Given the current planning situation, what should happen next?**
+> **Given the current planning situation, what should the user do next?**
 
 This document complements the project `README.md`, `ARCHITECTURE.md`, and the workspace subsystem documentation by describing the architectural responsibility owned by the guide subsystem.
 
@@ -16,7 +16,7 @@ This document complements the project `README.md`, `ARCHITECTURE.md`, and the wo
 
 # Architectural Role
 
-Guide sits above the planning subsystems.
+Guide evaluates fully materialized planning contexts.
 
 Conceptually:
 
@@ -24,21 +24,26 @@ Conceptually:
 Planning Context
         │
         ▼
-Characterization
+Materialization
         │
         ▼
-Semantic Variables
+Semantic Row
         │
         ▼
-Guide
+Guide Evaluation
         │
         ▼
-Suggested Activities
+Guide Views
+        │
+        ▼
+Display
 ```
 
 Guide does not characterize the planning context.
 
-Guide consumes semantic observations produced by other subsystems.
+Guide consumes semantic observations already produced by other subsystems.
+
+Display owns presentation.
 
 ---
 
@@ -53,12 +58,12 @@ Guide recommends appropriate next activities.
 Examples include:
 
 * initialize a workspace
-* import a household
-* create a study
-* execute an experiment
-* review results
-* compare runs
-* generate documentation
+* review planning cases
+* build execution plans
+* execute pending runs
+* compare results
+* generate reports
+* review studies
 
 Guide never performs these activities.
 
@@ -66,18 +71,36 @@ It merely recommends them.
 
 ---
 
-## Applicability
+## Evaluation
 
-Every recommendation has explicit applicability requirements.
+Every guide has explicit applicability requirements.
 
 Examples include:
 
 * one or more valid cases exist
 * a workspace has been initialized
-* execution results are available
-* multiple runs exist for comparison
+* execution plans exist
+* unrealized runs remain
+* multiple results exist for comparison
 
-Guide evaluates these requirements using semantic variables rather than inspecting files directly.
+Guide evaluates these requirements entirely from semantic observations.
+
+Guide never inspects the filesystem directly.
+
+---
+
+## Assistance
+
+Guide supplies contextual assistance that supplements normal displays.
+
+Guidance is computed from:
+
+* the current planning context
+* the current display level
+* the selected display view
+* the selected rows
+
+The same planning context may therefore produce different guidance depending upon what the user is currently viewing.
 
 ---
 
@@ -92,53 +115,7 @@ Users should be able to determine:
 * which semantic observations contributed
 * which applicability conditions succeeded or failed
 
-Guide therefore supports the same explainability principles used throughout ROOST.
-
----
-
-## Workflow Discovery
-
-Guide introduces users to ROOST.
-
-Rather than requiring users to memorize command sequences, Guide discovers appropriate workflows from the current planning situation.
-
-For example:
-
-```text
-Empty directory
-
-↓
-
-Initialize Workspace
-Import Case
-Open Example
-```
-
-Later:
-
-```text
-Initialized workspace
-
-↓
-
-Build Cases
-Create Study
-Generate Reports
-```
-
-Still later:
-
-```text
-Completed execution
-
-↓
-
-Review Results
-Compare Runs
-Generate Documentation
-```
-
-The current planning situation determines the available guidance.
+Guide therefore follows the same explainability principles used throughout ROOST.
 
 ---
 
@@ -146,9 +123,9 @@ The current planning situation determines the available guidance.
 
 Guide operates entirely from semantic variables.
 
-Guide does not inspect the filesystem directly.
+Guide does not inspect files directly.
 
-Guide does not parse household files.
+Guide does not parse household definitions.
 
 Guide does not evaluate execution artifacts.
 
@@ -158,35 +135,35 @@ Examples include:
 
 * context.valid_case_count
 * context.workspace_initialized
-* study.experiment_count
-* results.run_count
+* study.study_count
+* execution.plan_count
+* results.result_count
 
-The guide subsystem therefore remains independent of implementation details.
+Guide therefore remains independent of implementation details.
 
 ---
 
 # Guide Definitions
 
-Guide recommendations are registered.
+Workflow guidance is registered declaratively.
 
-A guide definition typically describes:
+Each guide definition typically describes:
 
 * title
 * description
 * suggested command
-* applicability expression
-* optional documentation
-* optional priority
+* applicability requirements
+* priority
 
-Guide definitions are reusable.
+Guide definitions contain workflow knowledge rather than presentation logic.
 
-Different interfaces may present them differently while sharing identical applicability logic.
+One guide definition may contribute to multiple guidance views.
 
 ---
 
-# Applicability Expressions
+# Applicability Evaluation
 
-Recommendations become applicable when their applicability expression evaluates to true.
+Recommendations become applicable when all applicability requirements evaluate to true.
 
 Conceptually:
 
@@ -194,13 +171,16 @@ Conceptually:
 Semantic Variables
         │
         ▼
-Applicability Expression
+Guide Definition
         │
         ▼
-Applicable Recommendation
+Requirement Evaluation
+        │
+        ▼
+Applicable Guide
 ```
 
-Expressions may compare:
+Requirements may compare:
 
 * booleans
 * counts
@@ -208,26 +188,65 @@ Expressions may compare:
 * categorical values
 * future semantic observations
 
-Guide remains independent of how those observations were computed.
+Guide remains independent of how those observations were produced.
 
 ---
 
-# User Interfaces
+# Guidance Views
 
-Guide does not own presentation.
+Guide produces semantic guidance.
 
-Different interfaces may consume Guide differently.
+Display determines how that guidance is rendered.
 
-Examples include:
+Current and planned guidance views include:
 
-* CLI welcome screens
-* Context summaries
-* Interactive tutorials
-* Documentation
-* Future graphical interfaces
-* Future LLM assistants
+| Guidance View | Purpose | Audience |
+|---------------|---------|----------|
+| `suggestions` | Recommended next actions. | Users |
+| `details` | Expanded explanations for suggested actions. | Users |
+| `workflow` | Display current workflow progress and readiness. | Users |
+| `coverage` | Reveal planning situations that currently lack guidance. | Developers |
+| `reasoning` | Show applicability evaluation for every guide definition. | Developers |
+| `variables` | Display semantic variables consumed during guide evaluation. | Developers |
+| `diagnostics` | Validate guide definitions and detect authoring problems. | Developers |
 
-Every interface should consume the same underlying guide definitions.
+Not every interface must expose every guidance view.
+
+---
+
+# Rendering
+
+Guide does not render output.
+
+Guide produces semantic guidance.
+
+Display renders that guidance using ordinary display views.
+
+Guidance supplements the user's requested view rather than replacing it.
+
+For example:
+
+```text
+roost cases
+```
+
+renders the requested case summary.
+
+While:
+
+```text
+roost cases --assist
+```
+
+renders:
+
+```text
+Case Summary
+
+Suggested Next Actions
+```
+
+Future interfaces may render different guidance views without modifying guide definitions.
 
 ---
 
@@ -247,9 +266,9 @@ Guide recommends planning activities based upon that characterization.
 
 ### Study
 
-Study defines analytical methodologies.
+Study characterizes analytical methodologies.
 
-Guide recommends applicable studies.
+Guide recommends appropriate studies and workflows.
 
 ---
 
@@ -257,7 +276,7 @@ Guide recommends applicable studies.
 
 Execution realizes analytical plans.
 
-Guide recommends appropriate execution workflows.
+Guide recommends appropriate execution activities.
 
 ---
 
@@ -265,7 +284,7 @@ Guide recommends appropriate execution workflows.
 
 Display renders guidance.
 
-Guide supplies recommendations.
+Guide computes semantic guidance.
 
 ---
 
@@ -281,11 +300,11 @@ Guide consumes semantic variables registered within the catalog.
 
 The following concepts should remain stable.
 
-## Guide owns recommendations.
+## Guide computes semantic guidance.
 
-Guide recommends activities.
+Guide evaluates workflow definitions.
 
-It does not perform them.
+It never performs planning activities.
 
 ---
 
@@ -299,7 +318,45 @@ Guide consumes those observations.
 
 ---
 
-## Applicability should be explainable.
+## Guidance is contextual.
+
+Guidance depends upon:
+
+* planning context
+* display level
+* current view
+* selected rows
+
+Different views of the same planning context may produce different guidance.
+
+---
+
+## Guide is presentation-independent.
+
+Guide never renders terminal output.
+
+Display owns presentation.
+
+Guide produces semantic guidance that may be rendered by:
+
+* CLI
+* documentation
+* notebooks
+* dashboards
+* graphical interfaces
+* future LLM assistants
+
+---
+
+## Guidance is additive.
+
+Guidance supplements the user's requested view.
+
+It never replaces the primary display.
+
+---
+
+## Applicability should remain explainable.
 
 Every recommendation should explain why it is applicable.
 
@@ -307,11 +364,11 @@ Recommendations that are not applicable should also be explainable.
 
 ---
 
-## Guide should remain interface-independent.
+## Guide definitions should remain reusable.
 
-CLI, documentation, graphical interfaces, and future LLM assistants should consume identical guide definitions.
+One guide definition may contribute to multiple guidance views.
 
-Presentation belongs elsewhere.
+Presentation should never be embedded within workflow definitions.
 
 ---
 
@@ -323,21 +380,21 @@ As new planning capabilities are added, Guide should recommend them automaticall
 
 # Long-Term Direction
 
-Guide is evolving toward the semantic workflow engine for ROOST.
+Guide is evolving toward ROOST's semantic workflow engine.
 
 Future capabilities are expected to include:
 
-* adaptive planning workflows
+* adaptive workflow coaching
 * study recommendations
-* context-sensitive help
-* execution guidance
-* comparison guidance
+* execution planning
+* comparison recommendations
 * documentation guidance
 * educational tutorials
-* explainable applicability trees
+* developer diagnostics
+* explainable workflow reasoning
 
-Regardless of implementation, the guide subsystem should continue to answer one architectural question:
+Regardless of implementation, Guide should continue to answer one architectural question:
 
 > **Given the current planning situation, what should the user do next?**
 
-Every recommendation should be explainable, deterministic, and derived from the semantic observations already produced by the rest of the ROOST architecture.
+Every recommendation should be deterministic, explainable, and derived entirely from the semantic observations already produced by the rest of the ROOST architecture.

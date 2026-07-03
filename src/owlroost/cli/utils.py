@@ -510,3 +510,21 @@ def is_workspace(
     path,
 ) -> bool:
     return Path(path).joinpath("workspace.toml").exists()
+
+
+def parse_assist(
+    ctx,
+    param,
+    value,
+):
+    """
+    Parse comma-separated assist views.
+    """
+
+    if value is None:
+        return None
+
+    if value == "":
+        return ["suggestions"]
+
+    return [part.strip() for part in value.split(",") if part.strip()]

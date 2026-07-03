@@ -20,8 +20,10 @@ FACET_NAME = "display"
 
 def render(
     *,
+    field_name,
     display_field,
     catalog_row,
+    row,
     row_values,
 ) -> str:
     """

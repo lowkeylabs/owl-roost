@@ -22,8 +22,10 @@ FACET_NAME = "debug"
 
 def render(
     *,
+    field_name,
     display_field,
     catalog_row,
+    row,
     row_values,
 ) -> str:
     return pformat(

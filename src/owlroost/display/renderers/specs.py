@@ -140,6 +140,7 @@ class RoostTable:
         *,
         show_header=True,
         title=None,
+        title_justify="left",
     ):
         self.columns = columns
         self.rows = rows
@@ -149,6 +150,7 @@ class RoostTable:
         self.show_header = show_header
 
         self.title = title
+        self.title_justify = title_justify
 
     # =====================================================
     # Diagnostics

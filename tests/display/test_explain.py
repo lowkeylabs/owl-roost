@@ -107,9 +107,12 @@ class DummyDisplayField:
 
 def test_build_field_explanation_empty():
     text = build_field_explanation(
+        field_name="example",
         display_field=None,
         catalog_row=None,
         explain_facets=set(),
+        row=None,
+        row_values=None,
     )
 
     assert text == ""
@@ -117,11 +120,14 @@ def test_build_field_explanation_empty():
 
 def test_build_field_explanation_variables():
     text = build_field_explanation(
+        field_name="example",
         display_field=DummyDisplayField(),
         catalog_row=None,
         explain_facets={
             "variables",
         },
+        row=None,
+        row_values=None,
     )
 
     assert "Example description" in text
@@ -129,11 +135,14 @@ def test_build_field_explanation_variables():
 
 def test_build_field_explanation_unknown_facet_ignored():
     text = build_field_explanation(
+        field_name="example",
         display_field=DummyDisplayField(),
         catalog_row=None,
         explain_facets={
             "bogus",
         },
+        row=None,
+        row_values=None,
     )
 
     assert text == ""
@@ -171,6 +180,8 @@ def test_build_explanation_cell_missing_registry():
         explain_facets={
             "variables",
         },
+        row=None,
+        row_values=None,
     )
 
     assert text == ""
@@ -184,6 +195,8 @@ def test_build_explanation_cell_success():
         explain_facets={
             "variables",
         },
+        row=None,
+        row_values=None,
     )
 
     assert "Example description" in text
@@ -206,6 +219,8 @@ def test_build_explanation_cell_handles_registry_failure():
         explain_facets={
             "variables",
         },
+        row=None,
+        row_values=None,
     )
 
     assert isinstance(
@@ -236,6 +251,8 @@ def test_build_explanation_cell_uses_full_field_name():
         explain_facets={
             "sources",
         },
+        row=None,
+        row_values=None,
     )
 
     assert "user-specified" in text
@@ -272,11 +289,14 @@ def test_build_field_explanation_handles_facet_failure(
 
     try:
         text = build_field_explanation(
+            field_name="example",
             display_field=DummyDisplayField(),
             catalog_row=None,
             explain_facets={
                 "variables",
             },
+            row=None,
+            row_values=None,
         )
 
         assert "facet error" in text

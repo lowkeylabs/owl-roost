@@ -43,16 +43,22 @@ def build_rich_table(
     """
 
     rich_table = Table(
+        title=getattr(table, "title", None),
+        title_justify=getattr(table, "title_justify", "left"),
         box=box.HORIZONTALS,
         show_edge=False,
         show_lines=False,
+        show_header=getattr(table, "show_header", True),
     )
 
     # swap out this definition for the one above to get borders
     _rich_table_for_debugging = Table(
+        title=getattr(table, "title", None),
+        title_justify=getattr(table, "title_justify", "left"),
         box=box.SQUARE,
         show_edge=True,
         show_lines=True,
+        show_header=getattr(table, "show_header", True),
     )
 
     # =====================================================

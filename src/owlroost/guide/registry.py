@@ -17,10 +17,24 @@ objects.
 
 The registry evaluates those guides
 against a planning context and returns
-a semantic EvaluationResult.
+GuideEvaluation objects.
 
-Rendering is owned by the display
-subsystem.
+Architectural Role
+-----------------
+GuideRegistry also serves as the
+semantic object registry for guide
+definitions.
+
+Semantic object lookups include:
+
+    guide.workspace.initialize.command
+
+    guide.workspace.initialize.description
+
+    guide.workspace.initialize.priority
+
+without requiring those properties to
+appear in the catalog.
 """
 
 from __future__ import annotations
@@ -55,7 +69,7 @@ class GuideRegistry:
         self._guides[guide.name] = guide
 
     # =====================================================
-    # Lookup
+    # Enumeration
     # =====================================================
 
     def all(
@@ -74,6 +88,31 @@ class GuideRegistry:
             ),
         )
 
+    # =====================================================
+    # Semantic Object Lookup
+    # =====================================================
+
+    def get_object(
+        self,
+        name,
+    ):
+        """
+        Return one registered GuideSpec.
+
+        This method establishes the
+        generic semantic-object lookup
+        interface that other registries
+        will eventually implement.
+        """
+
+        return self._guides.get(
+            name,
+        )
+
+    #
+    # Backwards compatibility.
+    #
+
     def get(
         self,
         name,
@@ -82,8 +121,52 @@ class GuideRegistry:
         Return one registered guide.
         """
 
-        return self._guides.get(
+        return self.get_object(
             name,
+        )
+
+    def has_object(
+        self,
+        name,
+    ):
+        """
+        Return whether a guide exists.
+        """
+
+        return name in self._guides
+
+    def resolve_object_property(
+        self,
+        object_name,
+        property_name,
+    ):
+        """
+        Resolve one property of a
+        registered GuideSpec.
+
+        Examples
+        --------
+
+            workspace.initialize
+
+                description
+
+            welcome
+
+                command
+        """
+
+        obj = self.get_object(
+            object_name,
+        )
+
+        if obj is None:
+            return None
+
+        return getattr(
+            obj,
+            property_name,
+            None,
         )
 
     # =====================================================

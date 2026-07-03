@@ -94,9 +94,11 @@ def _ordered_facets(
 
 def build_field_explanation(
     *,
+    field_name,
     display_field,
     catalog_row=None,
     explain_facets: set[str],
+    row=None,
     row_values=None,
 ) -> str:
     """
@@ -118,8 +120,10 @@ def build_field_explanation(
 
         try:
             text = render_fn(
+                field_name=field_name,
                 display_field=display_field,
                 catalog_row=catalog_row,
+                row=row,
                 row_values=row_values,
             )
 
@@ -150,6 +154,7 @@ def build_explanation_cell(
     registry=None,
     catalog_index=None,
     explain_facets: set[str] | None = None,
+    row=None,
     row_values=None,
 ) -> str:
     """
@@ -182,9 +187,11 @@ def build_explanation_cell(
             )
 
         return build_field_explanation(
+            field_name=field_name,
             display_field=display_field,
             catalog_row=catalog_row,
             explain_facets=explain_facets,
+            row=row,
             row_values=row_values,
         )
 

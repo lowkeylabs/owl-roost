@@ -74,7 +74,7 @@ def register_display_fields(
                     wrap=True,
                 ),
                 "pivot": DisplayProfile(
-                    label="Metric",
+                    label="Description",
                     width="auto",
                     min_width=22,
                     max_width=50,
