@@ -17,13 +17,9 @@ from __future__ import annotations
 
 import click
 
-from owlroost.guide.bootstrap import (
-    build_guide_registry,
-)
+from owlroost.guide.bootstrap import build_guide_registry
 
-from ..core.info import (
-    get_installation_info,
-)
+from ..core.settings import get_settings
 from ..version import __version__
 from .cmd_build import cmd_build
 from .cmd_context import cmd_context
@@ -88,10 +84,10 @@ def cli(
     "key",
     required=False,
 )
-def info(ctx, key):
-    """Show ROOST installation information."""
+def settings(ctx, key):
+    """Show ROOST settings"""
 
-    info = get_installation_info()
+    info = get_settings()
 
     if key is None:
         for k, v in info.items():
@@ -120,4 +116,4 @@ cli.add_command(cmd_workspace, name="workspace")
 cli.add_command(cmd_context, name="context")
 cli.add_command(cmd_context, name=".")
 
-cli.add_command(cmd_household)
+cli.add_command(cmd_household, name="library")

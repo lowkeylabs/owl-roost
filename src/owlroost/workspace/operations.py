@@ -35,7 +35,7 @@ from pathlib import Path
 
 import yaml
 
-from owlroost.core.info import (
+from owlroost.core.settings import (
     get_workspace_template_dir,
 )
 from owlroost.display.discovery import (
@@ -61,8 +61,7 @@ Edit the workspace.toml file to adjust.
 """
 
 results_dir = "./results"
-case_dir = "."
-
+case_dir = "./cases"
 '''
 
 MINIMAL_MAKEFILE = """\
@@ -72,8 +71,6 @@ MINIMAL_MAKEFILE = """\
 # Add additional makefile targets
 # to makefile.mk file.  It will be included
 # as necessary.
-
-
 
 """
 

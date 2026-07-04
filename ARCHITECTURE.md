@@ -10,7 +10,7 @@ Its purpose is to capture the architectural ideas that should remain stable even
 
 Subsystem READMEs describe how these ideas are realized within the current codebase.
 
----
+
 
 # Architectural Philosophy
 
@@ -31,7 +31,7 @@ This architecture emphasizes:
 * Composability
 * Long-term maintainability
 
----
+
 
 # The Architectural Boundary
 
@@ -74,7 +74,7 @@ Interpretation and recommendation belong to people, advisors, educators, researc
 
 This separation is fundamental.
 
----
+
 
 # Architectural Workflow
 
@@ -108,7 +108,7 @@ Every subsystem contributes to one or more stages of this workflow.
 
 No subsystem owns the entire workflow.
 
----
+
 
 # Characterization
 
@@ -131,7 +131,7 @@ They determine which transition families are applicable and constrain the valid 
 
 Levers are computed rather than manually maintained.
 
----
+
 
 # Transitions
 
@@ -155,7 +155,7 @@ ROOST does not recommend them.
 
 Related transitions may be organized into Transition Families.
 
----
+
 
 # Evaluation Environments
 
@@ -175,7 +175,7 @@ Evaluation environments remain independent from transitions.
 
 Experiments combine transitions with evaluation environments to generate evidence.
 
----
+
 
 # Evidence Generation
 
@@ -194,7 +194,7 @@ Experiments define methodology.
 
 Evidence packages describe results.
 
----
+
 
 # Definitions and Realizations
 
@@ -234,7 +234,7 @@ Realizations preserve the exact artifacts generated from those definitions.
 
 Maintaining this distinction improves reuse while preserving provenance and reproducibility.
 
----
+
 
 # Separation of Responsibilities
 
@@ -250,7 +250,7 @@ Ownership should remain local.
 
 Composition should occur above subsystem boundaries.
 
----
+
 
 # Semantic Communication
 
@@ -277,7 +277,7 @@ Consumers should not require knowledge of:
 
 Semantic communication promotes loose coupling and explainability.
 
----
+
 
 # Explainability
 
@@ -293,7 +293,7 @@ Explainability should include:
 
 Explainability is considered a first-class architectural concern rather than a reporting feature.
 
----
+
 
 # Provenance
 
@@ -309,7 +309,7 @@ Provenance explains:
 
 Artifacts should preserve sufficient information to reproduce and explain their creation.
 
----
+
 
 # Planning Intent
 
@@ -335,7 +335,7 @@ It captures:
 
 Preserving both allows investigations to be reproduced mechanically while also preserving the reasoning that motivated them.
 
----
+
 
 # Determinism
 
@@ -352,7 +352,7 @@ ROOST should generate identical evidence.
 
 Automation should never obscure reproducibility.
 
----
+
 
 # Service-Oriented Architecture
 
@@ -373,7 +373,7 @@ All interfaces should invoke the same underlying services.
 
 Business logic should not reside within user interfaces.
 
----
+
 
 # Composability
 
@@ -383,7 +383,7 @@ Subsystems should provide focused responsibilities that can be reused in many wo
 
 Composition should be preferred over duplication.
 
----
+
 
 # Extensibility
 
@@ -393,7 +393,7 @@ Architectural extension points should remain open while subsystem responsibiliti
 
 New analytical capabilities should normally be introduced without modifying existing subsystem behavior.
 
----
+
 
 # Documentation
 
@@ -408,7 +408,7 @@ Documentation should explain both:
 
 Documentation is part of the evidence-generation process rather than an afterthought.
 
----
+
 
 # Architectural Invariants
 
@@ -422,19 +422,19 @@ Every investigation begins with one or more canonical households.
 
 Canonical households describe financial state independently of how they were created.
 
----
+
 
 ## Characterization precedes experimentation.
 
 ROOST first characterizes the planning investigation before determining applicable analytical workflows and experiments.
 
----
+
 
 ## Levers characterize the planning situation.
 
 Levers are semantic observations that determine analytical applicability and constrain available transitions.
 
----
+
 
 ## Transitions represent candidate change.
 
@@ -442,7 +442,7 @@ ROOST evaluates transitions.
 
 ROOST does not recommend them.
 
----
+
 
 ## Evaluation environments represent possible futures.
 
@@ -450,7 +450,7 @@ Transitions are evaluated under one or more future environments.
 
 Environments remain independent of retiree decisions.
 
----
+
 
 ## Experiments generate evidence.
 
@@ -458,7 +458,7 @@ Experiments define reproducible methodologies.
 
 Evidence packages describe their results.
 
----
+
 
 ## Definitions remain distinct from realizations.
 
@@ -466,7 +466,7 @@ Analytical definitions describe intent.
 
 Execution artifacts record realized evidence.
 
----
+
 
 ## Evidence generation and interpretation remain separate.
 
@@ -476,7 +476,7 @@ Consumers interpret evidence.
 
 Recommendation logic remains outside the architectural boundary.
 
----
+
 
 ## Subsystems own concepts.
 
@@ -486,19 +486,19 @@ Higher-level workflows compose subsystem capabilities.
 
 Subsystems should avoid owning each other's responsibilities.
 
----
+
 
 ## Semantic interfaces are preferred.
 
 Subsystems communicate through semantic observations rather than implementation details.
 
----
+
 
 ## Documentation is a first-class architectural artifact.
 
 Generated evidence should remain understandable, reproducible, and explainable.
 
----
+
 
 # Architectural Goal
 

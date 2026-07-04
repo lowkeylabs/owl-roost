@@ -1,4 +1,4 @@
-# src/owlroost/core/info.py
+# src/owlroost/core/settings.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -113,7 +113,7 @@ def get_roost_makefile():
     return get_workspace_template_dir() / "roost.mk"
 
 
-def get_installation_info():
+def get_settings():
     """
     Return all known installation
     metadata.
@@ -151,4 +151,4 @@ def get_installation_value(
         Unknown name.
     """
 
-    return get_installation_info()[name]
+    return get_settings()[name]

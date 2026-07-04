@@ -1125,5 +1125,719 @@
     "title": "run - generic title from _variables",
     "section": "",
     "text": "this is run.qmd\nhello from inside _run_0.qmd"
+  },
+  {
+    "objectID": "roost/gathered-readmes.html",
+    "href": "roost/gathered-readmes.html",
+    "title": "ROOST",
+    "section": "",
+    "text": "title: “”"
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#households-are-the-primary-analytical-context",
+    "href": "roost/gathered-readmes.html#households-are-the-primary-analytical-context",
+    "title": "ROOST",
+    "section": "Households are the primary analytical context",
+    "text": "Households are the primary analytical context\nEvery investigation begins with a household."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#levers-characterize-the-current-planning-situation",
+    "href": "roost/gathered-readmes.html#levers-characterize-the-current-planning-situation",
+    "title": "ROOST",
+    "section": "Levers characterize the current planning situation",
+    "text": "Levers characterize the current planning situation\nLevers are semantic observations computed from household information, analytical results, and derived evidence.\nLevers determine which transition families are applicable and constrain the valid transitions available for evaluation."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#transitions-represent-candidate-changes",
+    "href": "roost/gathered-readmes.html#transitions-represent-candidate-changes",
+    "title": "ROOST",
+    "section": "Transitions represent candidate changes",
+    "text": "Transitions represent candidate changes\nTransitions describe meaningful changes from the current planning situation.\nROOST evaluates transitions.\nROOST does not recommend them."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#evaluation-environments-describe-possible-futures",
+    "href": "roost/gathered-readmes.html#evaluation-environments-describe-possible-futures",
+    "title": "ROOST",
+    "section": "Evaluation environments describe possible futures",
+    "text": "Evaluation environments describe possible futures\nEvaluation environments represent assumptions about the external world.\nThey are independent of retiree decisions.\nTransitions are evaluated under one or more environments."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#experiments-generate-evidence",
+    "href": "roost/gathered-readmes.html#experiments-generate-evidence",
+    "title": "ROOST",
+    "section": "Experiments generate evidence",
+    "text": "Experiments generate evidence\nExperiments evaluate transitions under specified environments.\nExperiments are deterministic, reproducible, and explainable."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#evidence-generation-and-interpretation-are-separate-activities",
+    "href": "roost/gathered-readmes.html#evidence-generation-and-interpretation-are-separate-activities",
+    "title": "ROOST",
+    "section": "Evidence generation and interpretation are separate activities",
+    "text": "Evidence generation and interpretation are separate activities\nROOST generates evidence.\nConsumers interpret evidence.\nRecommendations remain outside the architectural boundary of ROOST."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#owl-remains-the-analytical-engine",
+    "href": "roost/gathered-readmes.html#owl-remains-the-analytical-engine",
+    "title": "ROOST",
+    "section": "OWL remains the analytical engine",
+    "text": "OWL remains the analytical engine\nROOST builds upon OWL’s ability to evaluate household financial outcomes."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#documentation-is-a-first-class-outcome",
+    "href": "roost/gathered-readmes.html#documentation-is-a-first-class-outcome",
+    "title": "ROOST",
+    "section": "Documentation is a first-class outcome",
+    "text": "Documentation is a first-class outcome\nGenerated evidence should be understandable, reproducible, reviewable, and shareable."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#roost-should-use-its-own-workflow",
+    "href": "roost/gathered-readmes.html#roost-should-use-its-own-workflow",
+    "title": "ROOST",
+    "section": "ROOST should use its own workflow",
+    "text": "ROOST should use its own workflow\nROOST should document, validate, teach, and evaluate itself using the same evidence-generation workflow it provides to its users."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#canonical-households-define-the-planning-subject.",
+    "href": "roost/gathered-readmes.html#canonical-households-define-the-planning-subject.",
+    "title": "ROOST",
+    "section": "Canonical households define the planning subject.",
+    "text": "Canonical households define the planning subject.\nEvery investigation begins with one or more canonical households.\nCanonical households describe financial state independently of how they were created."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#characterization-precedes-experimentation.",
+    "href": "roost/gathered-readmes.html#characterization-precedes-experimentation.",
+    "title": "ROOST",
+    "section": "Characterization precedes experimentation.",
+    "text": "Characterization precedes experimentation.\nROOST first characterizes the planning investigation before determining applicable analytical workflows and experiments."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#levers-characterize-the-planning-situation.",
+    "href": "roost/gathered-readmes.html#levers-characterize-the-planning-situation.",
+    "title": "ROOST",
+    "section": "Levers characterize the planning situation.",
+    "text": "Levers characterize the planning situation.\nLevers are semantic observations that determine analytical applicability and constrain available transitions."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#transitions-represent-candidate-change.",
+    "href": "roost/gathered-readmes.html#transitions-represent-candidate-change.",
+    "title": "ROOST",
+    "section": "Transitions represent candidate change.",
+    "text": "Transitions represent candidate change.\nROOST evaluates transitions.\nROOST does not recommend them."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#evaluation-environments-represent-possible-futures.",
+    "href": "roost/gathered-readmes.html#evaluation-environments-represent-possible-futures.",
+    "title": "ROOST",
+    "section": "Evaluation environments represent possible futures.",
+    "text": "Evaluation environments represent possible futures.\nTransitions are evaluated under one or more future environments.\nEnvironments remain independent of retiree decisions."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#experiments-generate-evidence.",
+    "href": "roost/gathered-readmes.html#experiments-generate-evidence.",
+    "title": "ROOST",
+    "section": "Experiments generate evidence.",
+    "text": "Experiments generate evidence.\nExperiments define reproducible methodologies.\nEvidence packages describe their results."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#definitions-remain-distinct-from-realizations.",
+    "href": "roost/gathered-readmes.html#definitions-remain-distinct-from-realizations.",
+    "title": "ROOST",
+    "section": "Definitions remain distinct from realizations.",
+    "text": "Definitions remain distinct from realizations.\nAnalytical definitions describe intent.\nExecution artifacts record realized evidence."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#evidence-generation-and-interpretation-remain-separate.",
+    "href": "roost/gathered-readmes.html#evidence-generation-and-interpretation-remain-separate.",
+    "title": "ROOST",
+    "section": "Evidence generation and interpretation remain separate.",
+    "text": "Evidence generation and interpretation remain separate.\nROOST generates evidence.\nConsumers interpret evidence.\nRecommendation logic remains outside the architectural boundary."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#subsystems-own-concepts.",
+    "href": "roost/gathered-readmes.html#subsystems-own-concepts.",
+    "title": "ROOST",
+    "section": "Subsystems own concepts.",
+    "text": "Subsystems own concepts.\nSubsystems own knowledge.\nHigher-level workflows compose subsystem capabilities.\nSubsystems should avoid owning each other’s responsibilities."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#semantic-interfaces-are-preferred.",
+    "href": "roost/gathered-readmes.html#semantic-interfaces-are-preferred.",
+    "title": "ROOST",
+    "section": "Semantic interfaces are preferred.",
+    "text": "Semantic interfaces are preferred.\nSubsystems communicate through semantic observations rather than implementation details."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#documentation-is-a-first-class-architectural-artifact.",
+    "href": "roost/gathered-readmes.html#documentation-is-a-first-class-architectural-artifact.",
+    "title": "ROOST",
+    "section": "Documentation is a first-class architectural artifact.",
+    "text": "Documentation is a first-class architectural artifact.\nGenerated evidence should remain understandable, reproducible, and explainable."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#household",
+    "href": "roost/gathered-readmes.html#household",
+    "title": "ROOST",
+    "section": "household/",
+    "text": "household/\nOwns canonical household definitions.\nResponsibilities include:\n\ncanonical household registration\nhousehold libraries\nhousehold import\nhousehold export\nprogrammatic household construction\ncanonical household providers\n\nThe household subsystem owns the lifecycle of canonical households.\nRegardless of how a household is created, the public product of the subsystem is a canonical household suitable for analytical investigation.\nThe household subsystem does not characterize households, organize investigations, or generate evidence."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#workspace",
+    "href": "roost/gathered-readmes.html#workspace",
+    "title": "ROOST",
+    "section": "workspace/",
+    "text": "workspace/\nOwns planning investigations.\nResponsibilities include:\n\ninvestigation organization\nplanning intent\nhousehold inventory\ncharacterization\nsemantic levers\ntransition applicability\nexperiment selection\nreproducibility\nplanning documentation\n\nA workspace organizes one or more realized households into a coherent planning investigation.\nThe workspace explains why an investigation exists.\nIt does not own execution artifacts or analytical evidence."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#catalog",
+    "href": "roost/gathered-readmes.html#catalog",
+    "title": "ROOST",
+    "section": "catalog/",
+    "text": "catalog/\nOwns semantic identity.\nResponsibilities include:\n\ncanonical field definitions\nontology\nprovenance\nexplainability\nsemantic resolution\n\nThe catalog defines what can be observed."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#schema",
+    "href": "roost/gathered-readmes.html#schema",
+    "title": "ROOST",
+    "section": "schema/",
+    "text": "schema/\nOwns household configuration schema.\nResponsibilities include:\n\nconfiguration specifications\nvalidation\ndefaults\ncanonical household structure\n\nThe schema defines valid analytical inputs."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#study",
+    "href": "roost/gathered-readmes.html#study",
+    "title": "ROOST",
+    "section": "study/",
+    "text": "study/\nOwns reusable analytical methodologies.\nResponsibilities include:\n\nstudies\nscenario families\ntransition families\nexperiment definitions\n\nStudies define reusable analytical methodologies.\nThey describe what investigations may be performed.\nStudies do not instantiate execution artifacts."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#execution",
+    "href": "roost/gathered-readmes.html#execution",
+    "title": "ROOST",
+    "section": "execution/",
+    "text": "execution/\nOwns execution plans and execution artifacts.\nResponsibilities include:\n\nexecution plan realization\nsession creation\nrun creation\ntrial creation\nexecution scheduling\ntrial execution\nexecution provenance\nexecution artifact lifecycle\n\nThe execution subsystem transforms planning investigations into reproducible analytical investigations.\nIt owns the lifecycle of execution plans together with the artifacts stored beneath the results/ directory."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#metrics",
+    "href": "roost/gathered-readmes.html#metrics",
+    "title": "ROOST",
+    "section": "metrics/",
+    "text": "metrics/\nOwns analytical evidence.\nResponsibilities include:\n\nmetric definitions\nderived evidence\naggregation\ncomparison metrics\n\nMetrics describe the evidence generated by analytical execution."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#display",
+    "href": "roost/gathered-readmes.html#display",
+    "title": "ROOST",
+    "section": "display/",
+    "text": "display/\nOwns presentation.\nResponsibilities include:\n\ndisplay fields\nviews\nformatting\nreports\nvisualization support\n\nDisplay determines how evidence is communicated.\nIt does not generate evidence."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#comparison",
+    "href": "roost/gathered-readmes.html#comparison",
+    "title": "ROOST",
+    "section": "comparison/",
+    "text": "comparison/\nOwns analytical comparison.\nResponsibilities include:\n\ncomparisons\ncomparative metrics\nevidence organization\ncomparative reporting\n\nComparison relates evidence generated from one or more analytical investigations."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#review",
+    "href": "roost/gathered-readmes.html#review",
+    "title": "ROOST",
+    "section": "review/",
+    "text": "review/\nOwns workflow orchestration.\nResponsibilities include:\n\nguidance\nworkflow sequencing\nsubsystem composition\nuser-facing orchestration\n\nReview coordinates subsystems.\nIt does not own analytical knowledge."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#additional-packages",
+    "href": "roost/gathered-readmes.html#additional-packages",
+    "title": "ROOST",
+    "section": "Additional Packages",
+    "text": "Additional Packages\nOther packages support the architectural workflow by providing specialized capabilities.\nEach should own a single coherent responsibility.\nSubsystem READMEs describe these responsibilities in greater detail."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#planning-investigation",
+    "href": "roost/gathered-readmes.html#planning-investigation",
+    "title": "ROOST",
+    "section": "Planning Investigation",
+    "text": "Planning Investigation\nThe workspace organizes one or more canonical households into a coherent planning investigation.\nA planning investigation combines:\n\nCanonical household definitions\nRealized planning state\nPlanning intent\nWorkspace configuration\nSupporting documentation\n\nThe workspace preserves the context explaining why the investigation exists.\nThat context should remain understandable long after analytical execution has completed."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#characterization-2",
+    "href": "roost/gathered-readmes.html#characterization-2",
+    "title": "ROOST",
+    "section": "Characterization",
+    "text": "Characterization\nThe workspace characterizes the current planning situation.\nCharacterization begins with inventory.\nInventory identifies the resources available within the planning investigation.\nExamples include:\n\nCanonical households\nRealized planning state\nHousehold Financial Profiles\nPrevious execution artifacts\nReports\nSupporting documentation\n\nCharacterization computes semantic observations describing the planning situation.\nThese observations are called Levers.\nCharacterization is performed whenever the workspace subsystem observes a planning context.\nA persisted workspace.toml is not required.\nThe same inventory, characterization, and lever-computation pipeline may be applied to:\n\nan initialized workspace\na directory containing canonical households\na directory containing execution artifacts\nan empty directory\na household library\n\nThe persisted workspace stores planning intent and documentation.\nInventory, characterization, and levers are computed observations rather than stored state."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#discovery",
+    "href": "roost/gathered-readmes.html#discovery",
+    "title": "ROOST",
+    "section": "Discovery",
+    "text": "Discovery\nThe workspace determines which analytical methodologies are applicable.\nRather than exposing every possible investigation, the workspace identifies those appropriate for the current planning situation.\nExamples include:\n\nSpending investigations\nRetirement timing\nSocial Security claiming\nRoth conversions\nAsset allocation studies\n\nDiscovery depends upon computed lever values.\nThe workspace determines applicability.\nThe study subsystem defines the analytical methodologies themselves."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#execution-planning",
+    "href": "roost/gathered-readmes.html#execution-planning",
+    "title": "ROOST",
+    "section": "Execution Planning",
+    "text": "Execution Planning\nThe workspace assembles execution plans.\nExecution plans combine:\n\nOne or more canonical households\nPlanning intent\nAnalytical methodologies\nExperimental overrides\n\ninto reproducible analytical investigations.\nThe execution subsystem realizes and executes those plans.\nThe workspace preserves the planning context from which those execution plans were derived."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#the-workspace-owns-planning-investigations.",
+    "href": "roost/gathered-readmes.html#the-workspace-owns-planning-investigations.",
+    "title": "ROOST",
+    "section": "The workspace owns planning investigations.",
+    "text": "The workspace owns planning investigations.\nCanonical households belong to the household subsystem.\nExecution plans belong to the execution subsystem.\nThe workspace preserves the planning context connecting them."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#characterization-precedes-analysis.",
+    "href": "roost/gathered-readmes.html#characterization-precedes-analysis.",
+    "title": "ROOST",
+    "section": "Characterization precedes analysis.",
+    "text": "Characterization precedes analysis.\nThe planning situation should be understood before analytical methodologies are selected."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#characterization-is-independent-of-persistence.",
+    "href": "roost/gathered-readmes.html#characterization-is-independent-of-persistence.",
+    "title": "ROOST",
+    "section": "Characterization is independent of persistence.",
+    "text": "Characterization is independent of persistence.\nInventory, characterization, and lever computation are services provided by the workspace subsystem.\nThey may be applied to either transient directory contexts or persisted workspaces.\nPersisted workspaces record planning intent rather than computed observations."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#levers-characterize-planning-investigations.",
+    "href": "roost/gathered-readmes.html#levers-characterize-planning-investigations.",
+    "title": "ROOST",
+    "section": "Levers characterize planning investigations.",
+    "text": "Levers characterize planning investigations.\nLevers describe the planning context.\nThey determine applicability.\nThey do not represent recommendations."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#discovery-follows-characterization.",
+    "href": "roost/gathered-readmes.html#discovery-follows-characterization.",
+    "title": "ROOST",
+    "section": "Discovery follows characterization.",
+    "text": "Discovery follows characterization.\nApplicable analytical methodologies are determined from computed levers rather than direct inspection of household definitions."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#realized-and-experimental-changes-share-a-common-representation.",
+    "href": "roost/gathered-readmes.html#realized-and-experimental-changes-share-a-common-representation.",
+    "title": "ROOST",
+    "section": "Realized and experimental changes share a common representation.",
+    "text": "Realized and experimental changes share a common representation.\nHistorical household evolution and future analytical exploration should use the same override semantics whenever practical.\nThey differ only by provenance."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#execution-plans-preserve-planning-intent.",
+    "href": "roost/gathered-readmes.html#execution-plans-preserve-planning-intent.",
+    "title": "ROOST",
+    "section": "Execution plans preserve planning intent.",
+    "text": "Execution plans preserve planning intent.\nThe workspace assembles execution plans.\nThe execution subsystem realizes and executes them.\nPlanning intent remains independent of execution artifacts."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#planning-investigations-are-reproducible.",
+    "href": "roost/gathered-readmes.html#planning-investigations-are-reproducible.",
+    "title": "ROOST",
+    "section": "Planning investigations are reproducible.",
+    "text": "Planning investigations are reproducible.\nExecution artifacts should be regenerable from canonical households, planning intent, realized planning state, and workspace configuration whenever practical."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#the-workspace-owns-planning-context.",
+    "href": "roost/gathered-readmes.html#the-workspace-owns-planning-context.",
+    "title": "ROOST",
+    "section": "The workspace owns planning context.",
+    "text": "The workspace owns planning context.\nCanonical households belong elsewhere.\nAnalytical methodologies belong elsewhere.\nExecution belongs elsewhere.\nPresentation belongs elsewhere.\nAnalytical evidence belongs elsewhere.\nThe workspace owns the organization, characterization, and documentation of planning investigations."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#guidance",
+    "href": "roost/gathered-readmes.html#guidance",
+    "title": "ROOST",
+    "section": "Guidance",
+    "text": "Guidance\nGuide recommends appropriate next activities.\nExamples include:\n\ninitialize a workspace\nreview planning cases\nbuild execution plans\nexecute pending runs\ncompare results\ngenerate reports\nreview studies\n\nGuide never performs these activities.\nInstead, it produces semantic workflow knowledge describing recommended activities.\nPresentation and execution remain responsibilities of other subsystems."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#evaluation",
+    "href": "roost/gathered-readmes.html#evaluation",
+    "title": "ROOST",
+    "section": "Evaluation",
+    "text": "Evaluation\nEvery guide has explicit applicability requirements.\nExamples include:\n\none or more valid cases exist\na workspace has been initialized\nexecution plans exist\nunrealized runs remain\nmultiple results exist for comparison\n\nGuide evaluates these requirements entirely from semantic observations.\nGuide never inspects the filesystem directly."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#assistance",
+    "href": "roost/gathered-readmes.html#assistance",
+    "title": "ROOST",
+    "section": "Assistance",
+    "text": "Assistance\nGuide supplies contextual assistance by materializing semantic guidance that supplements normal displays.\nGuidance is computed from:\n\nthe current planning context\nthe current display level\nthe selected display view\nthe selected rows\n\nThe same planning context may therefore produce different guidance depending upon what the user is currently viewing."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#explainability-2",
+    "href": "roost/gathered-readmes.html#explainability-2",
+    "title": "ROOST",
+    "section": "Explainability",
+    "text": "Explainability\nGuide recommendations should always be explainable.\nGuide explanations are themselves semantic.\nWorkflow descriptions, commands, applicability conditions, and evaluation results are exposed as semantic object properties rather than embedded presentation logic.\nThis allows explanations to be generated dynamically without requiring separate documentation registrations for every workflow property.\nUsers should be able to determine:\n\nwhy a recommendation appears\nwhy another recommendation does not\nwhich semantic observations contributed\nwhich applicability conditions succeeded or failed\n\nGuide therefore follows the same explainability principles used throughout ROOST."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#future-semantic-object-subsystems-are-expected-to-follow-the-same-architectural-pattern.",
+    "href": "roost/gathered-readmes.html#future-semantic-object-subsystems-are-expected-to-follow-the-same-architectural-pattern.",
+    "title": "ROOST",
+    "section": "Future semantic object subsystems are expected to follow the same architectural pattern.",
+    "text": "Future semantic object subsystems are expected to follow the same architectural pattern."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#guide-computes-semantic-guidance.",
+    "href": "roost/gathered-readmes.html#guide-computes-semantic-guidance.",
+    "title": "ROOST",
+    "section": "Guide computes semantic guidance.",
+    "text": "Guide computes semantic guidance.\nGuide evaluates workflow definitions.\nIt never performs planning activities."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#guide-owns-workflow-knowledge.",
+    "href": "roost/gathered-readmes.html#guide-owns-workflow-knowledge.",
+    "title": "ROOST",
+    "section": "Guide owns workflow knowledge.",
+    "text": "Guide owns workflow knowledge.\nWorkflow definitions are represented as semantic objects.\nDescriptions, commands, applicability rules, and future workflow metadata should remain properties of those semantic objects rather than becoming embedded within presentation code."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#guide-consumes-semantic-observations.",
+    "href": "roost/gathered-readmes.html#guide-consumes-semantic-observations.",
+    "title": "ROOST",
+    "section": "Guide consumes semantic observations.",
+    "text": "Guide consumes semantic observations.\nGuide consumes semantic observations produced by other subsystems.\nGuide never characterizes planning state itself.\nGuide contributes new semantic workflow objects describing workflow knowledge."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#guidance-is-contextual.",
+    "href": "roost/gathered-readmes.html#guidance-is-contextual.",
+    "title": "ROOST",
+    "section": "Guidance is contextual.",
+    "text": "Guidance is contextual.\nGuidance depends upon:\n\nplanning context\ndisplay level\ncurrent view\nselected rows\n\nDifferent views of the same planning context may produce different guidance."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#guide-is-presentation-independent.",
+    "href": "roost/gathered-readmes.html#guide-is-presentation-independent.",
+    "title": "ROOST",
+    "section": "Guide is presentation-independent.",
+    "text": "Guide is presentation-independent.\nGuide never renders terminal output.\nDisplay owns presentation.\nGuide produces semantic guidance that may be rendered by:\n\nCLI\ndocumentation\nnotebooks\ndashboards\ngraphical interfaces\nfuture LLM assistants\n\nSemantic workflow objects may be consumed by:\n\nDisplay\ndocumentation\ndeveloper tooling\nnotebooks\ndashboards\nfuture LLM assistants\n\nwithout modification to Guide itself."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#guidance-is-additive.",
+    "href": "roost/gathered-readmes.html#guidance-is-additive.",
+    "title": "ROOST",
+    "section": "Guidance is additive.",
+    "text": "Guidance is additive.\nGuidance supplements the user’s requested view.\nIt never replaces the primary display."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#applicability-should-remain-explainable.",
+    "href": "roost/gathered-readmes.html#applicability-should-remain-explainable.",
+    "title": "ROOST",
+    "section": "Applicability should remain explainable.",
+    "text": "Applicability should remain explainable.\nEvery recommendation should explain why it is applicable.\nRecommendations that are not applicable should also be explainable."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#guide-definitions-should-remain-reusable.",
+    "href": "roost/gathered-readmes.html#guide-definitions-should-remain-reusable.",
+    "title": "ROOST",
+    "section": "Guide definitions should remain reusable.",
+    "text": "Guide definitions should remain reusable.\nOne semantic guide definition may contribute simultaneously to:\n\nsemantic variables\nsemantic object properties\nmultiple guidance trees\nfuture workflow interfaces\n\nPresentation should never be embedded within workflow definitions."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#guidance-should-evolve-naturally.",
+    "href": "roost/gathered-readmes.html#guidance-should-evolve-naturally.",
+    "title": "ROOST",
+    "section": "Guidance should evolve naturally.",
+    "text": "Guidance should evolve naturally.\nAs new planning capabilities are added, Guide should recommend them automatically through new guide definitions rather than changes to existing workflow logic."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#studies",
+    "href": "roost/gathered-readmes.html#studies",
+    "title": "ROOST",
+    "section": "Studies",
+    "text": "Studies\nA study organizes a coherent analytical investigation.\nA study groups related planning concepts into a reusable analytical framework.\nExamples include:\n\nSpending analysis\nRetirement timing\nSocial Security\nRoth conversion\nAsset allocation\nWithdrawal strategies\n\nA study defines analytical intent.\nIt does not generate evidence."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#transition-families",
+    "href": "roost/gathered-readmes.html#transition-families",
+    "title": "ROOST",
+    "section": "Transition Families",
+    "text": "Transition Families\nTransition families organize related planning transitions.\nExamples include:\n\nRetirement Timing\nSpending Level\nSocial Security Claiming\nRoth Conversion\nHousing Decisions\n\nA transition family defines a decision space.\nThe workspace determines whether that decision space is currently applicable."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#transitions-2",
+    "href": "roost/gathered-readmes.html#transitions-2",
+    "title": "ROOST",
+    "section": "Transitions",
+    "text": "Transitions\nA transition represents a meaningful change from the current planning situation.\nExamples include:\n\nDelay retirement one year\nIncrease annual spending\nDelay Social Security\nConvert additional retirement assets\nReduce portfolio risk\n\nTransitions represent candidate changes.\nROOST evaluates transitions.\nROOST does not recommend them.\nTransition generation should be deterministic and reproducible."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#experiments-1",
+    "href": "roost/gathered-readmes.html#experiments-1",
+    "title": "ROOST",
+    "section": "Experiments",
+    "text": "Experiments\nExperiments define methodologies for generating evidence.\nExperiments specify how one or more transitions should be evaluated.\nExamples include:\n\nParameter sweeps\nComparative analysis\nSensitivity studies\nRobustness evaluation\nUncertainty analysis\n\nExperiments describe methodology.\nThey do not interpret evidence."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#studies-own-analytical-methodology.",
+    "href": "roost/gathered-readmes.html#studies-own-analytical-methodology.",
+    "title": "ROOST",
+    "section": "Studies own analytical methodology.",
+    "text": "Studies own analytical methodology.\nStudies define reusable analytical organization.\nThey do not generate evidence."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#transition-families-organize-decision-spaces.",
+    "href": "roost/gathered-readmes.html#transition-families-organize-decision-spaces.",
+    "title": "ROOST",
+    "section": "Transition families organize decision spaces.",
+    "text": "Transition families organize decision spaces.\nTransition families define related planning transitions.\nApplicability belongs to the workspace."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#transitions-represent-candidate-change.-1",
+    "href": "roost/gathered-readmes.html#transitions-represent-candidate-change.-1",
+    "title": "ROOST",
+    "section": "Transitions represent candidate change.",
+    "text": "Transitions represent candidate change.\nTransitions describe meaningful changes from the current planning situation.\nROOST evaluates transitions.\nROOST does not recommend them."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#evaluation-environments-remain-independent.",
+    "href": "roost/gathered-readmes.html#evaluation-environments-remain-independent.",
+    "title": "ROOST",
+    "section": "Evaluation environments remain independent.",
+    "text": "Evaluation environments remain independent.\nFuture assumptions remain orthogonal to retiree decisions.\nExperiments combine transitions with environments."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#experiments-generate-evidence.-1",
+    "href": "roost/gathered-readmes.html#experiments-generate-evidence.-1",
+    "title": "ROOST",
+    "section": "Experiments generate evidence.",
+    "text": "Experiments generate evidence.\nExperiments define deterministic methodologies for producing evidence.\nInterpretation belongs elsewhere."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#execution-remains-separate-from-methodology.",
+    "href": "roost/gathered-readmes.html#execution-remains-separate-from-methodology.",
+    "title": "ROOST",
+    "section": "Execution remains separate from methodology.",
+    "text": "Execution remains separate from methodology.\nStudies, transition families, transitions, experiments, and execution plans describe analytical intent.\nSessions, runs, and trials describe realized execution."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#semantic-identity",
+    "href": "roost/gathered-readmes.html#semantic-identity",
+    "title": "ROOST",
+    "section": "Semantic Identity",
+    "text": "Semantic Identity\nThe catalog defines what every observation means.\nExamples include:\n\nHousehold inputs\nDerived values\nWorkspace observations\nMetrics\nAggregate values\nSynthetic observations\n\nEvery observation should have exactly one semantic definition."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#ontology",
+    "href": "roost/gathered-readmes.html#ontology",
+    "title": "ROOST",
+    "section": "Ontology",
+    "text": "Ontology\nThe catalog classifies observations.\nOntology provides consistent semantic descriptions across the entire system.\nExamples include:\n\nOwnership\nSemantic domain\nValue origin\nProjection kind\nMaterialization level\nAnalytic kind\nNode type\n\nOntology allows observations to be understood independently of their implementation."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#explainability-3",
+    "href": "roost/gathered-readmes.html#explainability-3",
+    "title": "ROOST",
+    "section": "Explainability",
+    "text": "Explainability\nThe catalog owns explainability metadata.\nExamples include:\n\nDescriptions\nDefinitions\nProvenance\nDependencies\nLineage\n\nExplainability should accompany every meaningful observation whenever practical."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#semantic-resolution",
+    "href": "roost/gathered-readmes.html#semantic-resolution",
+    "title": "ROOST",
+    "section": "Semantic Resolution",
+    "text": "Semantic Resolution\nThe catalog provides semantic lookup.\nConsumers request observations by meaning rather than implementation.\nConsumers should not require knowledge of:\n\nStorage layout\nPackage organization\nFilesystem location\nInternal implementation\n\nThe catalog resolves semantic identity into usable observations."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#every-observation-has-one-semantic-definition.",
+    "href": "roost/gathered-readmes.html#every-observation-has-one-semantic-definition.",
+    "title": "ROOST",
+    "section": "Every observation has one semantic definition.",
+    "text": "Every observation has one semantic definition.\nMeaning should be defined once.\nReuse should occur through reference rather than duplication."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#semantic-identity-is-independent-of-implementation.",
+    "href": "roost/gathered-readmes.html#semantic-identity-is-independent-of-implementation.",
+    "title": "ROOST",
+    "section": "Semantic identity is independent of implementation.",
+    "text": "Semantic identity is independent of implementation.\nPackage organization, storage, and execution should not affect meaning."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#the-catalog-owns-ontology.",
+    "href": "roost/gathered-readmes.html#the-catalog-owns-ontology.",
+    "title": "ROOST",
+    "section": "The catalog owns ontology.",
+    "text": "The catalog owns ontology.\nClassification belongs to the catalog.\nOther subsystems consume ontology."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#the-catalog-owns-explainability.",
+    "href": "roost/gathered-readmes.html#the-catalog-owns-explainability.",
+    "title": "ROOST",
+    "section": "The catalog owns explainability.",
+    "text": "The catalog owns explainability.\nExplainability metadata should remain attached to semantic definitions.\nPresentation belongs elsewhere."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#consumers-depend-upon-semantic-identity.",
+    "href": "roost/gathered-readmes.html#consumers-depend-upon-semantic-identity.",
+    "title": "ROOST",
+    "section": "Consumers depend upon semantic identity.",
+    "text": "Consumers depend upon semantic identity.\nSubsystems should request meaning rather than implementation.\nThe catalog provides semantic resolution."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#registration-should-remain-canonical.",
+    "href": "roost/gathered-readmes.html#registration-should-remain-canonical.",
+    "title": "ROOST",
+    "section": "Registration should remain canonical.",
+    "text": "Registration should remain canonical.\nEvery observation should be registered once.\nRegistration should become the authoritative source of semantic truth."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#presentation",
+    "href": "roost/gathered-readmes.html#presentation",
+    "title": "ROOST",
+    "section": "Presentation",
+    "text": "Presentation\nDisplay determines how information should be presented.\nExamples include:\n\nTables\nReports\nDashboards\nWeb pages\nDocumentation\nInteractive displays\n\nPresentation should remain independent from evidence generation."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#organization",
+    "href": "roost/gathered-readmes.html#organization",
+    "title": "ROOST",
+    "section": "Organization",
+    "text": "Organization\nDisplay organizes related information into meaningful views.\nExamples include:\n\nHousehold summaries\nBalance sheets\nSpending summaries\nTransition comparisons\nEvidence summaries\n\nViews organize semantic values, semantic object properties, and analytical evidence without changing their meaning."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#formatting",
+    "href": "roost/gathered-readmes.html#formatting",
+    "title": "ROOST",
+    "section": "Formatting",
+    "text": "Formatting\nDisplay owns presentation formatting.\nExamples include:\n\nLabels\nUnits\nNumeric formatting\nOrdering\nGrouping\nVisibility\nLayout\n\nFormatting should improve readability without altering analytical content."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#communication",
+    "href": "roost/gathered-readmes.html#communication",
+    "title": "ROOST",
+    "section": "Communication",
+    "text": "Communication\nDisplay communicates analytical evidence to people.\nTypical consumers include:\n\nIndividuals\nAdvisors\nResearchers\nEducators\nLLMs\nDocumentation systems\n\nCommunication should preserve analytical meaning while improving accessibility."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#display-owns-presentation.",
+    "href": "roost/gathered-readmes.html#display-owns-presentation.",
+    "title": "ROOST",
+    "section": "Display owns presentation.",
+    "text": "Display owns presentation.\nDisplay determines how information is communicated.\nIt does not generate evidence."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#display-does-not-own-semantics.",
+    "href": "roost/gathered-readmes.html#display-does-not-own-semantics.",
+    "title": "ROOST",
+    "section": "Display does not own semantics.",
+    "text": "Display does not own semantics.\nAnalytical meaning belongs to the catalog.\nEvidence belongs to metrics.\nDisplay communicates both."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#display-resolves-semantics-generically.",
+    "href": "roost/gathered-readmes.html#display-resolves-semantics-generically.",
+    "title": "ROOST",
+    "section": "Display resolves semantics generically.",
+    "text": "Display resolves semantics generically.\nDisplay understands semantic values and semantic object properties.\nIt does not depend upon the implementation details of individual semantic object types.\nNew semantic object subsystems should become displayable without changes to Display itself."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#display-does-not-alter-evidence.",
+    "href": "roost/gathered-readmes.html#display-does-not-alter-evidence.",
+    "title": "ROOST",
+    "section": "Display does not alter evidence.",
+    "text": "Display does not alter evidence.\nFormatting should never change analytical meaning.\nPresentation should remain faithful to the underlying evidence."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#presentation-is-reusable.",
+    "href": "roost/gathered-readmes.html#presentation-is-reusable.",
+    "title": "ROOST",
+    "section": "Presentation is reusable.",
+    "text": "Presentation is reusable.\nThe same analytical observation should be usable in multiple presentation contexts without duplication."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#explainability-should-remain-visible.",
+    "href": "roost/gathered-readmes.html#explainability-should-remain-visible.",
+    "title": "ROOST",
+    "section": "Explainability should remain visible.",
+    "text": "Explainability should remain visible.\nDisplay should expose available explainability whenever practical.\nUnderstanding evidence is as important as viewing it."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#presentation-remains-independent.",
+    "href": "roost/gathered-readmes.html#presentation-remains-independent.",
+    "title": "ROOST",
+    "section": "Presentation remains independent.",
+    "text": "Presentation remains independent.\nChanges to presentation should not require changes to analytical methodology.\nAnalytical methodology should not depend upon presentation."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#this-document-complements-the-project-readme.md-and-architecture.md-by-describing-the-architectural-responsibilities-owned-by-the-household-subsystem.",
+    "href": "roost/gathered-readmes.html#this-document-complements-the-project-readme.md-and-architecture.md-by-describing-the-architectural-responsibilities-owned-by-the-household-subsystem.",
+    "title": "ROOST",
+    "section": "This document complements the project README.md and ARCHITECTURE.md by describing the architectural responsibilities owned by the household subsystem.",
+    "text": "This document complements the project README.md and ARCHITECTURE.md by describing the architectural responsibilities owned by the household subsystem."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#household-registration",
+    "href": "roost/gathered-readmes.html#household-registration",
+    "title": "ROOST",
+    "section": "Household Registration",
+    "text": "Household Registration\nThe subsystem maintains a registry of households available to ROOST.\nThe registry provides a uniform view of all known households regardless of their origin.\nEach registered household is represented by a HouseholdSpec.\nA HouseholdSpec describes:\n\nIdentity\nMetadata\nProvenance\nConstruction method\n\nThe registry owns household discovery.\nConsumers should not inspect the filesystem directly."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#canonical-household-lifecycle",
+    "href": "roost/gathered-readmes.html#canonical-household-lifecycle",
+    "title": "ROOST",
+    "section": "Canonical Household Lifecycle",
+    "text": "Canonical Household Lifecycle\nThe household subsystem manages the lifecycle of canonical households.\nCanonical households may originate from many sources while presenting a consistent analytical interface.\nExamples include:\n\nprogrammatically generated households\nimported OWL household definitions\nhousehold library snapshots\neducational examples\npublished research cases\nfuture external providers\n\nConstruction is one mechanism within the lifecycle.\nImport, export, registration, storage, and discovery are equally important responsibilities.\nConsumers request canonical households.\nThey do not request particular construction mechanisms."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#household-providers",
+    "href": "roost/gathered-readmes.html#household-providers",
+    "title": "ROOST",
+    "section": "Household Providers",
+    "text": "Household Providers\nHouseholds are contributed through Household Providers.\nA provider contributes one or more HouseholdSpec instances to the registry.\nExamples include:\n\nSynthetic providers\nImported household providers\nTutorial providers\nFuture Quicken providers\nFuture web service providers\n\nEach provider owns the mechanics required to construct its households.\nThe registry aggregates providers into a single semantic collection."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#household-export",
+    "href": "roost/gathered-readmes.html#household-export",
+    "title": "ROOST",
+    "section": "Household Export",
+    "text": "Household Export\nThe household subsystem exports canonical households into forms required by downstream workflows.\nToday the canonical export consists of:\n\nOWL case.toml\noptional Household Financial Profile (HFP.xlsx)\n\nFuture export formats may include notebooks, editors, or additional interchange formats.\nExport remains independent of household construction."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#every-investigation-begins-with-one-or-more-canonical-households.",
+    "href": "roost/gathered-readmes.html#every-investigation-begins-with-one-or-more-canonical-households.",
+    "title": "ROOST",
+    "section": "Every investigation begins with one or more canonical households.",
+    "text": "Every investigation begins with one or more canonical households.\nCanonical households are the enduring planning subjects within ROOST.\nPlanning investigations, execution artifacts, and evidence are derived from canonical households without modifying their definition."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#construction-is-independent-of-representation.",
+    "href": "roost/gathered-readmes.html#construction-is-independent-of-representation.",
+    "title": "ROOST",
+    "section": "Construction is independent of representation.",
+    "text": "Construction is independent of representation.\nHouseholds may originate from many sources while producing equivalent analytical definitions.\nConsumers should not depend upon storage formats."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#providers-own-acquisition.",
+    "href": "roost/gathered-readmes.html#providers-own-acquisition.",
+    "title": "ROOST",
+    "section": "Providers own acquisition.",
+    "text": "Providers own acquisition.\nProviders know how households are obtained.\nThe registry knows which households exist.\nConsumers request households from the registry."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#registration-enables-extensibility.",
+    "href": "roost/gathered-readmes.html#registration-enables-extensibility.",
+    "title": "ROOST",
+    "section": "Registration enables extensibility.",
+    "text": "Registration enables extensibility.\nNew household sources should normally be introduced through additional providers rather than modification of existing subsystem behavior."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#canonical-households-remain-independent-of-planning-investigations.",
+    "href": "roost/gathered-readmes.html#canonical-households-remain-independent-of-planning-investigations.",
+    "title": "ROOST",
+    "section": "Canonical households remain independent of planning investigations.",
+    "text": "Canonical households remain independent of planning investigations.\nCanonical households describe financial state.\nPlanning investigations organize analytical intent.\nExecution artifacts preserve realized analyses.\nEach concept has a distinct architectural owner."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#households-are-reusable-analytical-assets.",
+    "href": "roost/gathered-readmes.html#households-are-reusable-analytical-assets.",
+    "title": "ROOST",
+    "section": "Households are reusable analytical assets.",
+    "text": "Households are reusable analytical assets.\nA registered household may support education, documentation, experimentation, validation, benchmarking, and regression testing.\nThe same canonical household should be reused whenever practical."
+  },
+  {
+    "objectID": "roost/gathered-readmes.html#roost-leverages-owl.",
+    "href": "roost/gathered-readmes.html#roost-leverages-owl.",
+    "title": "ROOST",
+    "section": "ROOST leverages OWL.",
+    "text": "ROOST leverages OWL.\nROOST should prefer OWL’s Python object model and analytical capabilities over reimplementing financial concepts.\nThe household subsystem coordinates household construction while OWL remains responsible for financial behavior."
   }
 ]

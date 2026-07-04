@@ -1,0 +1,23 @@
+---
+title: ""
+---
+
+{{< include ../../README.md >}}
+
+{{< include ../../ARCHITECTURE.md >}}
+
+{{< include ../../src/owlroost/README.md >}}
+
+{{< include ../../src/owlroost/workspace/README.md >}}
+
+{{< include ../../src/owlroost/guide/README.md >}}
+
+{{< include ../../src/owlroost/study/README.md >}}
+
+{{< include ../../src/owlroost/catalog/README.md >}}
+
+{{< include ../../src/owlroost/display/README.md >}}
+
+{{< include ../../src/owlroost/hydra/README.md >}}
+
+{{< include ../../src/owlroost/household/README.md >}}
