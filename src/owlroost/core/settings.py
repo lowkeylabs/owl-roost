@@ -151,4 +151,7 @@ def get_installation_value(
         Unknown name.
     """
 
-    return get_settings()[name]
+    if name in get_settings().keys():
+        return get_settings()[name]
+
+    print(f"name not found: {name}")

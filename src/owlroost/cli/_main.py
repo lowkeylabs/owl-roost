@@ -17,7 +17,10 @@ from __future__ import annotations
 
 import click
 
-from owlroost.guide.bootstrap import build_guide_registry
+from owlroost.catalog.context import build_catalog_context
+from owlroost.operations.resolve import build_resolver
+from owlroost.workspace.loaders import load_context_row
+from owlroost.workspace.materializers import materialize_planning_context
 
 from ..core.settings import get_settings
 from ..version import __version__
@@ -27,6 +30,7 @@ from .cmd_household import cmd_household
 from .cmd_reports import cmd_reports
 from .cmd_results import cmd_results
 from .cmd_run import cmd_run
+from .cmd_vals import cmd_vals
 from .cmd_vars import cmd_vars
 from .cmd_workspace import cmd_workspace
 
@@ -67,15 +71,7 @@ def cli(
     # No subcommand?
     #
     if ctx.invoked_subcommand is None:
-        guide = build_guide_registry()
-
-        click.echo(
-            render_welcome(
-                guide,
-            )
-        )
-
-        return
+        print("welcome.  Adjust in _main")
 
 
 @cli.command()
@@ -92,16 +88,31 @@ def settings(ctx, key):
     if key is None:
         for k, v in info.items():
             click.echo(f"{k}: {v}")
-    else:
+
+    if key in info.keys():
         click.echo(info[key])
 
+    # click.echo(f"key not in settings: {key}")
 
-#    solver = get_owl_solver_info()
-#    click.echo(f"OWL-Planner version: {solver.version}")
-#    if solver.commit:
-#        click.echo(f"OWL-Planner commit:  {solver.commit}")
-#    click.echo(f"{solver}")
+    catalog = build_catalog_context()
+    planning_context = materialize_planning_context(
+        load_context_row("."),
+        catalog,
+    )
+    resolve = build_resolver(
+        catalog,
+        planning_context,
+    )
+    try:
+        value = resolve(key)
+        print(value)
+    except Exception as e:
+        print(str(e))
 
+
+# ================================================
+# Add commands
+# ================================================
 
 cli.add_command(cmd_build, name="cases")
 cli.add_command(cmd_build, name="build")
@@ -111,6 +122,8 @@ cli.add_command(cmd_reports)
 cli.add_command(cmd_results)
 
 cli.add_command(cmd_vars, name="vars")
+cli.add_command(cmd_vals, name="vals")
+
 cli.add_command(cmd_workspace, name="workspace")
 
 cli.add_command(cmd_context, name="context")
