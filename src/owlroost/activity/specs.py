@@ -95,6 +95,21 @@ class ActivityState(StrEnum):
     NOT_APPLICABLE = "not_applicable"
 
 
+class ActivityRecommendationState(StrEnum):
+    """
+    Recommendation produced after
+    readiness evaluation.
+    """
+
+    NEXT = "next"
+
+    UPCOMING = "upcoming"
+
+    DEFERRED = "deferred"
+
+    HIDDEN = "hidden"
+
+
 @dataclass(slots=True)
 class Requirement:
     """
@@ -342,6 +357,8 @@ class ActivityResult:
 
     state: ActivityState
 
+    recommendation: ActivityRecommendationState = ActivityRecommendationState.HIDDEN
+
     requirement_results: list[RequirementResult] = field(
         default_factory=list,
     )
@@ -407,14 +424,75 @@ class ActivityResult:
         return self.state == ActivityState.WAITING
 
     @property
-    def is_applicable(self):
+    def is_next(
+        self,
+    ) -> bool:
         """
-        Backwards compatibility.
+        Whether this activity is the
+        next recommended planning
+        milestone.
+        """
 
-        An activity is applicable if it is
-        ready to perform.
+        return self.recommendation == ActivityRecommendationState.NEXT
+
+    @property
+    def is_upcoming(
+        self,
+    ) -> bool:
         """
-        return self.state == ActivityState.READY
+        Whether this activity is
+        expected to become the next
+        recommendation after earlier
+        milestones are completed.
+        """
+
+        return self.recommendation == ActivityRecommendationState.UPCOMING
+
+    @property
+    def is_hidden(
+        self,
+    ) -> bool:
+        """
+        Whether this activity should
+        currently be omitted from
+        workflow recommendations.
+        """
+
+        return self.recommendation == ActivityRecommendationState.HIDDEN
+
+    @property
+    def is_recommended(
+        self,
+    ) -> bool:
+        """
+        Whether this activity should
+        appear in recommendation
+        displays.
+        """
+
+        return self.recommendation in {
+            ActivityRecommendationState.NEXT,
+            ActivityRecommendationState.UPCOMING,
+        }
+
+    @property
+    def is_terminal(self):
+        return self.state in {
+            ActivityState.COMPLETE,
+            ActivityState.NOT_APPLICABLE,
+        }
+
+    @property
+    def is_visible(self):
+        return not self.is_hidden
+
+    @property
+    def is_deferred(self):
+        return self.recommendation == ActivityRecommendationState.DEFERRED
+
+    @property
+    def recommendation_label(self):
+        return self.recommendation.value
 
 
 @dataclass(slots=True)
@@ -463,6 +541,22 @@ class ActivityEvaluation:
         default_factory=list,
     )
 
+    next_activities: list[ActivityResult] = field(
+        default_factory=list,
+    )
+
+    upcoming_activities: list[ActivityResult] = field(
+        default_factory=list,
+    )
+
+    hidden_activities: list[ActivityResult] = field(
+        default_factory=list,
+    )
+
+    deferred_activities: list[ActivityResult] = field(
+        default_factory=list,
+    )
+
     # =====================================================
     # Coverage
     # =====================================================
@@ -480,8 +574,11 @@ class ActivityEvaluation:
     )
 
     @property
-    def actionable_activities(self):
-        return self.ready_activities
+    def recommended_activities(self):
+        return [
+            *self.next_activities,
+            *self.upcoming_activities,
+        ]
 
     @property
     def blocked_count(self):
@@ -498,3 +595,58 @@ class ActivityEvaluation:
     @property
     def state_counts(self):
         return Counter(result.state for result in self.all_activities)
+
+    @property
+    def recommendation_counts(self):
+        return Counter(result.recommendation for result in self.all_activities)
+
+    @property
+    def has_next_activity(self):
+        return bool(self.next_activities)
+
+    @property
+    def has_upcoming_activity(self):
+        return bool(self.upcoming_activities)
+
+    @property
+    def next_activity(self):
+        return next(
+            iter(self.next_activities),
+            None,
+        )
+
+    @property
+    def display_activities(self):
+        return [
+            *self.next_activities,
+            *self.upcoming_activities,
+            *self.deferred_activities,
+        ]
+
+    @property
+    def workflow_activities(self):
+        return [
+            *self.next_activities,
+            *self.upcoming_activities,
+            *self.deferred_activities,
+        ]
+
+    @property
+    def visible_activities(self):
+        return [
+            *self.next_activities,
+            *self.upcoming_activities,
+            *self.deferred_activities,
+        ]
+
+    @property
+    def active_activities(self):
+        return [
+            *self.ready_activities,
+            *self.waiting_activities,
+            *self.needs_review_activities,
+        ]
+
+    @property
+    def recommended_count(self):
+        return len(self.next_activities) + len(self.upcoming_activities)

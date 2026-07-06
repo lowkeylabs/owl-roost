@@ -239,10 +239,19 @@ def test_ready_activity_counts():
     assert evaluation.activity_count == 1
 
     assert evaluation.ready_count == 1
-
     assert evaluation.blocked_count == 0
 
-    assert evaluation.actionable_activities == evaluation.ready_activities
+    #
+    # Recommendation state.
+    #
+    assert len(evaluation.next_activities) == 1
+    assert len(evaluation.upcoming_activities) == 0
+    assert len(evaluation.hidden_activities) == 0
+
+    result = evaluation.next_activities[0]
+
+    assert result.is_ready
+    assert result.is_next
 
 
 def test_state_counts():
@@ -268,3 +277,37 @@ def test_state_counts():
     )
 
     assert evaluation.state_counts[ActivityState.BLOCKED] == 1
+
+
+def test_first_ready_activity_is_next():
+    registry = ActivityRegistry()
+
+    registry.register(
+        ActivitySpec(
+            name="a",
+            title="A",
+            display_order=10,
+        )
+    )
+
+    registry.register(
+        ActivitySpec(
+            name="b",
+            title="B",
+            display_order=20,
+        )
+    )
+
+    evaluation = evaluate(
+        row=make_row(),
+        registry=registry,
+    )
+
+    assert len(evaluation.next_activities) == 1
+    assert len(evaluation.upcoming_activities) == 1
+
+    assert evaluation.next_activities[0].activity.name == "a"
+    assert evaluation.upcoming_activities[0].activity.name == "b"
+
+    assert evaluation.next_activities[0].is_next
+    assert evaluation.upcoming_activities[0].is_upcoming

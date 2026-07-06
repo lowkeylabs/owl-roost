@@ -38,6 +38,7 @@ from owlroost.display.operations.resolution import (
 
 from .specs import (
     ActivityEvaluation,
+    ActivityRecommendationState,
     ActivityResult,
     ActivityState,
     RequirementResult,
@@ -69,8 +70,20 @@ def evaluate(
     registry,
 ):
     """
-    Evaluate every registered activity.
+    Evaluate every registered planning
+    activity.
+
+    The evaluation proceeds in three
+    phases:
+
+        1. Determine readiness state.
+        2. Determine recommendations.
+        3. Compute evaluation coverage.
     """
+
+    # =====================================================
+    # Activity collections
+    # =====================================================
 
     all_activities = []
 
@@ -86,28 +99,23 @@ def evaluate(
 
     not_applicable_activities = []
 
+    next_activities = []
+
+    upcoming_activities = []
+
+    deferred_activities = []
+
+    hidden_activities = []
+
     referenced_variables = set()
 
-    # -----------------------------------------------------
-    # Evaluate every registered activity.
-    # -----------------------------------------------------
+    # =====================================================
+    # Phase 1
+    #
+    # Determine readiness.
+    # =====================================================
 
-    for activity in registry.all():
-        #
-        # Determine the current readiness
-        # state for this activity.
-        #
-        # The current implementation uses
-        # only semantic requirements.
-        #
-        # Future implementations will also
-        # consider:
-        #
-        #     * prerequisite activities
-        #     * planning cadence
-        #     * completion history
-        #     * evidence freshness
-        #
+    for activity in registry.activities():
         state = ActivityState.READY
 
         requirement_results = []
@@ -146,14 +154,10 @@ def evaluate(
             )
 
         #
-        # Future readiness refinement.
+        # Placeholder for future readiness
+        # refinement.
         #
-        # state = determine_readiness(
-        #     activity,
-        #     state,
-        #     row,
-        #     requirement_results,
-        # )
+        # state = determine_readiness(...)
         #
 
         result = ActivityResult(
@@ -197,48 +201,106 @@ def evaluate(
                     result,
                 )
 
-    # -----------------------------------------------------
-    # Presentation order.
-    # -----------------------------------------------------
+    # =====================================================
+    # Phase 2
+    #
+    # Determine recommendations.
+    # =====================================================
 
-    all_activities.sort(
-        key=lambda r: (
-            r.activity.display_order,
-            r.activity.title.lower(),
-        ),
-    )
+    if ready_activities:
+        first = ready_activities[0]
+
+        first.recommendation = ActivityRecommendationState.NEXT
+
+        next_activities.append(
+            first,
+        )
+
+        for result in ready_activities[1:]:
+            result.recommendation = ActivityRecommendationState.UPCOMING
+
+            upcoming_activities.append(
+                result,
+            )
+
+    #
+    # Everything else is currently hidden.
+    #
+    # Future implementations may classify
+    # activities as DEFERRED.
+    #
+
+    for result in (
+        waiting_activities
+        + blocked_activities
+        + needs_review_activities
+        + complete_activities
+        + not_applicable_activities
+    ):
+        hidden_activities.append(
+            result,
+        )
+
+    # =====================================================
+    # Presentation order
+    # =====================================================
+
+    def sort_key(
+        result,
+    ):
+        return (
+            result.activity.display_order,
+            result.activity.title.lower(),
+        )
 
     for collection in (
+        all_activities,
         ready_activities,
         waiting_activities,
         blocked_activities,
         needs_review_activities,
         complete_activities,
         not_applicable_activities,
+        next_activities,
+        upcoming_activities,
+        deferred_activities,
+        hidden_activities,
     ):
         collection.sort(
-            key=lambda r: (
-                r.activity.display_order,
-                r.activity.title.lower(),
-            ),
+            key=sort_key,
         )
 
-    # -----------------------------------------------------
+    # =====================================================
     # Coverage
-    # -----------------------------------------------------
-    #
-    # Currently every non-private row
-    # field is treated as an observed
-    # semantic variable.
-    #
-    # Future implementations should
-    # derive semantic coverage directly
-    # from the catalog.
-    #
+    # =====================================================
 
     observed_variables = {key for key in row if not key.startswith("_")}
 
     unused_variables = observed_variables - referenced_variables
+
+    # =====================================================
+    # Sanity checks
+    # =====================================================
+
+    assert len(all_activities) == (
+        len(ready_activities)
+        + len(waiting_activities)
+        + len(blocked_activities)
+        + len(needs_review_activities)
+        + len(complete_activities)
+        + len(not_applicable_activities)
+    )
+
+    assert len(all_activities) == (
+        len(next_activities)
+        + len(upcoming_activities)
+        + len(deferred_activities)
+        + len(hidden_activities)
+    )
+
+    # =====================================================
+    # Result
+    # =====================================================
 
     return ActivityEvaluation(
         all_activities=all_activities,
@@ -248,6 +310,10 @@ def evaluate(
         needs_review_activities=needs_review_activities,
         complete_activities=complete_activities,
         not_applicable_activities=not_applicable_activities,
+        next_activities=next_activities,
+        upcoming_activities=upcoming_activities,
+        deferred_activities=deferred_activities,
+        hidden_activities=hidden_activities,
         observed_variables=observed_variables,
         required_variables=referenced_variables,
         unused_variables=unused_variables,
