@@ -165,6 +165,17 @@ def cmd_context(
     rows = [row]
 
     # =====================================================
+    # Available activity views
+    # =====================================================
+
+    if "." in assist:
+        render_available_views(
+            catalog.display_registry,
+            level="activity",
+        )
+
+        return
+    # =====================================================
     # View validation
     # =====================================================
 

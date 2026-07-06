@@ -20,9 +20,11 @@ The source tree is organized around architectural responsibilities rather than e
 
 Each major subsystem owns one conceptual responsibility.
 
-Subsystems expose reusable services and semantic observations.
+Subsystems expose reusable services, semantic observations, and reusable domain concepts.
 
 Higher-level workflows emerge through the composition of stable architectural concepts rather than direct coupling between implementations.
+
+Workflow is driven by evaluated planning activities rather than command sequencing.
 
 No subsystem should require knowledge of another subsystem's internal implementation.
 
@@ -32,7 +34,7 @@ No subsystem should require knowledge of another subsystem's internal implementa
 
 Conceptually, ROOST follows the architectural workflow described in `ARCHITECTURE.md`.
 
-The source tree organizes that workflow into cooperating subsystems with clearly separated responsibilities.
+The source tree realizes that workflow through cooperating subsystems with clearly separated responsibilities.
 
 ```text
 Canonical Household
@@ -44,7 +46,13 @@ Household Library
 Workspace
         │
         ▼
-Planning Investigation
+Planning Context
+        │
+        ▼
+Planning Activities
+        │
+        ▼
+Studies
         │
         ▼
 Execution
@@ -60,13 +68,15 @@ The workflow above illustrates architectural ownership rather than execution ord
 
 Several subsystems may participate in a single workflow stage, while a single subsystem may contribute services used throughout multiple stages.
 
-The goal is clear ownership rather than linear execution.e current source tree realizes that workflow through a collection of cooperating subsystems.
+The goal is clear ownership rather than linear execution.
 
 
 
 # Subsystem Responsibilities
 
 Each major package owns one architectural concept.
+
+
 
 ## household/
 
@@ -83,33 +93,50 @@ Responsibilities include:
 
 The household subsystem owns the lifecycle of canonical households.
 
-Regardless of how a household is created, the public product of the subsystem is a canonical household suitable for analytical investigation.
+Regardless of how a household is created, the public product of the subsystem is a canonical household suitable for retirement planning and analytical investigation.
 
-The household subsystem does not characterize households, organize investigations, or generate evidence.
+The household subsystem does not organize planning workflows, characterize households, or generate evidence.
 
 
 
 ## workspace/
 
-Owns planning investigations.
+Owns planning context.
 
 Responsibilities include:
 
-* investigation organization
-* planning intent
+* workspace lifecycle
+* planning context discovery
 * household inventory
-* characterization
-* semantic levers
-* transition applicability
-* experiment selection
-* reproducibility
-* planning documentation
+* workspace characterization
+* semantic observations
+* planning context materialization
 
-A workspace organizes one or more realized households into a coherent planning investigation.
+A workspace organizes one or more households into a coherent planning context.
 
-The workspace explains why an investigation exists.
+It provides the semantic observations consumed by higher-level planning activities.
 
-It does not own execution artifacts or analytical evidence.
+The workspace does not own execution artifacts or analytical evidence.
+
+
+
+## activity/
+
+Owns the semantic retirement planning workflow.
+
+Responsibilities include:
+
+* planning activity definitions
+* activity evaluation
+* workflow organization
+* recommendation generation
+* workflow explainability
+
+Activities describe retirement planning practice.
+
+The subsystem evaluates activities against the current planning context and determines which activities are ready, blocked, complete, or recommended next.
+
+Activity does not execute planning commands.
 
 
 
@@ -125,7 +152,7 @@ Responsibilities include:
 * explainability
 * semantic resolution
 
-The catalog defines what can be observed.
+The catalog defines what can be observed throughout ROOST.
 
 
 
@@ -146,18 +173,18 @@ The schema defines valid analytical inputs.
 
 ## study/
 
-Owns reusable analytical methodologies.
+Owns reusable evidence-generation methodologies.
 
 Responsibilities include:
 
 * studies
 * scenario families
-* transition families
 * experiment definitions
+* reusable analytical methodologies
 
-Studies define reusable analytical methodologies.
+Studies describe reusable approaches for generating retirement planning evidence.
 
-They describe what investigations may be performed.
+They define what investigations may be performed.
 
 Studies do not instantiate execution artifacts.
 
@@ -178,7 +205,7 @@ Responsibilities include:
 * execution provenance
 * execution artifact lifecycle
 
-The execution subsystem transforms planning investigations into reproducible analytical investigations.
+The execution subsystem realizes planned analytical investigations into reproducible execution artifacts.
 
 It owns the lifecycle of execution plans together with the artifacts stored beneath the `results/` directory.
 
@@ -195,25 +222,7 @@ Responsibilities include:
 * aggregation
 * comparison metrics
 
-Metrics describe the evidence generated by analytical execution.
-
-
-
-## display/
-
-Owns presentation.
-
-Responsibilities include:
-
-* display fields
-* views
-* formatting
-* reports
-* visualization support
-
-Display determines how evidence is communicated.
-
-It does not generate evidence.
+Metrics organize the evidence generated by analytical execution and expose it for planning decisions and longitudinal comparison.
 
 
 
@@ -228,24 +237,26 @@ Responsibilities include:
 * evidence organization
 * comparative reporting
 
-Comparison relates evidence generated from one or more analytical investigations.
+Comparison relates evidence generated from one or more analytical investigations and supports longitudinal retirement planning.
 
 
 
-## review/
+## display/
 
-Owns workflow orchestration.
+Owns presentation.
 
 Responsibilities include:
 
-* guidance
-* workflow sequencing
-* subsystem composition
-* user-facing orchestration
+* display fields
+* display views
+* semantic trees
+* formatting
+* reports
+* visualization support
 
-Review coordinates subsystems.
+Display determines how planning context, workflow, and evidence are communicated.
 
-It does not own analytical knowledge.
+It does not generate evidence.
 
 
 
@@ -263,11 +274,11 @@ Subsystem READMEs describe these responsibilities in greater detail.
 
 ROOST deliberately separates planning from execution.
 
-Planning subsystems organize analytical investigations, identify applicable methodologies, and preserve planning intent.
+Planning subsystems organize planning context, evaluate retirement planning activities, identify applicable analytical methodologies, and preserve planning intent.
 
 Execution subsystems realize those investigations into reproducible analytical artifacts and generated evidence.
 
-This separation allows planning investigations to remain lightweight and shareable while execution artifacts preserve complete analytical provenance.
+This separation allows planning context to remain lightweight and shareable while execution artifacts preserve complete analytical provenance.
 
 
 
@@ -303,6 +314,8 @@ registry.py
 specs.py
 
 providers/
+
+materializers/
 ```
 
 Registries organize capabilities.
@@ -357,4 +370,4 @@ The preferred direction is always:
 >
 > One clear owner.
 >
-> One well-defined contribution to the planning and evidence-generation workflow.
+> One well-defined contribution to the retirement planning and evidence-generation workflow.
