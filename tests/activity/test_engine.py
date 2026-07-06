@@ -1,4 +1,4 @@
-# tests/guide/test_engine.py
+# tests/activity/test_engine.py
 
 from owlroost.activity.engine import (
     evaluate,
@@ -8,6 +8,7 @@ from owlroost.activity.registry import (
 )
 from owlroost.activity.specs import (
     ActivitySpec,
+    ActivityState,
     Requirement,
 )
 
@@ -33,7 +34,7 @@ def make_registry(
     return registry
 
 
-def test_no_requirements_is_applicable():
+def test_no_requirements_is_ready():
     row = make_row()
 
     activity = ActivitySpec(
@@ -49,12 +50,21 @@ def test_no_requirements_is_applicable():
         ),
     )
 
-    assert len(evaluation.applicable_activities) == 1
+    assert (
+        len(
+            evaluation.ready_activities,
+        )
+        == 1
+    )
 
-    assert evaluation.applicable_activities[0].applicable
+    result = evaluation.ready_activities[0]
+
+    assert result.is_ready
+
+    assert result.state == ActivityState.READY
 
 
-def test_equal_requirement():
+def test_equal_requirement_is_ready():
     row = make_row()
 
     activity = ActivitySpec(
@@ -77,12 +87,21 @@ def test_equal_requirement():
         ),
     )
 
-    assert len(evaluation.applicable_activities) == 1
+    assert (
+        len(
+            evaluation.ready_activities,
+        )
+        == 1
+    )
 
-    assert evaluation.applicable_activities[0].applicable
+    result = evaluation.ready_activities[0]
+
+    assert result.is_ready
+
+    assert result.state == ActivityState.READY
 
 
-def test_greater_than_requirement():
+def test_greater_than_requirement_is_ready():
     row = make_row()
 
     activity = ActivitySpec(
@@ -105,12 +124,21 @@ def test_greater_than_requirement():
         ),
     )
 
-    assert len(evaluation.applicable_activities) == 1
+    assert (
+        len(
+            evaluation.ready_activities,
+        )
+        == 1
+    )
 
-    assert evaluation.applicable_activities[0].applicable
+    result = evaluation.ready_activities[0]
+
+    assert result.is_ready
+
+    assert result.state == ActivityState.READY
 
 
-def test_failed_requirement():
+def test_failed_requirement_is_blocked():
     row = make_row()
 
     activity = ActivitySpec(
@@ -133,11 +161,25 @@ def test_failed_requirement():
         ),
     )
 
-    assert len(evaluation.applicable_activities) == 0
+    assert (
+        len(
+            evaluation.ready_activities,
+        )
+        == 0
+    )
 
-    assert len(evaluation.rejected_activities) == 1
+    assert (
+        len(
+            evaluation.blocked_activities,
+        )
+        == 1
+    )
 
-    assert not evaluation.rejected_activities[0].applicable
+    result = evaluation.blocked_activities[0]
+
+    assert result.is_blocked
+
+    assert result.state == ActivityState.BLOCKED
 
 
 def test_requirement_results_are_recorded():
@@ -163,12 +205,66 @@ def test_requirement_results_are_recorded():
         ),
     )
 
-    result = evaluation.applicable_activities[0]
+    result = evaluation.ready_activities[0]
 
-    assert len(result.requirement_results) == 1
+    assert (
+        len(
+            result.requirement_results,
+        )
+        == 1
+    )
 
     requirement = result.requirement_results[0]
 
     assert requirement.actual == 2
 
     assert requirement.satisfied
+
+
+def test_ready_activity_counts():
+    row = make_row()
+
+    activity = ActivitySpec(
+        name="x",
+        title="X",
+    )
+
+    evaluation = evaluate(
+        row=row,
+        registry=make_registry(
+            activity,
+        ),
+    )
+
+    assert evaluation.activity_count == 1
+
+    assert evaluation.ready_count == 1
+
+    assert evaluation.blocked_count == 0
+
+    assert evaluation.actionable_activities == evaluation.ready_activities
+
+
+def test_state_counts():
+    row = make_row()
+
+    activity = ActivitySpec(
+        name="x",
+        title="X",
+        requirements=[
+            Requirement(
+                "context.valid_case_count",
+                ">",
+                5,
+            )
+        ],
+    )
+
+    evaluation = evaluate(
+        row=row,
+        registry=make_registry(
+            activity,
+        ),
+    )
+
+    assert evaluation.state_counts[ActivityState.BLOCKED] == 1

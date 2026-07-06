@@ -5,17 +5,26 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Planning activity display views.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Registers display views that present
+ROOST planning activities from several
+perspectives.
+
+The views range from concise
+recommendations ("what should I do
+next?") through detailed reasoning and
+diagnostics used to understand activity
+evaluation.
 """
 
 from __future__ import annotations
 
-from owlroost.core.utils import normalize_module_path
+from owlroost.core.utils import (
+    normalize_module_path,
+)
 from owlroost.display.specs import (
     DisplayView,
 )
@@ -29,130 +38,170 @@ def register_display_views(
     reg,
 ):
     """
-    Register catalog inspection views.
+    Register planning activity views.
     """
 
-    reg.register_view(
-        DisplayView(
-            level="activity",
-            name="suggestions",
-            entries=[
-                # =====================================
-                # Workspace Inventory
-                # =====================================
-                ("tree", {"root": "activity_suggestions", "depth": 5}),
-            ],
-            description=(
-                "Summarizes the current "
-                "workspace, its readiness "
-                "for retirement planning, "
-                "and available analytical "
-                "artifacts."
-            ),
-            **SHARED_VIEW_ONTOLOGY,
-        )
-    )
+    # =====================================================
+    # Recommended Next Activities
+    # =====================================================
 
     reg.register_view(
         DisplayView(
             level="activity",
-            name="details",
+            name="next",
             entries=[
-                # =====================================
-                # Workspace Inventory
-                # =====================================
-                ("tree", {"root": "activity_details", "depth": 5}),
+                (
+                    "tree",
+                    {
+                        "root": "activity_next",
+                        "depth": 3,
+                    },
+                ),
             ],
-            description=(
-                "Summarizes the current "
-                "workspace, its readiness "
-                "for retirement planning, "
-                "and available analytical "
-                "artifacts."
-            ),
+            description=("Recommended planning activities that are ready to perform now."),
             **SHARED_VIEW_ONTOLOGY,
         )
     )
+
+    # =====================================================
+    # overall workflow
+    # =====================================================
+
+    reg.register_view(
+        DisplayView(
+            level="activity",
+            name="workflow",
+            entries=[
+                (
+                    "tree",
+                    {
+                        "root": "activity_workflow",
+                        "depth": 3,
+                    },
+                ),
+            ],
+            description=("Overall workflow"),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    # =====================================================
+    # Activity Status
+    # =====================================================
 
     reg.register_view(
         DisplayView(
             level="activity",
             name="status",
             entries=[
-                # =====================================
-                # Workspace Inventory
-                # =====================================
-                ("tree", {"root": "activity_status", "depth": 5}),
+                (
+                    "tree",
+                    {
+                        "root": "activity_status",
+                        "depth": 4,
+                    },
+                ),
+            ],
+            description=("Current readiness of all planning activities."),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    # =====================================================
+    # Activity Details
+    # =====================================================
+
+    reg.register_view(
+        DisplayView(
+            level="activity",
+            name="details",
+            entries=[
+                (
+                    "tree",
+                    {
+                        "root": "activity_details",
+                        "depth": 6,
+                    },
+                ),
             ],
             description=(
-                "Summarizes the current "
-                "workspace, its readiness "
-                "for retirement planning, "
-                "and available analytical "
-                "artifacts."
+                "Detailed descriptions, "
+                "dependencies, evidence "
+                "requirements, and suggested "
+                "commands for planning "
+                "activities."
             ),
             **SHARED_VIEW_ONTOLOGY,
         )
     )
+
+    # =====================================================
+    # Activity Reasoning
+    # =====================================================
 
     reg.register_view(
         DisplayView(
             level="activity",
             name="reasoning",
             entries=[
-                # =====================================
-                # Workspace Inventory
-                # =====================================
-                ("tree", {"root": "activity_reasoning", "depth": 99}),
+                (
+                    "tree",
+                    {
+                        "root": "activity_reasoning",
+                        "depth": 99,
+                    },
+                ),
             ],
             description=(
-                "Summarizes the current "
-                "workspace, its readiness "
-                "for retirement planning, "
-                "and available analytical "
-                "artifacts."
+                "Shows how the readiness state "
+                "of each activity was determined "
+                "from semantic requirements."
             ),
             **SHARED_VIEW_ONTOLOGY,
         )
     )
+
+    # =====================================================
+    # Evaluation Variables
+    # =====================================================
 
     reg.register_view(
         DisplayView(
             level="activity",
             name="variables",
             entries=[
-                # =====================================
-                # Workspace Inventory
-                # =====================================
-                ("tree", {"root": "activity_variables", "depth": 5}),
+                (
+                    "tree",
+                    {
+                        "root": "activity_variables",
+                        "depth": 2,
+                    },
+                ),
             ],
-            description=(
-                "Summarizes the current "
-                "workspace, its readiness "
-                "for retirement planning, "
-                "and available analytical "
-                "artifacts."
-            ),
+            description=("Semantic variables consulted while evaluating planning activities."),
             **SHARED_VIEW_ONTOLOGY,
         )
     )
+
+    # =====================================================
+    # Diagnostics
+    # =====================================================
 
     reg.register_view(
         DisplayView(
             level="activity",
             name="diagnostics",
             entries=[
-                # =====================================
-                # Workspace Inventory
-                # =====================================
-                ("tree", {"root": "activity_diagnostics", "depth": 5}),
+                (
+                    "tree",
+                    {
+                        "root": "activity_diagnostics",
+                        "depth": 3,
+                    },
+                ),
             ],
             description=(
-                "Summarizes the current "
-                "workspace, its readiness "
-                "for retirement planning, "
-                "and available analytical "
-                "artifacts."
+                "Internal evaluation statistics and planning activity engine diagnostics."
             ),
             **SHARED_VIEW_ONTOLOGY,
         )

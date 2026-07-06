@@ -46,47 +46,28 @@ def _build_activity_namespace(
     """
     Convert an ActivityEvaluation into
     the semantic activity namespace.
-
-    The namespace contains both the
-    semantic values consumed by display
-    fields and the semantic objects used
-    for dynamic property resolution.
-
-    Objects include:
-
-        ActivitySpec
-        ActivityResult
-        RequirementResult
     """
 
     activity = {
         "summary": {
-            #
-            # Overall activity counts.
-            #
-            "activity_count": len(
-                evaluation.all_activities,
+            "activity_count": evaluation.activity_count,
+            "actionable_count": evaluation.ready_count,
+            "ready_count": evaluation.ready_count,
+            "blocked_count": evaluation.blocked_count,
+            "needs_review_count": len(
+                evaluation.needs_review_activities,
             ),
-            "applicable_count": len(
-                evaluation.applicable_activities,
+            "not_applicable_count": len(
+                evaluation.not_applicable_activities,
             ),
-            "rejected_count": len(
-                evaluation.rejected_activities,
-            ),
-            #
-            # Applicable activity summary.
-            #
             "top_activity": (
-                evaluation.applicable_activities[0].activity.title
-                if evaluation.applicable_activities
+                evaluation.actionable_activities[0].activity.title
+                if evaluation.actionable_activities
                 else None
             ),
-            "has_activities": bool(
-                evaluation.applicable_activities,
+            "has_actionable": bool(
+                evaluation.actionable_activities,
             ),
-            #
-            # Variable coverage.
-            #
             "required_variable_count": len(
                 evaluation.required_variables,
             ),
@@ -99,65 +80,37 @@ def _build_activity_namespace(
             "variables": sorted(
                 evaluation.required_variables,
             ),
-        },  #
-        # Semantic object registry.
-        #
+        },
         "_objects": {},
     }
 
-    #
-    # Materialize every evaluated activity.
-    #
     for activity_result in evaluation.all_activities:
         activity_spec = activity_result.activity
 
-        #
-        # -------------------------------------------------
-        # ActivitySpec
-        # -------------------------------------------------
-        #
         activity["_objects"][activity_spec.name] = activity_spec
 
-        #
-        # -------------------------------------------------
-        # ActivityResult
-        # -------------------------------------------------
-        #
         activity["_objects"][f"{activity_spec.name}.result"] = activity_result
 
-        #
-        # -------------------------------------------------
-        # RequirementResult objects
-        # -------------------------------------------------
-        #
         for i, requirement_result in enumerate(
             activity_result.requirement_results,
         ):
             activity["_objects"][f"{activity_spec.name}.requirement.{i}"] = requirement_result
 
         #
-        # -------------------------------------------------
-        # Semantic value
-        #
-        # Only applicable activities are
+        # Only actionable activities are
         # materialized into the semantic
         # namespace.
-        # -------------------------------------------------
         #
-        if activity_result.applicable:
+        if activity_result.is_ready:
             current = activity
 
-            parts = activity_spec.name.split(
-                ".",
-            )
-
-            for part in parts[:-1]:
+            for part in activity_spec.name.split(".")[:-1]:
                 current = current.setdefault(
                     part,
                     {},
                 )
 
-            current[parts[-1]] = activity_spec.suggested_commands
+            current[activity_spec.name.split(".")[-1]] = activity_spec.suggested_commands
 
     return activity
 
@@ -172,23 +125,16 @@ def materialize_activity(
     registry,
 ):
     """
-    Attach activity evaluation and the
-    semantic activity namespace to a
-    planning row.
+    Attach activity evaluation and
+    semantic activity namespace.
     """
 
     evaluation = registry.evaluate(
         row=row,
     )
 
-    #
-    # Rich internal evaluation.
-    #
     row["_activity_eval"] = evaluation
 
-    #
-    # Semantic namespace.
-    #
     row["_activity"] = _build_activity_namespace(
         evaluation,
     )
@@ -201,12 +147,12 @@ def materialize_activity(
 # =========================================================
 
 
-def materialize_activity_suggestion_tree(
+def materialize_activity_next_tree(
     row,
 ):
     """
-    Materialize applicable planning
-    activities into a semantic tree.
+    Materialize actionable planning
+    activities.
     """
 
     evaluation = row.get(
@@ -220,7 +166,7 @@ def materialize_activity_suggestion_tree(
     }
 
     if evaluation is not None:
-        for result in evaluation.applicable_activities:
+        for result in evaluation.actionable_activities:
             activity = result.activity
 
             tree["children"].append(
@@ -232,7 +178,7 @@ def materialize_activity_suggestion_tree(
                 }
             )
 
-    row["_activity_suggestions"] = tree
+    row["_activity_next"] = tree
 
     return row
 
@@ -241,8 +187,8 @@ def materialize_activity_detail_tree(
     row,
 ):
     """
-    Materialize detailed information for
-    applicable planning activities.
+    Materialize detailed information
+    for actionable activities.
     """
 
     evaluation = row.get(
@@ -256,7 +202,7 @@ def materialize_activity_detail_tree(
     }
 
     if evaluation is not None:
-        for result in evaluation.applicable_activities:
+        for result in evaluation.actionable_activities:
             activity = result.activity
 
             tree["children"].append(
@@ -289,16 +235,7 @@ def materialize_activity_status_tree(
     row,
 ):
     """
-    Materialize planning activity
-    availability.
-
-    Applicable activities resolve to
-    their semantic activity values.
-
-    Rejected activities remain
-    structural since they are
-    intentionally not materialized into
-    the activity semantic namespace.
+    Materialize activity readiness.
     """
 
     evaluation = row.get(
@@ -307,61 +244,49 @@ def materialize_activity_status_tree(
 
     tree = {
         "kind": "section",
-        "label": "Activity Status",
+        "label": "Activity Readiness",
         "children": [],
     }
 
     if evaluation is not None:
-        applicable = {
-            "kind": "section",
-            "label": "Applicable",
-            "children": [],
-        }
+        sections = [
+            (
+                "Ready",
+                evaluation.ready_activities,
+            ),
+            (
+                "Blocked",
+                evaluation.blocked_activities,
+            ),
+            (
+                "Needs Review",
+                evaluation.needs_review_activities,
+            ),
+            (
+                "Not Applicable",
+                evaluation.not_applicable_activities,
+            ),
+        ]
 
-        rejected = {
-            "kind": "section",
-            "label": "Not Applicable",
-            "children": [],
-        }
+        for label, results in sections:
+            node = {
+                "kind": "section",
+                "label": label,
+                "children": [],
+            }
 
-        #
-        # Applicable activities.
-        #
-        for result in evaluation.applicable_activities:
-            activity = result.activity
+            for result in results:
+                node["children"].append(
+                    {
+                        "kind": "section",
+                        "label": result.activity.title,
+                        "children": [],
+                    }
+                )
 
-            applicable["children"].append(
-                {
-                    "kind": "section",
-                    "label": activity.title,
-                    "field": (f"activity.{activity.name}"),
-                    "children": [],
-                }
+            tree["children"].append(
+                node,
             )
-
-        #
-        # Rejected activities.
-        #
-        # These are intentionally not
-        # materialized into the activity
-        # namespace, so they remain
-        # structural.
-        #
-        for result in evaluation.rejected_activities:
-            rejected["children"].append(
-                {
-                    "kind": "section",
-                    "label": result.activity.title,
-                    "children": [],
-                }
-            )
-
-        tree["children"].extend(
-            [
-                applicable,
-                rejected,
-            ]
-        )
 
     row["_activity_status"] = tree
 
@@ -415,6 +340,12 @@ def materialize_activity_reasoning_tree(
                         # Structural node only.
                         #
                         "children": [
+                            {
+                                "kind": "section",
+                                "label": "State",
+                                "field": (f"activity.{activity.name}.result.state"),
+                                "children": [],
+                            },
                             {
                                 "kind": "section",
                                 "label": "Operator",
@@ -501,9 +432,6 @@ def materialize_activity_diagnostic_tree(
 ):
     """
     Materialize activity diagnostics.
-
-    Diagnostic values are resolved from
-    the semantic activity namespace.
     """
 
     tree = {
@@ -512,26 +440,161 @@ def materialize_activity_diagnostic_tree(
         "children": [
             {
                 "kind": "section",
-                "label": "Applicable",
-                "field": ("activity.summary.applicable_count"),
+                "label": "Activities",
+                "field": ("activity.summary.activity_count"),
                 "children": [],
             },
             {
                 "kind": "section",
-                "label": "Rejected",
-                "field": ("activity.summary.rejected_count"),
+                "label": "Actionable",
+                "field": ("activity.summary.actionable_count"),
                 "children": [],
             },
             {
                 "kind": "section",
-                "label": "Variables",
+                "label": "Ready",
+                "field": ("activity.summary.ready_count"),
+                "children": [],
+            },
+            {
+                "kind": "section",
+                "label": "Blocked",
+                "field": ("activity.summary.blocked_count"),
+                "children": [],
+            },
+            {
+                "kind": "section",
+                "label": "Needs Review",
+                "field": ("activity.summary.needs_review_count"),
+                "children": [],
+            },
+            {
+                "kind": "section",
+                "label": "Not Applicable",
+                "field": ("activity.summary.not_applicable_count"),
+                "children": [],
+            },
+            {
+                "kind": "section",
+                "label": "Required Variables",
                 "field": ("activity.summary.required_variable_count"),
+                "children": [],
+            },
+            {
+                "kind": "section",
+                "label": "Observed Variables",
+                "field": ("activity.summary.observed_variable_count"),
+                "children": [],
+            },
+            {
+                "kind": "section",
+                "label": "Unused Variables",
+                "field": ("activity.summary.unused_variable_count"),
                 "children": [],
             },
         ],
     }
 
     row["_activity_diagnostics"] = tree
+
+    return row
+
+
+def materialize_activity_workflow_tree(
+    row,
+):
+    """
+    Materialize the retirement
+    planning workflow.
+
+    Activities are organized by
+    category and ordered according
+    to their display order.
+
+    The workflow shows each activity's
+    readiness rather than only those
+    that are currently actionable.
+    """
+
+    evaluation = row.get(
+        "_activity_eval",
+    )
+
+    tree = {
+        "kind": "section",
+        "label": "Planning Workflow",
+        "children": [],
+    }
+
+    if evaluation is None:
+        row["_activity_workflow"] = tree
+        return row
+
+    #
+    # Build quick lookup.
+    #
+    results = {result.activity.name: result for result in evaluation.all_activities}
+
+    #
+    # Categories appear in workflow order.
+    #
+    categories = [
+        ("Workspace", "WORKSPACE"),
+        ("Households", "HOUSEHOLD"),
+        ("Annual Review", "REVIEW"),
+        ("Planning Decisions", "DECISION"),
+        ("Reporting", "REPORTING"),
+        ("General", "GENERAL"),
+    ]
+
+    for label, enum_name in categories:
+        category_node = {
+            "kind": "section",
+            "label": label,
+            "children": [],
+        }
+
+        for result in sorted(
+            (r for r in results.values() if r.activity.category.name == enum_name),
+            key=lambda r: (
+                r.activity.display_order,
+                r.activity.title.lower(),
+            ),
+        ):
+            #
+            # Readiness label.
+            #
+
+            if result.is_ready:
+                state = "▶"
+
+            elif result.needs_review:
+                state = "↺"
+
+            elif result.is_blocked:
+                state = "○"
+
+            elif result.is_complete:
+                state = "✓"
+
+            else:
+                state = "—"
+
+            category_node["children"].append(
+                {
+                    "kind": "section",
+                    "label": (f"{state} {result.activity.title}"),
+                    "field": (f"activity.{result.activity.name}" if result.is_ready else None),
+                    "children": [],
+                }
+            )
+
+        if category_node["children"]:
+            tree["children"].append(
+                category_node,
+            )
+
+    row["_activity_workflow"] = tree
 
     return row
 
@@ -543,7 +606,7 @@ def materialize_activity_trees(
     Materialize every activity tree.
     """
 
-    row = materialize_activity_suggestion_tree(
+    row = materialize_activity_next_tree(
         row,
     )
 
@@ -552,6 +615,10 @@ def materialize_activity_trees(
     )
 
     row = materialize_activity_status_tree(
+        row,
+    )
+
+    row = materialize_activity_workflow_tree(
         row,
     )
 

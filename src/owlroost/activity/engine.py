@@ -14,9 +14,20 @@ activity against the current planning
 context.
 
 Produces an ActivityEvaluation
-describing both applicable and
-rejected activities together with
-evaluation coverage.
+describing activity readiness together
+with evaluation coverage.
+
+Current Implementation
+----------------------
+Activities currently transition between
+READY and BLOCKED based solely upon
+their semantic requirements.
+
+Future implementations will also
+consider prerequisite activities,
+planning cadence, completion history,
+and evidence freshness to produce
+additional readiness states.
 """
 
 from __future__ import annotations
@@ -28,6 +39,7 @@ from owlroost.display.operations.resolution import (
 from .specs import (
     ActivityEvaluation,
     ActivityResult,
+    ActivityState,
     RequirementResult,
 )
 
@@ -42,9 +54,6 @@ OPS = {
     ">=": lambda a, b: a >= b,
     "<": lambda a, b: a < b,
     "<=": lambda a, b: a <= b,
-    #
-    # Membership
-    #
     "in": lambda a, b: a in b,
     "not in": lambda a, b: a not in b,
 }
@@ -60,16 +69,24 @@ def evaluate(
     registry,
 ):
     """
-    Evaluate every registered activity
+    Evaluate every registered activity.
     """
 
     all_activities = []
 
-    applicable_activities = []
+    ready_activities = []
 
-    rejected_activities = []
+    waiting_activities = []
 
-    required_variables = set()
+    blocked_activities = []
+
+    needs_review_activities = []
+
+    complete_activities = []
+
+    not_applicable_activities = []
+
+    referenced_variables = set()
 
     # -----------------------------------------------------
     # Evaluate every registered activity.
@@ -77,22 +94,26 @@ def evaluate(
 
     for activity in registry.all():
         #
-        # Activity applicability currently
-        # reflects only semantic
-        # requirements.
+        # Determine the current readiness
+        # state for this activity.
+        #
+        # The current implementation uses
+        # only semantic requirements.
         #
         # Future implementations will also
-        # consider prerequisite activities,
-        # required scenario families, and
-        # planning-cycle state.
+        # consider:
         #
+        #     * prerequisite activities
+        #     * planning cadence
+        #     * completion history
+        #     * evidence freshness
         #
-        applicable = True
+        state = ActivityState.READY
 
         requirement_results = []
 
         for requirement in activity.requirements:
-            required_variables.add(
+            referenced_variables.add(
                 requirement.variable,
             )
 
@@ -114,7 +135,7 @@ def evaluate(
             )
 
             if not satisfied:
-                applicable = False
+                state = ActivityState.BLOCKED
 
             requirement_results.append(
                 RequirementResult(
@@ -124,9 +145,20 @@ def evaluate(
                 )
             )
 
+        #
+        # Future readiness refinement.
+        #
+        # state = determine_readiness(
+        #     activity,
+        #     state,
+        #     row,
+        #     requirement_results,
+        # )
+        #
+
         result = ActivityResult(
             activity=activity,
-            applicable=applicable,
+            state=state,
             requirement_results=requirement_results,
         )
 
@@ -134,53 +166,89 @@ def evaluate(
             result,
         )
 
-        if applicable:
-            applicable_activities.append(
-                result,
-            )
-        else:
-            rejected_activities.append(
-                result,
-            )
+        match state:
+            case ActivityState.READY:
+                ready_activities.append(
+                    result,
+                )
+
+            case ActivityState.WAITING:
+                waiting_activities.append(
+                    result,
+                )
+
+            case ActivityState.BLOCKED:
+                blocked_activities.append(
+                    result,
+                )
+
+            case ActivityState.NEEDS_REVIEW:
+                needs_review_activities.append(
+                    result,
+                )
+
+            case ActivityState.COMPLETE:
+                complete_activities.append(
+                    result,
+                )
+
+            case ActivityState.NOT_APPLICABLE:
+                not_applicable_activities.append(
+                    result,
+                )
 
     # -----------------------------------------------------
-    # Highest-priority guides first.
+    # Presentation order.
     # -----------------------------------------------------
 
-    applicable_activities.sort(
+    all_activities.sort(
         key=lambda r: (
             r.activity.display_order,
             r.activity.title.lower(),
         ),
     )
 
-    rejected_activities.sort(
-        key=lambda r: (
-            r.activity.display_order,
-            r.activity.title.lower(),
-        ),
-    )
+    for collection in (
+        ready_activities,
+        waiting_activities,
+        blocked_activities,
+        needs_review_activities,
+        complete_activities,
+        not_applicable_activities,
+    ):
+        collection.sort(
+            key=lambda r: (
+                r.activity.display_order,
+                r.activity.title.lower(),
+            ),
+        )
 
     # -----------------------------------------------------
     # Coverage
     # -----------------------------------------------------
     #
     # Currently every non-private row
-    # field is considered observed.
+    # field is treated as an observed
+    # semantic variable.
+    #
     # Future implementations should
-    # derive observed semantic variables
+    # derive semantic coverage directly
     # from the catalog.
     #
 
     observed_variables = {key for key in row if not key.startswith("_")}
 
-    unused_variables = observed_variables - required_variables
+    unused_variables = observed_variables - referenced_variables
 
     return ActivityEvaluation(
         all_activities=all_activities,
-        applicable_activities=applicable_activities,
-        rejected_activities=rejected_activities,
+        ready_activities=ready_activities,
+        waiting_activities=waiting_activities,
+        blocked_activities=blocked_activities,
+        needs_review_activities=needs_review_activities,
+        complete_activities=complete_activities,
+        not_applicable_activities=not_applicable_activities,
         observed_variables=observed_variables,
-        required_variables=required_variables,
+        required_variables=referenced_variables,
         unused_variables=unused_variables,
     )

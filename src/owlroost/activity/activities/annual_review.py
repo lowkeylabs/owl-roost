@@ -10,14 +10,14 @@ Annual retirement review activities.
 Notes
 -----
 Registers the repeatable planning
-activities supporting an annual
-retirement review.
+activities comprising the ROOST annual
+planning cycle.
 
 The goal of the annual review is to
 produce current evidence supporting
-spending, withdrawal, tax, and other
 retirement decisions for the coming
-year.
+year and package that evidence for
+future planning cycles.
 
 Activities consume semantic variables
 materialized by the workspace
@@ -68,22 +68,17 @@ ACTIVITY_ONTOLOGY: dict[str, Any] = dict(
 
 ACTIVITIES = [
     # -----------------------------------------------------
-    # Review household
+    # Begin planning cycle
     # -----------------------------------------------------
     dict(
-        name="review.household",
-        title="Review Current Household",
-        description=(
-            "Verify that the retirement plan accurately represents the current financial situation."
-        ),
+        name="annual.begin",
+        title="Begin Annual Review",
+        description=("Begin a new annual retirement planning cycle."),
         category=ActivityCategory.REVIEW,
-        display_order=200,
         frequency=ActivityFrequency.ANNUAL,
-        prerequisite_activities=[
-            "household.review_plans",
-        ],
+        display_order=200,
         suggested_commands=[
-            "roost cases",
+            "roost workspace",
         ],
         requirements=[
             Requirement(
@@ -94,53 +89,99 @@ ACTIVITIES = [
         ],
     ),
     # -----------------------------------------------------
+    # Household review
+    # -----------------------------------------------------
+    dict(
+        name="annual.household",
+        title="Review Current Household",
+        description=(
+            "Verify that the retirement "
+            "household accurately reflects "
+            "the current financial and "
+            "personal situation."
+        ),
+        category=ActivityCategory.REVIEW,
+        frequency=ActivityFrequency.ANNUAL,
+        display_order=210,
+        prerequisite_activities=[
+            "annual.begin",
+        ],
+        suggested_commands=[
+            "roost cases",
+        ],
+    ),
+    # -----------------------------------------------------
     # Characterization
     # -----------------------------------------------------
     dict(
-        name="review.characterize",
+        name="annual.characterize",
         title="Characterize Household",
         description=(
             "Characterize the household to "
-            "identify available planning "
-            "levers and applicable scenario "
-            "families."
+            "identify planning levers, "
+            "constraints, and applicable "
+            "retirement scenario families."
         ),
         category=ActivityCategory.REVIEW,
-        display_order=210,
         frequency=ActivityFrequency.ANNUAL,
+        display_order=220,
         prerequisite_activities=[
-            "review.household",
+            "annual.household",
         ],
         suggested_commands=[
             "roost workspace",
         ],
     ),
     # -----------------------------------------------------
-    # Applicable scenarios
+    # Scenario identification
     # -----------------------------------------------------
     dict(
-        name="review.scenarios",
-        title="Determine Applicable Scenario Families",
-        description=("Identify the retirement planning questions requiring updated evidence."),
+        name="annual.scenarios",
+        title="Identify Applicable Scenario Families",
+        description=(
+            "Determine which retirement "
+            "decisions require updated "
+            "evidence during the current "
+            "planning cycle."
+        ),
         category=ActivityCategory.REVIEW,
-        display_order=220,
         frequency=ActivityFrequency.ANNUAL,
+        display_order=230,
         prerequisite_activities=[
-            "review.characterize",
+            "annual.characterize",
+        ],
+    ),
+    # -----------------------------------------------------
+    # Experiment planning
+    # -----------------------------------------------------
+    dict(
+        name="annual.experiments",
+        title="Design Planning Experiments",
+        description=(
+            "Design the experiments needed "
+            "to collect evidence for each "
+            "applicable retirement scenario "
+            "family."
+        ),
+        category=ActivityCategory.REVIEW,
+        frequency=ActivityFrequency.ANNUAL,
+        display_order=240,
+        prerequisite_activities=[
+            "annual.scenarios",
         ],
     ),
     # -----------------------------------------------------
     # Evidence generation
     # -----------------------------------------------------
     dict(
-        name="review.build_evidence",
-        title="Build Planning Evidence",
-        description=("Generate current evidence for all applicable scenario families."),
+        name="annual.evidence",
+        title="Generate Decision Evidence",
+        description=("Generate retirement planning evidence for every applicable scenario family."),
         category=ActivityCategory.REVIEW,
-        display_order=230,
         frequency=ActivityFrequency.ANNUAL,
+        display_order=250,
         prerequisite_activities=[
-            "review.scenarios",
+            "annual.experiments",
         ],
         suggested_commands=[
             "roost build",
@@ -148,17 +189,44 @@ ACTIVITIES = [
         ],
     ),
     # -----------------------------------------------------
-    # Evidence review
+    # Longitudinal comparison
     # -----------------------------------------------------
     dict(
-        name="review.review_evidence",
-        title="Review Planning Evidence",
-        description=("Review the evidence generated for the current planning cycle."),
+        name="annual.compare",
+        title="Compare With Previous Reviews",
+        description=(
+            "Compare the current planning "
+            "cycle with previous reviews to "
+            "understand how the retirement "
+            "plan has evolved over time."
+        ),
         category=ActivityCategory.REVIEW,
-        display_order=240,
         frequency=ActivityFrequency.ANNUAL,
+        display_order=260,
         prerequisite_activities=[
-            "review.build_evidence",
+            "annual.evidence",
+        ],
+        suggested_commands=[
+            "roost compare",
+        ],
+    ),
+    # -----------------------------------------------------
+    # Evidence interpretation
+    # -----------------------------------------------------
+    dict(
+        name="annual.analysis",
+        title="Analyze Planning Evidence",
+        description=(
+            "Interpret the evidence and "
+            "identify the retirement "
+            "decisions supported by the "
+            "current planning cycle."
+        ),
+        category=ActivityCategory.REVIEW,
+        frequency=ActivityFrequency.ANNUAL,
+        display_order=270,
+        prerequisite_activities=[
+            "annual.compare",
         ],
         suggested_commands=[
             "roost results",
@@ -166,68 +234,48 @@ ACTIVITIES = [
         ],
     ),
     # -----------------------------------------------------
-    # Longitudinal comparison
+    # Decisions
     # -----------------------------------------------------
     dict(
-        name="review.compare",
-        title="Compare With Previous Reviews",
-        description=(
-            "Compare current evidence with "
-            "previous planning cycles to "
-            "understand how the retirement "
-            "plan has evolved."
-        ),
-        category=ActivityCategory.REVIEW,
-        display_order=250,
-        frequency=ActivityFrequency.ANNUAL,
-        prerequisite_activities=[
-            "review.review_evidence",
-        ],
-        suggested_commands=[
-            "roost compare",
-        ],
-    ),
-    # -----------------------------------------------------
-    # Planning decisions
-    # -----------------------------------------------------
-    dict(
-        name="review.policy",
-        title="Establish Annual Spending Policy",
+        name="annual.decisions",
+        title="Make Retirement Decisions",
         description=(
             "Use the accumulated evidence "
             "to establish spending, Roth "
-            "conversion, withdrawal, and "
-            "other retirement decisions "
+            "conversions, withdrawal "
+            "strategies, tax strategies, "
+            "and other retirement decisions "
             "for the coming year."
         ),
         category=ActivityCategory.DECISION,
-        display_order=260,
         frequency=ActivityFrequency.ANNUAL,
+        display_order=280,
         prerequisite_activities=[
-            "review.compare",
+            "annual.analysis",
         ],
     ),
     # -----------------------------------------------------
-    # Package review
+    # Publish
     # -----------------------------------------------------
     dict(
-        name="review.publish",
-        title="Package Annual Review",
+        name="annual.publish",
+        title="Publish Annual Review",
         description=(
-            "Package the retirement review "
-            "and supporting evidence for "
-            "future planning cycles or "
-            "consultation."
+            "Package the annual retirement "
+            "review together with its "
+            "supporting evidence for future "
+            "planning cycles and external "
+            "decision makers."
         ),
         category=ActivityCategory.REPORTING,
-        display_order=270,
         frequency=ActivityFrequency.ANNUAL,
+        display_order=290,
         prerequisite_activities=[
-            "review.policy",
+            "annual.decisions",
         ],
         suggested_commands=[
-            "roost package",
             "roost reports",
+            "roost package",
         ],
     ),
 ]

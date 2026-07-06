@@ -5,20 +5,20 @@
 # See LICENSE file in repository root.
 
 """
-Workspace setup activities.
+Workspace lifecycle activities.
 
 Notes
 -----
 Registers the planning activities that
-establish and inspect a ROOST
-workspace.
+establish a ROOST workspace and prepare
+it for retirement planning.
 
 These activities represent durable
 planning milestones rather than
 individual shell operations.
 
 Provider discovery automatically
-imports this module and invokes:
+imports this module and invokes
 
     register(reg)
 """
@@ -62,15 +62,15 @@ ACTIVITY_ONTOLOGY: dict[str, Any] = dict(
 
 ACTIVITIES = [
     # -----------------------------------------------------
-    # Always available
+    # Context
     # -----------------------------------------------------
     dict(
-        name="current.context",
+        name="workspace.context",
         title="Review Current Context",
         description=(
-            "Display the current planning context "
-            "and determine the next recommended "
-            "planning activities."
+            "Determine the current planning "
+            "context and identify the next "
+            "recommended planning milestones."
         ),
         category=ActivityCategory.WORKSPACE,
         frequency=ActivityFrequency.EVENT,
@@ -80,12 +80,12 @@ ACTIVITIES = [
         ],
     ),
     # -----------------------------------------------------
-    # Workspace lifecycle
+    # Workspace
     # -----------------------------------------------------
     dict(
         name="workspace.initialize",
         title="Initialize Workspace",
-        description=("Create a planning workspace in the current directory."),
+        description=("Create a new ROOST workspace to hold retirement planning artifacts."),
         category=ActivityCategory.WORKSPACE,
         frequency=ActivityFrequency.ONCE,
         display_order=20,
@@ -121,15 +121,17 @@ ACTIVITIES = [
     dict(
         name="workspace.review",
         title="Review Workspace",
-        description=("Inspect the workspace structure and planning status."),
+        description=(
+            "Inspect the workspace structure and determine its readiness for retirement planning."
+        ),
         category=ActivityCategory.WORKSPACE,
         frequency=ActivityFrequency.EVENT,
         display_order=30,
-        suggested_commands=[
-            "roost workspace",
-        ],
         prerequisite_activities=[
             "workspace.initialize",
+        ],
+        suggested_commands=[
+            "roost workspace",
         ],
         requirements=[
             Requirement(
@@ -140,25 +142,51 @@ ACTIVITIES = [
         ],
     ),
     # -----------------------------------------------------
-    # Household inventory
+    # Households
     # -----------------------------------------------------
     dict(
-        name="households.review",
+        name="households.inventory",
         title="Review Households",
-        description=("Review the households available for planning within the current workspace."),
+        description=("Review the retirement households available within the current workspace."),
         category=ActivityCategory.HOUSEHOLD,
         frequency=ActivityFrequency.EVENT,
         display_order=40,
+        prerequisite_activities=[
+            "workspace.review",
+        ],
         suggested_commands=[
             "roost cases",
-        ],
-        prerequisite_activities=[
-            "workspace.initialize",
         ],
         requirements=[
             Requirement(
                 "context.valid_case_count",
                 ">",
+                0,
+            ),
+        ],
+    ),
+    dict(
+        name="households.create",
+        title="Create Retirement Household",
+        description=(
+            "Create a retirement household by "
+            "assembling a household TOML file "
+            "and Household Financial Profile "
+            "(HFP)."
+        ),
+        category=ActivityCategory.HOUSEHOLD,
+        frequency=ActivityFrequency.ONCE,
+        display_order=50,
+        prerequisite_activities=[
+            "workspace.initialize",
+        ],
+        suggested_commands=[
+            "roost household",
+        ],
+        requirements=[
+            Requirement(
+                "context.valid_case_count",
+                "==",
                 0,
             ),
         ],
@@ -174,7 +202,8 @@ def register(
     reg,
 ):
     """
-    Register planning activities.
+    Register workspace lifecycle
+    activities.
     """
 
     for activity in ACTIVITIES:

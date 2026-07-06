@@ -344,7 +344,7 @@ def sync_activity_registry(
     registered workflow guides.
     """
 
-    for activity in activity_registry.all():
+    for activity in activity_registry.activities():
         _register_field_if_missing(
             field_name=f"activity.{activity.name}",
             description=activity.description,

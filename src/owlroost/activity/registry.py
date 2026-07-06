@@ -43,9 +43,7 @@ from __future__ import annotations
 from .engine import (
     evaluate,
 )
-from .specs import (
-    ActivitySpec,
-)
+from .specs import ActivityCategory, ActivityEvaluation, ActivitySpec
 
 
 class ActivityRegistry:
@@ -68,7 +66,7 @@ class ActivityRegistry:
     def register(
         self,
         activity: ActivitySpec,
-    ):
+    ) -> None:
         """
         Register one planning activity.
         """
@@ -79,22 +77,30 @@ class ActivityRegistry:
     # Enumeration
     # =====================================================
 
-    def all(
+    def activities(
         self,
-    ):
-        """
-        Return all registered
-        activities in presentation
-        order.
-        """
-
-        return sorted(
+        *,
+        category: ActivityCategory | None = None,
+    ) -> list[ActivitySpec]:
+        activities = sorted(
             self._activities.values(),
             key=lambda activity: (
                 activity.display_order,
                 activity.title.lower(),
             ),
         )
+
+        if category is not None:
+            activities = [activity for activity in activities if activity.category == category]
+
+        return activities
+
+    def all(
+        self,
+        *,
+        category: ActivityCategory | None = None,
+    ) -> list[ActivitySpec]:
+        return self.activities(category=category)
 
     # =====================================================
     # Semantic Object Lookup
@@ -103,7 +109,7 @@ class ActivityRegistry:
     def get_object(
         self,
         name,
-    ):
+    ) -> ActivitySpec | None:
         """
         Return one registered
         ActivitySpec.
@@ -125,7 +131,7 @@ class ActivityRegistry:
     def get(
         self,
         name,
-    ):
+    ) -> ActivitySpec | None:
         """
         Return one registered
         activity.
@@ -138,7 +144,7 @@ class ActivityRegistry:
     def has_object(
         self,
         name,
-    ):
+    ) -> bool:
         """
         Return whether an activity
         exists.
@@ -150,7 +156,7 @@ class ActivityRegistry:
         self,
         object_name,
         property_name,
-    ):
+    ) -> object | None:
         """
         Resolve one property of a
         registered ActivitySpec.
@@ -188,7 +194,7 @@ class ActivityRegistry:
         self,
         *,
         row,
-    ):
+    ) -> ActivityEvaluation:
         """
         Evaluate all registered
         activities for one planning
@@ -199,3 +205,25 @@ class ActivityRegistry:
             row=row,
             registry=self,
         )
+
+    def by_category(
+        self,
+        category: ActivityCategory,
+    ) -> list[ActivitySpec]:
+        return self.activities(
+            category=category,
+        )
+
+    def dependents(
+        self,
+        activity_name,
+    ) -> list[ActivitySpec]:
+        return [
+            activity
+            for activity in self.activities()
+            if activity_name in activity.prerequisite_activities
+        ]
+
+    @property
+    def names(self) -> list[str]:
+        return sorted(self._activities)

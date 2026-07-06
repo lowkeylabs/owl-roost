@@ -110,7 +110,7 @@ from owlroost.workspace.materializers import (
 )
 @click.option(
     "--assist",
-    default="suggestions",
+    default="next",
     callback=parse_assist,
     help=(
         "Append activity view(s).\n"
@@ -276,5 +276,4 @@ def cmd_context(
                 activity_output,
             )
 
-
-#    print(rows)
+    # print(rows)

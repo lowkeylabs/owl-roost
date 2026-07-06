@@ -5,20 +5,21 @@
 # See LICENSE file in repository root.
 
 """
-Household setup activities.
+Household lifecycle activities.
 
 Notes
 -----
 Registers the planning activities
-required to establish one or more
-canonical retirement plans within an
+required to establish and manage
+retirement households within an
 initialized ROOST workspace.
 
-A retirement plan represents the
-household's current financial state
-using an OWL household configuration
-together with an optional Household
-Financial Profile (HFP).
+A household is the canonical
+representation of a retiree or
+retiring household. It consists of an
+OWL household configuration together
+with an optional Household Financial
+Profile (HFP).
 
 Activities consume semantic variables
 materialized by the workspace
@@ -69,24 +70,21 @@ ACTIVITY_ONTOLOGY: dict[str, Any] = dict(
 
 ACTIVITIES = [
     # -----------------------------------------------------
-    # Retirement plan creation
+    # Household creation
     # -----------------------------------------------------
     dict(
-        name="household.create_plan",
-        title="Create Retirement Plan",
+        name="household.create",
+        title="Create Retirement Household",
         description=(
-            "Create a canonical retirement "
-            "plan representing the current "
-            "financial situation of a "
-            "household. A completed plan "
-            "contains an OWL household "
-            "configuration together with "
-            "an optional Household "
-            "Financial Profile (HFP)."
+            "Create a retirement household "
+            "consisting of an OWL household "
+            "configuration together with an "
+            "optional Household Financial "
+            "Profile (HFP)."
         ),
         category=ActivityCategory.HOUSEHOLD,
-        display_order=100,
         frequency=ActivityFrequency.ONCE,
+        display_order=100,
         prerequisite_activities=[
             "workspace.initialize",
         ],
@@ -109,25 +107,48 @@ ACTIVITIES = [
         ],
     ),
     # -----------------------------------------------------
-    # Retirement plan review
+    # Household inventory
     # -----------------------------------------------------
     dict(
-        name="household.review_plans",
-        title="Review Retirement Plans",
-        description=(
-            "Review the retirement plans "
-            "currently available within "
-            "the workspace before selecting "
-            "one for further planning."
-        ),
+        name="household.inventory",
+        title="Review Retirement Households",
+        description=("Review the retirement households available within the current workspace."),
         category=ActivityCategory.HOUSEHOLD,
-        display_order=110,
         frequency=ActivityFrequency.EVENT,
+        display_order=110,
         prerequisite_activities=[
-            "household.create_plan",
+            "workspace.initialize",
         ],
         suggested_commands=[
             "roost cases",
+        ],
+        requirements=[
+            Requirement(
+                "context.valid_case_count",
+                ">",
+                0,
+            ),
+        ],
+    ),
+    # -----------------------------------------------------
+    # Household selection
+    # -----------------------------------------------------
+    dict(
+        name="household.select",
+        title="Select Active Household",
+        description=(
+            "Select the retirement household "
+            "that will serve as the basis for "
+            "the current planning cycle."
+        ),
+        category=ActivityCategory.HOUSEHOLD,
+        frequency=ActivityFrequency.EVENT,
+        display_order=120,
+        prerequisite_activities=[
+            "household.inventory",
+        ],
+        suggested_commands=[
+            "roost household",
         ],
         requirements=[
             Requirement(
@@ -148,7 +169,8 @@ def register(
     reg,
 ):
     """
-    Register household setup activities.
+    Register household lifecycle
+    activities.
     """
 
     for activity in ACTIVITIES:

@@ -24,6 +24,7 @@ evaluation.
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass, field
 from enum import StrEnum
 
@@ -73,6 +74,25 @@ class ActivityCategory(StrEnum):
     REPORTING = "reporting"
 
     GENERAL = "general"
+
+
+class ActivityState(StrEnum):
+    """
+    Current readiness of a planning
+    activity.
+    """
+
+    READY = "ready"
+
+    BLOCKED = "blocked"
+
+    WAITING = "waiting"
+
+    COMPLETE = "complete"
+
+    NEEDS_REVIEW = "needs_review"
+
+    NOT_APPLICABLE = "not_applicable"
 
 
 @dataclass(slots=True)
@@ -320,14 +340,14 @@ class ActivityResult:
 
     activity: ActivitySpec
 
-    applicable: bool
+    state: ActivityState
 
     requirement_results: list[RequirementResult] = field(
         default_factory=list,
     )
 
     _PROPERTY_DESCRIPTIONS = {
-        "applicable": "Whether this activity is currently applicable.",
+        "state": "Current readiness of this activity.",
     }
 
     def describe_property(
@@ -366,6 +386,36 @@ class ActivityResult:
             " ",
         ).title()
 
+    @property
+    def is_ready(self):
+        return self.state == ActivityState.READY
+
+    @property
+    def is_blocked(self):
+        return self.state == ActivityState.BLOCKED
+
+    @property
+    def is_complete(self):
+        return self.state == ActivityState.COMPLETE
+
+    @property
+    def needs_review(self):
+        return self.state == ActivityState.NEEDS_REVIEW
+
+    @property
+    def is_waiting(self):
+        return self.state == ActivityState.WAITING
+
+    @property
+    def is_applicable(self):
+        """
+        Backwards compatibility.
+
+        An activity is applicable if it is
+        ready to perform.
+        """
+        return self.state == ActivityState.READY
+
 
 @dataclass(slots=True)
 class ActivityEvaluation:
@@ -389,11 +439,27 @@ class ActivityEvaluation:
         default_factory=list,
     )
 
-    applicable_activities: list[ActivityResult] = field(
+    ready_activities: list[ActivityResult] = field(
         default_factory=list,
     )
 
-    rejected_activities: list[ActivityResult] = field(
+    blocked_activities: list[ActivityResult] = field(
+        default_factory=list,
+    )
+
+    waiting_activities: list[ActivityResult] = field(
+        default_factory=list,
+    )
+
+    needs_review_activities: list[ActivityResult] = field(
+        default_factory=list,
+    )
+
+    complete_activities: list[ActivityResult] = field(
+        default_factory=list,
+    )
+
+    not_applicable_activities: list[ActivityResult] = field(
         default_factory=list,
     )
 
@@ -412,3 +478,23 @@ class ActivityEvaluation:
     unused_variables: set[str] = field(
         default_factory=set,
     )
+
+    @property
+    def actionable_activities(self):
+        return self.ready_activities
+
+    @property
+    def blocked_count(self):
+        return len(self.blocked_activities)
+
+    @property
+    def ready_count(self):
+        return len(self.ready_activities)
+
+    @property
+    def activity_count(self):
+        return len(self.all_activities)
+
+    @property
+    def state_counts(self):
+        return Counter(result.state for result in self.all_activities)
