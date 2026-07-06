@@ -6,7 +6,7 @@ import yaml
 from loguru import logger
 from omegaconf import OmegaConf
 
-from owlroost.hydra.generate_trials import (
+from owlroost.executive.generate_trials import (
     generate_trials,
     materialize_execution_plan,
 )
@@ -94,7 +94,7 @@ def hydra_cfg(
             return FakeHydraConfig()
 
     monkeypatch.setattr(
-        "owlroost.hydra.generate_trials.HydraConfig",
+        "owlroost.executive.generate_trials.HydraConfig",
         FakeHydraConfig,
     )
 
@@ -339,7 +339,7 @@ def test_default_solver_materialized_when_auto_workers(
     monkeypatch,
 ):
     monkeypatch.setattr(
-        "owlroost.hydra.generate_trials.mosek_available",
+        "owlroost.executive.generate_trials.mosek_available",
         lambda: True,
     )
 
@@ -369,7 +369,7 @@ def test_default_solver_preserved_when_workers_explicit(
     monkeypatch,
 ):
     monkeypatch.setattr(
-        "owlroost.hydra.generate_trials.mosek_available",
+        "owlroost.executive.generate_trials.mosek_available",
         lambda: True,
     )
 
@@ -395,7 +395,7 @@ def test_default_solver_materializes_to_highs(
     monkeypatch,
 ):
     monkeypatch.setattr(
-        "owlroost.hydra.generate_trials.mosek_available",
+        "owlroost.executive.generate_trials.mosek_available",
         lambda: False,
     )
 
@@ -424,7 +424,7 @@ def test_execution_metadata_always_materialized(
     monkeypatch,
 ):
     monkeypatch.setattr(
-        "owlroost.hydra.generate_trials.mosek_available",
+        "owlroost.executive.generate_trials.mosek_available",
         lambda: False,
     )
 
@@ -443,7 +443,7 @@ def test_explicit_workers_override_auto_mapping(
     monkeypatch,
 ):
     monkeypatch.setattr(
-        "owlroost.hydra.generate_trials.mosek_available",
+        "owlroost.executive.generate_trials.mosek_available",
         lambda: True,
     )
 

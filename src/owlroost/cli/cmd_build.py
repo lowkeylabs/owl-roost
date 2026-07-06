@@ -74,7 +74,7 @@ def build_hydra_command(
     cmd = [
         sys.executable,
         "-m",
-        "owlroost.hydra.generate_trials",
+        "owlroost.executive.generate_trials",
         "--multirun",
         (f"--config-path={str(conf_dir.resolve())}"),
         "--config-name=config",

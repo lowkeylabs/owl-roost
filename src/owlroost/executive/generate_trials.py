@@ -1,4 +1,4 @@
-# src/owlroost/hydra/generate_trials.py
+# src/owlroost/executive/generate_trials.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
