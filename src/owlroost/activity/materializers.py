@@ -1,27 +1,28 @@
-# src/owlroost/guide/materializers.py
+# src/owlroost/activity/materializers.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See LICENSE file in repository root.
 
 """
-Guide materialization.
+Planning activity materialization.
 
 Notes
 -----
-Materializes workflow guidance onto
-operational rows.
+Materializes planning activity
+evaluation onto operational rows.
 
-Guide materialization intentionally
+Activity materialization intentionally
 produces two representations.
 
-#    _guide_eval
-#
-#        Rich evaluation object used by
-#        explanation, coverage analysis,
-#        and future guide reasoning.
-#
-    _guide
+    _activity_eval
+
+        Rich evaluation object used by
+        explanation, coverage analysis,
+        and future planning-cycle
+        reasoning.
+
+    _activity
 
         Semantic namespace consumed by
         the display subsystem exactly
@@ -39,12 +40,12 @@ from __future__ import annotations
 # =========================================================
 
 
-def _build_guide_namespace(
+def _build_activity_namespace(
     evaluation,
 ):
     """
-    Convert a GuideEvaluation into the
-    semantic guide namespace.
+    Convert an ActivityEvaluation into
+    the semantic activity namespace.
 
     The namespace contains both the
     semantic values consumed by display
@@ -53,53 +54,76 @@ def _build_guide_namespace(
 
     Objects include:
 
-        GuideSpec
-        GuideResult
+        ActivitySpec
+        ActivityResult
         RequirementResult
     """
 
-    guide = {
+    activity = {
         "summary": {
-            "guide_count": len(
-                evaluation.applicable_guides,
+            #
+            # Overall activity counts.
+            #
+            "activity_count": len(
+                evaluation.all_activities,
             ),
-            "top_guide": (
-                evaluation.applicable_guides[0].guide.title
-                if evaluation.applicable_guides
+            "applicable_count": len(
+                evaluation.applicable_activities,
+            ),
+            "rejected_count": len(
+                evaluation.rejected_activities,
+            ),
+            #
+            # Applicable activity summary.
+            #
+            "top_activity": (
+                evaluation.applicable_activities[0].activity.title
+                if evaluation.applicable_activities
                 else None
             ),
-            "has_guides": bool(
-                evaluation.applicable_guides,
+            "has_activities": bool(
+                evaluation.applicable_activities,
+            ),
+            #
+            # Variable coverage.
+            #
+            "required_variable_count": len(
+                evaluation.required_variables,
+            ),
+            "observed_variable_count": len(
+                evaluation.observed_variables,
+            ),
+            "unused_variable_count": len(
+                evaluation.unused_variables,
             ),
             "variables": sorted(
                 evaluation.required_variables,
             ),
-        },
-        #
+        },  #
         # Semantic object registry.
         #
         "_objects": {},
     }
 
     #
-    # Materialize every evaluated guide.
+    # Materialize every evaluated activity.
     #
-    for guide_result in evaluation.all_guides:
-        guide_spec = guide_result.guide
+    for activity_result in evaluation.all_activities:
+        activity_spec = activity_result.activity
 
         #
         # -------------------------------------------------
-        # GuideSpec
+        # ActivitySpec
         # -------------------------------------------------
         #
-        guide["_objects"][guide_spec.name] = guide_spec
+        activity["_objects"][activity_spec.name] = activity_spec
 
         #
         # -------------------------------------------------
-        # GuideResult
+        # ActivityResult
         # -------------------------------------------------
         #
-        guide["_objects"][f"{guide_spec.name}.result"] = guide_result
+        activity["_objects"][f"{activity_spec.name}.result"] = activity_result
 
         #
         # -------------------------------------------------
@@ -107,22 +131,23 @@ def _build_guide_namespace(
         # -------------------------------------------------
         #
         for i, requirement_result in enumerate(
-            guide_result.requirement_results,
+            activity_result.requirement_results,
         ):
-            guide["_objects"][(f"{guide_spec.name}.requirement.{i}")] = requirement_result
+            activity["_objects"][f"{activity_spec.name}.requirement.{i}"] = requirement_result
 
         #
         # -------------------------------------------------
         # Semantic value
         #
-        # Only applicable guides receive a
-        # command value in the namespace.
+        # Only applicable activities are
+        # materialized into the semantic
+        # namespace.
         # -------------------------------------------------
         #
-        if guide_result.applicable:
-            current = guide
+        if activity_result.applicable:
+            current = activity
 
-            parts = guide_spec.name.split(
+            parts = activity_spec.name.split(
                 ".",
             )
 
@@ -132,23 +157,24 @@ def _build_guide_namespace(
                     {},
                 )
 
-            current[parts[-1]] = guide_spec.command
+            current[parts[-1]] = activity_spec.suggested_commands
 
-    return guide
+    return activity
 
 
 # =========================================================
-# Guide Materialization
+# Activity Materialization
 # =========================================================
 
 
-def materialize_guide(
+def materialize_activity(
     row,
     registry,
 ):
     """
-    Attach guide evaluation and semantic
-    guide namespace to a row.
+    Attach activity evaluation and the
+    semantic activity namespace to a
+    planning row.
     """
 
     evaluation = registry.evaluate(
@@ -158,12 +184,12 @@ def materialize_guide(
     #
     # Rich internal evaluation.
     #
-    row["_guide_eval"] = evaluation
+    row["_activity_eval"] = evaluation
 
     #
     # Semantic namespace.
     #
-    row["_guide"] = _build_guide_namespace(
+    row["_activity"] = _build_activity_namespace(
         evaluation,
     )
 
@@ -175,210 +201,213 @@ def materialize_guide(
 # =========================================================
 
 
-def materialize_guide_suggestion_tree(
+def materialize_activity_suggestion_tree(
     row,
 ):
     """
-    Materialize applicable guides into a
-    semantic tree.
+    Materialize applicable planning
+    activities into a semantic tree.
     """
 
     evaluation = row.get(
-        "_guide_eval",
+        "_activity_eval",
     )
 
     tree = {
         "kind": "section",
-        "label": "Suggested Next Steps",
+        "label": "Suggested Activities",
         "children": [],
     }
 
     if evaluation is not None:
-        for result in evaluation.applicable_guides:
-            guide = result.guide
+        for result in evaluation.applicable_activities:
+            activity = result.activity
 
             tree["children"].append(
                 {
                     "kind": "section",
-                    "label": guide.title,
-                    "field": (f"guide.{guide.name}"),
+                    "label": activity.title,
+                    "field": (f"activity.{activity.name}"),
                     "children": [],
                 }
             )
 
-    row["_guide_suggestions"] = tree
+    row["_activity_suggestions"] = tree
 
     return row
 
 
-def materialize_guide_detail_tree(
+def materialize_activity_detail_tree(
     row,
 ):
     """
     Materialize detailed information for
-    applicable guides.
+    applicable planning activities.
     """
 
     evaluation = row.get(
-        "_guide_eval",
+        "_activity_eval",
     )
 
     tree = {
         "kind": "section",
-        "label": "Guide Details",
+        "label": "Activity Details",
         "children": [],
     }
 
     if evaluation is not None:
-        for result in evaluation.applicable_guides:
-            guide = result.guide
+        for result in evaluation.applicable_activities:
+            activity = result.activity
 
             tree["children"].append(
                 {
                     "kind": "section",
-                    "label": guide.title,
+                    "label": activity.title,
                     "children": [
                         {
                             "kind": "section",
                             "label": "Description",
-                            "field": (f"guide.{guide.name}.description"),
+                            "field": (f"activity.{activity.name}.description"),
                             "children": [],
                         },
                         {
                             "kind": "section",
-                            "label": "Command",
-                            "field": (f"guide.{guide.name}.command"),
+                            "label": "Suggested Commands",
+                            "field": (f"activity.{activity.name}.suggested_commands"),
                             "children": [],
                         },
                     ],
                 }
             )
 
-    row["_guide_details"] = tree
+    row["_activity_details"] = tree
 
     return row
 
 
-def materialize_guide_workflow_tree(
+def materialize_activity_status_tree(
     row,
 ):
     """
-    Materialize workflow availability.
+    Materialize planning activity
+    availability.
 
-    Available guides resolve to their
-    semantic command values.
+    Applicable activities resolve to
+    their semantic activity values.
 
-    Unavailable guides remain structural
-    since they are intentionally not
-    materialized into the guide semantic
-    namespace.
+    Rejected activities remain
+    structural since they are
+    intentionally not materialized into
+    the activity semantic namespace.
     """
 
     evaluation = row.get(
-        "_guide_eval",
+        "_activity_eval",
     )
 
     tree = {
         "kind": "section",
-        "label": "Workflow",
+        "label": "Activity Status",
         "children": [],
     }
 
     if evaluation is not None:
-        available = {
+        applicable = {
             "kind": "section",
-            "label": "Available",
+            "label": "Applicable",
             "children": [],
         }
 
-        unavailable = {
+        rejected = {
             "kind": "section",
-            "label": "Unavailable",
+            "label": "Not Applicable",
             "children": [],
         }
 
         #
-        # Applicable transforms.
+        # Applicable activities.
         #
-        for result in evaluation.applicable_guides:
-            guide = result.guide
+        for result in evaluation.applicable_activities:
+            activity = result.activity
 
-            available["children"].append(
+            applicable["children"].append(
                 {
                     "kind": "section",
-                    "label": guide.title,
-                    "field": (f"guide.{guide.name}"),
+                    "label": activity.title,
+                    "field": (f"activity.{activity.name}"),
                     "children": [],
                 }
             )
 
         #
-        # Rejected transforms.
+        # Rejected activities.
         #
-        # These are not materialized into
-        # _guide, so they remain structural.
+        # These are intentionally not
+        # materialized into the activity
+        # namespace, so they remain
+        # structural.
         #
-        for result in evaluation.rejected_guides:
-            unavailable["children"].append(
+        for result in evaluation.rejected_activities:
+            rejected["children"].append(
                 {
                     "kind": "section",
-                    "label": result.guide.title,
+                    "label": result.activity.title,
                     "children": [],
                 }
             )
 
         tree["children"].extend(
             [
-                available,
-                unavailable,
+                applicable,
+                rejected,
             ]
         )
 
-    row["_guide_workflows"] = tree
+    row["_activity_status"] = tree
 
     return row
 
 
-def materialize_guide_reasoning_tree(
+def materialize_activity_reasoning_tree(
     row,
 ):
     """
-    Materialize guide applicability
+    Materialize activity applicability
     reasoning.
 
     Each RequirementResult is exposed
-    through the semantic guide object
+    through the semantic activity object
     namespace. The requirement node is
     structural; its children resolve the
     RequirementResult properties.
     """
 
     evaluation = row.get(
-        "_guide_eval",
+        "_activity_eval",
     )
 
     tree = {
         "kind": "section",
-        "label": "Guide Reasoning",
+        "label": "Activity Reasoning",
         "children": [],
     }
 
     if evaluation is not None:
-        for result in evaluation.all_guides:
-            guide = result.guide
+        for result in evaluation.all_activities:
+            activity = result.activity
 
-            guide_node = {
+            activity_node = {
                 "kind": "section",
-                "label": guide.title,
+                "label": activity.title,
                 "children": [],
             }
 
             for i, requirement in enumerate(
                 result.requirement_results,
             ):
-                prefix = f"guide.{guide.name}.requirement.{i}"
+                prefix = f"activity.{activity.name}.requirement.{i}"
 
-                guide_node["children"].append(
+                activity_node["children"].append(
                     {
                         "kind": "section",
                         "label": (requirement.requirement.variable),
@@ -415,25 +444,26 @@ def materialize_guide_reasoning_tree(
                 )
 
             tree["children"].append(
-                guide_node,
+                activity_node,
             )
 
-    row["_guide_reasoning"] = tree
+    row["_activity_reasoning"] = tree
 
     return row
 
 
-def materialize_guide_variable_tree(
+def materialize_activity_variable_tree(
     row,
 ):
     """
     Materialize the semantic variables
-    consumed during guide evaluation.
+    consumed during activity
+    evaluation.
     """
 
     variables = (
         row.get(
-            "_guide",
+            "_activity",
             {},
         )
         .get(
@@ -448,7 +478,7 @@ def materialize_guide_variable_tree(
 
     tree = {
         "kind": "section",
-        "label": "Guide Variables",
+        "label": "Activity Variables",
         "children": [],
     }
 
@@ -461,63 +491,80 @@ def materialize_guide_variable_tree(
             }
         )
 
-    row["_guide_variables"] = tree
+    row["_activity_variables"] = tree
 
     return row
 
 
-def materialize_guide_diagnostic_tree(
+def materialize_activity_diagnostic_tree(
     row,
 ):
     """
-    Materialize guide diagnostics.
+    Materialize activity diagnostics.
 
     Diagnostic values are resolved from
-    the semantic guide namespace.
+    the semantic activity namespace.
     """
 
     tree = {
         "kind": "section",
-        "label": "Guide Diagnostics",
+        "label": "Activity Diagnostics",
         "children": [
             {
                 "kind": "section",
                 "label": "Applicable",
-                "field": ("guide.summary.applicable_count"),
+                "field": ("activity.summary.applicable_count"),
                 "children": [],
             },
             {
                 "kind": "section",
                 "label": "Rejected",
-                "field": ("guide.summary.rejected_count"),
+                "field": ("activity.summary.rejected_count"),
                 "children": [],
             },
             {
                 "kind": "section",
                 "label": "Variables",
-                "field": ("guide.summary.required_variable_count"),
+                "field": ("activity.summary.required_variable_count"),
                 "children": [],
             },
         ],
     }
 
-    row["_guide_diagnostics"] = tree
+    row["_activity_diagnostics"] = tree
 
     return row
 
 
-def materialize_guide_trees(
+def materialize_activity_trees(
     row,
 ):
     """
-    Materialize every guide tree.
+    Materialize every activity tree.
     """
 
-    row = materialize_guide_suggestion_tree(row)
-    row = materialize_guide_detail_tree(row)
-    row = materialize_guide_workflow_tree(row)
-    row = materialize_guide_reasoning_tree(row)
-    row = materialize_guide_variable_tree(row)
-    row = materialize_guide_diagnostic_tree(row)
+    row = materialize_activity_suggestion_tree(
+        row,
+    )
+
+    row = materialize_activity_detail_tree(
+        row,
+    )
+
+    row = materialize_activity_status_tree(
+        row,
+    )
+
+    row = materialize_activity_reasoning_tree(
+        row,
+    )
+
+    row = materialize_activity_variable_tree(
+        row,
+    )
+
+    row = materialize_activity_diagnostic_tree(
+        row,
+    )
 
     return row

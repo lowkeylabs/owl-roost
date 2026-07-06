@@ -316,26 +316,26 @@ def build_workspace_rows(
 
 
 # =========================================================
-# Guide Registry
+# activity Registry
 # =========================================================
 
 
-def build_guide_rows(
-    guide_registry,
+def build_activity_rows(
+    activity_registry,
 ):
     """
     Build canonical catalog rows from
-    workflow guide ontology.
+    workflow activity ontology.
 
     Notes
     -----
-    Guide fields represent semantic
+    activity fields represent semantic
     workflow transformations available
     within the current planning context.
 
-    Guide values materialize into
+    activity values materialize into
 
-        row["_guide"]
+        row["_activity"]
 
     and participate in catalog synthesis
     exactly like workspace observations.
@@ -343,38 +343,38 @@ def build_guide_rows(
 
     rows = []
 
-    for guide in guide_registry.all():
+    for activity in activity_registry.all():
         spec = CatalogSpec(
-            field_name=f"guide.{guide.name}",
-            node_type=guide.node_type,
-            owner=guide.owner,
-            semantic_domain=guide.semantic_domain,
-            value_origin=guide.value_origin,
-            projection_kind=guide.projection_kind,
-            analytic_kind=guide.analytic_kind,
-            materialization_level=guide.materialization_level,
-            source="_guide",
-            path=guide.name,
-            description=guide.description,
+            field_name=f"activity.{activity.name}",
+            node_type=activity.node_type,
+            owner=activity.owner,
+            semantic_domain=activity.semantic_domain,
+            value_origin=activity.value_origin,
+            projection_kind=activity.projection_kind,
+            analytic_kind=activity.analytic_kind,
+            materialization_level=activity.materialization_level,
+            source="_activity",
+            path=activity.name,
+            description=activity.description,
             derived_from=list(
                 getattr(
-                    guide,
+                    activity,
                     "derived_from",
                     [],
                 )
             ),
             provenance_chain=_build_provenance(
-                stage="guide",
+                stage="activity",
                 operation=ProvenanceOperation.REGISTERED,
-                source=guide,
+                source=activity,
             ),
         )
 
         rows.append(
             build_catalog_row(
                 spec=spec,
-                layer="guide",
-                semantic_field=guide,
+                layer="activity",
+                semantic_field=activity,
             )
         )
 

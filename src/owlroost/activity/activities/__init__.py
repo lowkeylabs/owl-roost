@@ -1,21 +1,21 @@
-# src/owlroost/guide/providers/__init__.py
+# src/owlroost/activity/activities/__init__.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See LICENSE file in repository root.
 
 """
-Guide provider discovery.
+Planning activity discovery.
 
-Automatically imports every provider module
-within this package.
+Automatically imports every activity
+module within this package.
 
-Each provider should implement:
+Each module should implement:
 
     register(reg)
 
-No manual updates are required when new
-providers are added.
+No manual updates are required when
+new activity modules are added.
 """
 
 from __future__ import annotations
@@ -24,9 +24,10 @@ import importlib
 import pkgutil
 
 
-def iter_providers():
+def iter_activities():
     """
-    Yield every provider module.
+    Yield every planning activity
+    module.
     """
 
     for module_info in pkgutil.iter_modules(__path__):
@@ -37,5 +38,5 @@ def iter_providers():
 
 
 __all__ = [
-    "iter_providers",
+    "iter_activities",
 ]

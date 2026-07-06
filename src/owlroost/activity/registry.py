@@ -1,4 +1,4 @@
-# src/owlroost/guide/registry.py
+# src/owlroost/activity/registry.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -10,28 +10,29 @@ Guide registry.
 Notes
 -----
 Owns registration and evaluation of
-workflow guidance.
+planning activities.
 
-Guide providers register GuideSpec
+Activity providers register
+ActivitySpec objects.
+
+The registry evaluates those
+activities against a planning context
+and returns ActivityEvaluation
 objects.
-
-The registry evaluates those guides
-against a planning context and returns
-GuideEvaluation objects.
 
 Architectural Role
 -----------------
-GuideRegistry also serves as the
-semantic object registry for guide
+GuideRegistry serves as the semantic
+object registry for planning activity
 definitions.
 
 Semantic object lookups include:
 
-    guide.workspace.initialize.command
+    workspace.initialize.description
 
-    guide.workspace.initialize.description
+    annual_review.frequency
 
-    guide.workspace.initialize.priority
+    annual_review.display_order
 
 without requiring those properties to
 appear in the catalog.
@@ -39,20 +40,26 @@ appear in the catalog.
 
 from __future__ import annotations
 
-from owlroost.guide.engine import (
+from .engine import (
     evaluate,
+)
+from .specs import (
+    ActivitySpec,
 )
 
 
-class GuideRegistry:
+class ActivityRegistry:
     """
-    Registered workflow guides.
+    Registered planning activities.
     """
 
     def __init__(
         self,
     ):
-        self._guides = {}
+        self._activities: dict[
+            str,
+            ActivitySpec,
+        ] = {}
 
     # =====================================================
     # Registration
@@ -60,13 +67,13 @@ class GuideRegistry:
 
     def register(
         self,
-        guide,
+        activity: ActivitySpec,
     ):
         """
-        Register one workflow guide.
+        Register one planning activity.
         """
 
-        self._guides[guide.name] = guide
+        self._activities[activity.name] = activity
 
     # =====================================================
     # Enumeration
@@ -76,15 +83,16 @@ class GuideRegistry:
         self,
     ):
         """
-        Return all registered guides in
-        presentation order.
+        Return all registered
+        activities in presentation
+        order.
         """
 
         return sorted(
-            self._guides.values(),
-            key=lambda guide: (
-                guide.priority,
-                guide.title.lower(),
+            self._activities.values(),
+            key=lambda activity: (
+                activity.display_order,
+                activity.title.lower(),
             ),
         )
 
@@ -97,7 +105,8 @@ class GuideRegistry:
         name,
     ):
         """
-        Return one registered GuideSpec.
+        Return one registered
+        ActivitySpec.
 
         This method establishes the
         generic semantic-object lookup
@@ -105,7 +114,7 @@ class GuideRegistry:
         will eventually implement.
         """
 
-        return self._guides.get(
+        return self._activities.get(
             name,
         )
 
@@ -118,7 +127,8 @@ class GuideRegistry:
         name,
     ):
         """
-        Return one registered guide.
+        Return one registered
+        activity.
         """
 
         return self.get_object(
@@ -130,10 +140,11 @@ class GuideRegistry:
         name,
     ):
         """
-        Return whether a guide exists.
+        Return whether an activity
+        exists.
         """
 
-        return name in self._guides
+        return name in self._activities
 
     def resolve_object_property(
         self,
@@ -142,7 +153,7 @@ class GuideRegistry:
     ):
         """
         Resolve one property of a
-        registered GuideSpec.
+        registered ActivitySpec.
 
         Examples
         --------
@@ -151,9 +162,9 @@ class GuideRegistry:
 
                 description
 
-            welcome
+            annual_review
 
-                command
+                frequency
         """
 
         obj = self.get_object(
@@ -179,8 +190,9 @@ class GuideRegistry:
         row,
     ):
         """
-        Evaluate all registered guides
-        for one planning row.
+        Evaluate all registered
+        activities for one planning
+        context.
         """
 
         return evaluate(

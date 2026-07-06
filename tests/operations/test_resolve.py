@@ -2,6 +2,10 @@
 
 from types import SimpleNamespace
 
+from owlroost.activity.materializers import (
+    materialize_activity,
+    materialize_activity_trees,
+)
 from owlroost.catalog.context import (
     build_catalog_context,
 )
@@ -9,10 +13,6 @@ from owlroost.display.operations.resolution import (
     resolve_field_description,
     resolve_field_object,
     resolve_field_value,
-)
-from owlroost.guide.materializers import (
-    materialize_guide,
-    materialize_guide_trees,
 )
 from owlroost.workspace.loaders import (
     load_context_row,
@@ -44,7 +44,7 @@ def make_fake_catalog():
         catalog_index={
             "context.case_count": {},
             "workspace.identity.name": {},
-            "guide.workspace.initialize": {},
+            "activity.workspace.initialize": {},
         },
         display_registry=DummyDisplayRegistry(),
     )
@@ -60,7 +60,7 @@ def make_fake_row():
                 "name": "Example",
             },
         },
-        "_guide": {
+        "_activity": {
             "workspace": {
                 "initialize": "roost workspace --init",
             },
@@ -110,12 +110,12 @@ def make_context():
         catalog.study_registry,
     )
 
-    row = materialize_guide(
+    row = materialize_activity(
         row,
-        catalog.guide_registry,
+        catalog.activity_registry,
     )
 
-    row = materialize_guide_trees(
+    row = materialize_activity_trees(
         row,
     )
 
@@ -227,7 +227,7 @@ def test_resolution_integration():
     assert (
         resolve_field_value(
             row,
-            "guide.workspace.initialize.command",
+            "activity.workspace.initialize",
         )
         is not None
     )
@@ -235,7 +235,7 @@ def test_resolution_integration():
     assert (
         resolve_field_description(
             row,
-            "guide.workspace.initialize.command",
+            "activity.workspace.initialize",
         )
         != ""
     )

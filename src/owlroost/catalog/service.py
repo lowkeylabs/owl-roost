@@ -31,10 +31,10 @@ from __future__ import annotations
 from copy import deepcopy
 
 from owlroost.catalog.builders import (
+    build_activity_rows,
     build_comparison_rows,
     build_display_declaration_rows,
     build_display_overlay_rows,
-    build_guide_rows,
     build_metric_rows,
     build_schema_rows,
     build_workspace_rows,
@@ -231,7 +231,7 @@ def load_catalog(
     schema_registry,
     metrics_registry,
     workspace_registry,
-    guide_registry,
+    activity_registry,
     comparison_registry,
     display_registry,
 ):
@@ -309,11 +309,11 @@ def load_catalog(
         )
 
     # =====================================================
-    # Guide Ontology
+    # Activity Ontology
     # =====================================================
 
-    for row in build_guide_rows(
-        guide_registry,
+    for row in build_activity_rows(
+        activity_registry,
     ):
         _merge_row(
             entities,

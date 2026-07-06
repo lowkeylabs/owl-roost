@@ -1,25 +1,24 @@
-# src/owlroost/guide/providers/folder_setup.py
+# src/owlroost/activity/activities/workspace_setup.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See LICENSE file in repository root.
 
 """
-Planning context workflow guides.
+Workspace setup activities.
 
 Notes
 -----
-Registers the workflow guides that
-describe how a user progresses from an
-empty planning context toward an
-initialized ROOST workspace.
+Registers the planning activities that
+establish and inspect a ROOST
+workspace.
 
-Each guide consumes semantic variables
-already materialized by the workspace
-subsystem.
+These activities represent durable
+planning milestones rather than
+individual shell operations.
 
-Provider discovery automatically imports
-this module and invokes:
+Provider discovery automatically
+imports this module and invokes:
 
     register(reg)
 """
@@ -28,6 +27,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from owlroost.activity.specs import (
+    ActivityCategory,
+    ActivityFrequency,
+    ActivitySpec,
+    Requirement,
+)
 from owlroost.catalog.ontology import (
     ONTOLOGY_DIMENSIONS,
     CatalogNodeType,
@@ -35,16 +40,12 @@ from owlroost.catalog.ontology import (
 from owlroost.core.utils import (
     normalize_module_path,
 )
-from owlroost.guide.specs import (
-    GuideSpec,
-    Requirement,
-)
 
 # =========================================================
 # Ontology
 # =========================================================
 
-GUIDE_ONTOLOGY: dict[str, Any] = dict(
+ACTIVITY_ONTOLOGY: dict[str, Any] = dict(
     owner="ROOST",
     semantic_domain="planning",
     value_origin="roost-computed",
@@ -56,49 +57,26 @@ GUIDE_ONTOLOGY: dict[str, Any] = dict(
 )
 
 # =========================================================
-# Workflow Guides
+# Activities
 # =========================================================
 
-TRANSFORMS = [
+ACTIVITIES = [
     # -----------------------------------------------------
     # Always available
     # -----------------------------------------------------
     dict(
         name="current.context",
-        title="Where am I?",
-        description="Display the current planning context.",
-        command="roost .",
-        priority=10,
-    ),
-    # -----------------------------------------------------
-    # Directory preparation
-    # -----------------------------------------------------
-    dict(
-        name="folder.create",
-        title="Create New Folder",
-        description=("Create an empty directory before starting a new ROOST workspace."),
-        command="mkdir my-study",
-        priority=20,
-        requirements=[
-            Requirement(
-                "context.workspace_suitable",
-                "==",
-                False,
-            ),
-        ],
-    ),
-    dict(
-        name="folder.change",
-        title="Change Into New Folder",
-        description=("Move into the newly created directory before initializing a workspace."),
-        command="cd my-study",
-        priority=21,
-        requirements=[
-            Requirement(
-                "context.workspace_suitable",
-                "==",
-                False,
-            ),
+        title="Review Current Context",
+        description=(
+            "Display the current planning context "
+            "and determine the next recommended "
+            "planning activities."
+        ),
+        category=ActivityCategory.WORKSPACE,
+        frequency=ActivityFrequency.EVENT,
+        display_order=10,
+        suggested_commands=[
+            "roost workspace",
         ],
     ),
     # -----------------------------------------------------
@@ -108,8 +86,12 @@ TRANSFORMS = [
         name="workspace.initialize",
         title="Initialize Workspace",
         description=("Create a planning workspace in the current directory."),
-        command="roost workspace --init",
-        priority=30,
+        category=ActivityCategory.WORKSPACE,
+        frequency=ActivityFrequency.ONCE,
+        display_order=20,
+        suggested_commands=[
+            "roost workspace --init",
+        ],
         requirements=[
             Requirement(
                 "context.workspace_initialized",
@@ -137,11 +119,18 @@ TRANSFORMS = [
         ],
     ),
     dict(
-        name="workspace.view",
+        name="workspace.review",
         title="Review Workspace",
-        description="Inspect the initialized workspace.",
-        command="roost workspace .",
-        priority=40,
+        description=("Inspect the workspace structure and planning status."),
+        category=ActivityCategory.WORKSPACE,
+        frequency=ActivityFrequency.EVENT,
+        display_order=30,
+        suggested_commands=[
+            "roost workspace",
+        ],
+        prerequisite_activities=[
+            "workspace.initialize",
+        ],
         requirements=[
             Requirement(
                 "context.workspace_initialized",
@@ -151,14 +140,21 @@ TRANSFORMS = [
         ],
     ),
     # -----------------------------------------------------
-    # Case workflow
+    # Household inventory
     # -----------------------------------------------------
     dict(
-        name="cases.review",
-        title="Review Cases",
-        description="Review available planning cases.",
-        command="roost cases",
-        priority=50,
+        name="households.review",
+        title="Review Households",
+        description=("Review the households available for planning within the current workspace."),
+        category=ActivityCategory.HOUSEHOLD,
+        frequency=ActivityFrequency.EVENT,
+        display_order=40,
+        suggested_commands=[
+            "roost cases",
+        ],
+        prerequisite_activities=[
+            "workspace.initialize",
+        ],
         requirements=[
             Requirement(
                 "context.valid_case_count",
@@ -178,23 +174,23 @@ def register(
     reg,
 ):
     """
-    Register planning workflow guides.
+    Register planning activities.
     """
 
-    for transform in TRANSFORMS:
+    for activity in ACTIVITIES:
         ontology = dict(
-            GUIDE_ONTOLOGY,
+            ACTIVITY_ONTOLOGY,
         )
 
         for dimension in ONTOLOGY_DIMENSIONS:
             field = dimension.field_name
 
-            if field in transform:
-                ontology[field] = transform[field]
+            if field in activity:
+                ontology[field] = activity[field]
 
         reg.register(
-            GuideSpec(
-                **transform,
+            ActivitySpec(
+                **activity,
                 **ontology,
             )
         )

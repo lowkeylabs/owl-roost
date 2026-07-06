@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from owlroost.guide.materializers import materialize_guide, materialize_guide_trees
+from owlroost.activity.materializers import materialize_activity, materialize_activity_trees
 
 
 def row_lookup(
@@ -777,12 +777,12 @@ def materialize_planning_context(
     # Guide
     #
 
-    row = materialize_guide(
+    row = materialize_activity(
         row,
-        catalog.guide_registry,
+        catalog.activity_registry,
     )
 
-    row = materialize_guide_trees(
+    row = materialize_activity_trees(
         row,
     )
 

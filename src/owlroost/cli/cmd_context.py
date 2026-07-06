@@ -113,11 +113,11 @@ from owlroost.workspace.materializers import (
     default="suggestions",
     callback=parse_assist,
     help=(
-        "Append guide view(s).\n"
+        "Append activity view(s).\n"
         "Examples:\n"
         "  --assist\n"
-        "  --assist workflow\n"
-        "  --assist suggestions,workflow"
+        "  --assist status\n"
+        "  --assist suggestions,status"
     ),
 )
 def cmd_context(
@@ -233,47 +233,47 @@ def cmd_context(
     )
 
     # =====================================================
-    # Guidance
+    # Planning activities
     # =====================================================
 
-    for guide_view in assist:
+    for activity_view in assist:
         if not catalog.display_registry.has_view_for_level(
-            "guide",
-            guide_view,
+            "activity",
+            activity_view,
         ):
-            click.echo(f"Guide view not found: guide/{guide_view}")
+            click.echo("")
+            click.echo(f"View not found: activity/{activity_view}")
 
             render_available_views(
                 catalog.display_registry,
-                level="guide",
+                level="activity",
             )
 
             continue
 
         print("")
-        guide_table = materialize_view(
+        activity_table = materialize_view(
             rows=rows,
             registry=catalog.display_registry,
             catalog_index=catalog.catalog_index,
-            level="guide",
+            level="activity",
             mode="pivot",
-            view_name=guide_view,
+            view_name=activity_view,
             explain_facets=explain_facets,
             show_header=False,
         )
-
-        guide_output = render_table(
-            guide_table,
+        activity_output = render_table(
+            activity_table,
             resolve_renderer(
                 False,
                 False,
             ),
         )
 
-        if guide_output:
+        if activity_output:
             click.echo()
             click.echo(
-                guide_output,
+                activity_output,
             )
 
 

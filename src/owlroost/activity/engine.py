@@ -1,21 +1,21 @@
-# src/owlroost/guide/engine.py
+# src/owlroost/activity/engine.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See LICENSE file in repository root.
 
 """
-Guide evaluation engine.
+Planning activity evaluation engine.
 
 Notes
 -----
-Evaluates every registered workflow
-guide against the current planning
+Evaluates every registered planning
+activity against the current planning
 context.
 
-Produces a complete GuideEvaluation
+Produces an ActivityEvaluation
 describing both applicable and
-rejected guides together with
+rejected activities together with
 evaluation coverage.
 """
 
@@ -24,9 +24,10 @@ from __future__ import annotations
 from owlroost.display.operations.resolution import (
     resolve_field_value,
 )
-from owlroost.guide.specs import (
-    GuideEvaluation,
-    GuideResult,
+
+from .specs import (
+    ActivityEvaluation,
+    ActivityResult,
     RequirementResult,
 )
 
@@ -59,27 +60,38 @@ def evaluate(
     registry,
 ):
     """
-    Evaluate every registered guide.
+    Evaluate every registered activity
     """
 
-    all_guides = []
+    all_activities = []
 
-    applicable_guides = []
+    applicable_activities = []
 
-    rejected_guides = []
+    rejected_activities = []
 
     required_variables = set()
 
     # -----------------------------------------------------
-    # Evaluate every registered guide.
+    # Evaluate every registered activity.
     # -----------------------------------------------------
 
-    for guide in registry.all():
+    for activity in registry.all():
+        #
+        # Activity applicability currently
+        # reflects only semantic
+        # requirements.
+        #
+        # Future implementations will also
+        # consider prerequisite activities,
+        # required scenario families, and
+        # planning-cycle state.
+        #
+        #
         applicable = True
 
         requirement_results = []
 
-        for requirement in guide.requirements:
+        for requirement in activity.requirements:
             required_variables.add(
                 requirement.variable,
             )
@@ -94,7 +106,7 @@ def evaluate(
             )
 
             if op is None:
-                raise ValueError(f"Unknown guide operator: {requirement.operator!r}")
+                raise ValueError(f"Unknown activity operator: {requirement.operator!r}")
 
             satisfied = op(
                 actual,
@@ -112,22 +124,22 @@ def evaluate(
                 )
             )
 
-        result = GuideResult(
-            guide=guide,
+        result = ActivityResult(
+            activity=activity,
             applicable=applicable,
             requirement_results=requirement_results,
         )
 
-        all_guides.append(
+        all_activities.append(
             result,
         )
 
         if applicable:
-            applicable_guides.append(
+            applicable_activities.append(
                 result,
             )
         else:
-            rejected_guides.append(
+            rejected_activities.append(
                 result,
             )
 
@@ -135,17 +147,17 @@ def evaluate(
     # Highest-priority guides first.
     # -----------------------------------------------------
 
-    applicable_guides.sort(
+    applicable_activities.sort(
         key=lambda r: (
-            r.guide.priority,
-            r.guide.title.lower(),
+            r.activity.display_order,
+            r.activity.title.lower(),
         ),
     )
 
-    rejected_guides.sort(
+    rejected_activities.sort(
         key=lambda r: (
-            r.guide.priority,
-            r.guide.title.lower(),
+            r.activity.display_order,
+            r.activity.title.lower(),
         ),
     )
 
@@ -164,10 +176,10 @@ def evaluate(
 
     unused_variables = observed_variables - required_variables
 
-    return GuideEvaluation(
-        all_guides=all_guides,
-        applicable_guides=applicable_guides,
-        rejected_guides=rejected_guides,
+    return ActivityEvaluation(
+        all_activities=all_activities,
+        applicable_activities=applicable_activities,
+        rejected_activities=rejected_activities,
         observed_variables=observed_variables,
         required_variables=required_variables,
         unused_variables=unused_variables,

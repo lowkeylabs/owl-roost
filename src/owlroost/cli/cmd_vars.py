@@ -210,7 +210,7 @@ def cmd_vars(
         schema_registry=catalog.schema_registry,
         metrics_registry=catalog.metrics_registry,
         workspace_registry=catalog.workspace_registry,
-        guide_registry=catalog.guide_registry,
+        activity_registry=catalog.activity_registry,
         comparison_registry=catalog.comparison_registry,
         display_registry=catalog.display_registry,
         search=search_terms,

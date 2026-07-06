@@ -335,13 +335,8 @@ def sync_workspace_registry(
 # =========================================================
 
 
-# =========================================================
-# Guide Overlay Sync
-# =========================================================
-
-
-def sync_guide_registry(
-    guide_registry,
+def sync_activity_registry(
+    activity_registry,
     display_registry,
 ):
     """
@@ -349,24 +344,24 @@ def sync_guide_registry(
     registered workflow guides.
     """
 
-    for guide in guide_registry.all():
+    for activity in activity_registry.all():
         _register_field_if_missing(
-            field_name=f"guide.{guide.name}",
-            description=guide.description,
+            field_name=f"activity.{activity.name}",
+            description=activity.description,
             display_registry=display_registry,
             profiles={
                 "table": DisplayProfile(
-                    label=guide.title,
+                    label=activity.title,
                     wrap=True,
                     content_align="left",
                 ),
                 "pivot": DisplayProfile(
-                    label=guide.title,
+                    label=activity.title,
                     wrap=True,
                     content_align="left",
                 ),
             },
-            defined_in=getattr(guide, "defined_in", None),
+            defined_in=getattr(activity, "defined_in", None),
         )
 
 

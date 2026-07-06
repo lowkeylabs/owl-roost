@@ -1,13 +1,13 @@
 # tests/guide/test_engine.py
 
-from owlroost.guide.engine import (
+from owlroost.activity.engine import (
     evaluate,
 )
-from owlroost.guide.registry import (
-    GuideRegistry,
+from owlroost.activity.registry import (
+    ActivityRegistry,
 )
-from owlroost.guide.specs import (
-    GuideSpec,
+from owlroost.activity.specs import (
+    ActivitySpec,
     Requirement,
 )
 
@@ -22,12 +22,12 @@ def make_row():
 
 
 def make_registry(
-    guide,
+    activity,
 ):
-    registry = GuideRegistry()
+    registry = ActivityRegistry()
 
     registry.register(
-        guide,
+        activity,
     )
 
     return registry
@@ -36,7 +36,7 @@ def make_registry(
 def test_no_requirements_is_applicable():
     row = make_row()
 
-    guide = GuideSpec(
+    activity = ActivitySpec(
         name="x",
         title="X",
         description="",
@@ -45,19 +45,19 @@ def test_no_requirements_is_applicable():
     evaluation = evaluate(
         row=row,
         registry=make_registry(
-            guide,
+            activity,
         ),
     )
 
-    assert len(evaluation.applicable_guides) == 1
+    assert len(evaluation.applicable_activities) == 1
 
-    assert evaluation.applicable_guides[0].applicable
+    assert evaluation.applicable_activities[0].applicable
 
 
 def test_equal_requirement():
     row = make_row()
 
-    guide = GuideSpec(
+    activity = ActivitySpec(
         name="x",
         title="X",
         description="",
@@ -73,19 +73,19 @@ def test_equal_requirement():
     evaluation = evaluate(
         row=row,
         registry=make_registry(
-            guide,
+            activity,
         ),
     )
 
-    assert len(evaluation.applicable_guides) == 1
+    assert len(evaluation.applicable_activities) == 1
 
-    assert evaluation.applicable_guides[0].applicable
+    assert evaluation.applicable_activities[0].applicable
 
 
 def test_greater_than_requirement():
     row = make_row()
 
-    guide = GuideSpec(
+    activity = ActivitySpec(
         name="x",
         title="X",
         description="",
@@ -101,19 +101,19 @@ def test_greater_than_requirement():
     evaluation = evaluate(
         row=row,
         registry=make_registry(
-            guide,
+            activity,
         ),
     )
 
-    assert len(evaluation.applicable_guides) == 1
+    assert len(evaluation.applicable_activities) == 1
 
-    assert evaluation.applicable_guides[0].applicable
+    assert evaluation.applicable_activities[0].applicable
 
 
 def test_failed_requirement():
     row = make_row()
 
-    guide = GuideSpec(
+    activity = ActivitySpec(
         name="x",
         title="X",
         description="",
@@ -129,21 +129,21 @@ def test_failed_requirement():
     evaluation = evaluate(
         row=row,
         registry=make_registry(
-            guide,
+            activity,
         ),
     )
 
-    assert len(evaluation.applicable_guides) == 0
+    assert len(evaluation.applicable_activities) == 0
 
-    assert len(evaluation.rejected_guides) == 1
+    assert len(evaluation.rejected_activities) == 1
 
-    assert not (evaluation.rejected_guides[0].applicable)
+    assert not evaluation.rejected_activities[0].applicable
 
 
 def test_requirement_results_are_recorded():
     row = make_row()
 
-    guide = GuideSpec(
+    activity = ActivitySpec(
         name="x",
         title="X",
         description="",
@@ -159,11 +159,11 @@ def test_requirement_results_are_recorded():
     evaluation = evaluate(
         row=row,
         registry=make_registry(
-            guide,
+            activity,
         ),
     )
 
-    result = evaluation.applicable_guides[0]
+    result = evaluation.applicable_activities[0]
 
     assert len(result.requirement_results) == 1
 

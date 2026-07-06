@@ -476,8 +476,15 @@ def resolve_field_description(
         field_name,
     )
 
-    if obj is None or not property_path:
+    if obj is None:
         return ""
+
+    #
+    # Referring to the object itself
+    # means "describe the object".
+    #
+    if not property_path:
+        property_path = "description"
 
     describe = getattr(
         obj,

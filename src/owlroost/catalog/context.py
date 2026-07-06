@@ -31,6 +31,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from owlroost.activity.bootstrap import (
+    build_activity_registry,
+)
 from owlroost.catalog.loaders import (
     load_catalog_rows,
 )
@@ -39,9 +42,6 @@ from owlroost.comparison.bootstrap import (
 )
 from owlroost.display.bootstrap import (
     build_display_registry,
-)
-from owlroost.guide.bootstrap import (
-    build_guide_registry,
 )
 from owlroost.metrics.bootstrap import (
     build_metrics_registry,
@@ -85,7 +85,7 @@ class CatalogContext:
 
     study_registry: object
 
-    guide_registry: object
+    activity_registry: object
 
     display_registry: object
 
@@ -122,7 +122,7 @@ def build_catalog_context() -> CatalogContext:
 
     study_registry = build_study_registry()
 
-    guide_registry = build_guide_registry()
+    activity_registry = build_activity_registry()
 
     # =====================================================
     # Display Overlay Registry
@@ -132,7 +132,7 @@ def build_catalog_context() -> CatalogContext:
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
-        guide_registry=guide_registry,
+        activity_registry=activity_registry,
         comparison_registry=comparison_registry,
     )
 
@@ -144,7 +144,7 @@ def build_catalog_context() -> CatalogContext:
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
-        guide_registry=guide_registry,
+        activity_registry=activity_registry,
         comparison_registry=comparison_registry,
         display_registry=display_registry,
     )
@@ -161,7 +161,7 @@ def build_catalog_context() -> CatalogContext:
         workspace_registry=workspace_registry,
         comparison_registry=comparison_registry,
         study_registry=study_registry,
-        guide_registry=guide_registry,
+        activity_registry=activity_registry,
         display_registry=display_registry,
         catalog_rows=catalog_rows,
         catalog_index=catalog_index,

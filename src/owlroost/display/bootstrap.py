@@ -28,8 +28,8 @@ from owlroost.display.registry import (
     DisplayRegistry,
 )
 from owlroost.display.sync import (
+    sync_activity_registry,
     sync_comparison_registry,
-    sync_guide_registry,
     sync_metrics_registry,
     sync_schema_registry,
     sync_workspace_registry,
@@ -47,7 +47,7 @@ def build_display_registry(
     schema_registry,
     metrics_registry,
     workspace_registry,
-    guide_registry,
+    activity_registry,
     comparison_registry,
 ):
     """
@@ -135,8 +135,8 @@ def build_display_registry(
     # Workspace Display Overlays
     # =====================================================
 
-    sync_guide_registry(
-        guide_registry=guide_registry,
+    sync_activity_registry(
+        activity_registry=activity_registry,
         display_registry=reg,
     )
 

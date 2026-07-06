@@ -1,4 +1,4 @@
-# src/owlroost/guide/bootstrap.py
+# src/owlroost/activity/bootstrap.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -15,18 +15,18 @@ and architectural role.
 
 from __future__ import annotations
 
-from owlroost.guide.providers import (
-    iter_providers,
+from .activities import (
+    iter_activities,
 )
-from owlroost.guide.registry import (
-    GuideRegistry,
+from .registry import (
+    ActivityRegistry,
 )
 
 
-def build_guide_registry():
-    reg = GuideRegistry()
+def build_activity_registry():
+    reg = ActivityRegistry()
 
-    for provider in iter_providers():
-        provider.register(reg)
+    for activity_module in iter_activities():
+        activity_module.register(reg)
 
     return reg

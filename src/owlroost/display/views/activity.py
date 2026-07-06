@@ -1,4 +1,4 @@
-# src/owlroost/display/views/guide.py
+# src/owlroost/display/views/activity.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -34,13 +34,13 @@ def register_display_views(
 
     reg.register_view(
         DisplayView(
-            level="guide",
+            level="activity",
             name="suggestions",
             entries=[
                 # =====================================
                 # Workspace Inventory
                 # =====================================
-                ("tree", {"root": "guide_suggestions", "depth": 5}),
+                ("tree", {"root": "activity_suggestions", "depth": 5}),
             ],
             description=(
                 "Summarizes the current "
@@ -55,13 +55,13 @@ def register_display_views(
 
     reg.register_view(
         DisplayView(
-            level="guide",
+            level="activity",
             name="details",
             entries=[
                 # =====================================
                 # Workspace Inventory
                 # =====================================
-                ("tree", {"root": "guide_details", "depth": 5}),
+                ("tree", {"root": "activity_details", "depth": 5}),
             ],
             description=(
                 "Summarizes the current "
@@ -76,13 +76,13 @@ def register_display_views(
 
     reg.register_view(
         DisplayView(
-            level="guide",
-            name="workflows",
+            level="activity",
+            name="status",
             entries=[
                 # =====================================
                 # Workspace Inventory
                 # =====================================
-                ("tree", {"root": "guide_workflows", "depth": 5}),
+                ("tree", {"root": "activity_status", "depth": 5}),
             ],
             description=(
                 "Summarizes the current "
@@ -97,13 +97,13 @@ def register_display_views(
 
     reg.register_view(
         DisplayView(
-            level="guide",
+            level="activity",
             name="reasoning",
             entries=[
                 # =====================================
                 # Workspace Inventory
                 # =====================================
-                ("tree", {"root": "guide_reasoning", "depth": 99}),
+                ("tree", {"root": "activity_reasoning", "depth": 99}),
             ],
             description=(
                 "Summarizes the current "
@@ -118,13 +118,13 @@ def register_display_views(
 
     reg.register_view(
         DisplayView(
-            level="guide",
+            level="activity",
             name="variables",
             entries=[
                 # =====================================
                 # Workspace Inventory
                 # =====================================
-                ("tree", {"root": "guide_variables", "depth": 5}),
+                ("tree", {"root": "activity_variables", "depth": 5}),
             ],
             description=(
                 "Summarizes the current "
@@ -139,13 +139,13 @@ def register_display_views(
 
     reg.register_view(
         DisplayView(
-            level="guide",
+            level="activity",
             name="diagnostics",
             entries=[
                 # =====================================
                 # Workspace Inventory
                 # =====================================
-                ("tree", {"root": "guide_diagnostics", "depth": 5}),
+                ("tree", {"root": "activity_diagnostics", "depth": 5}),
             ],
             description=(
                 "Summarizes the current "
