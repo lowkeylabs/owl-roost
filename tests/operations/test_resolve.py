@@ -42,7 +42,7 @@ class DummyDisplayRegistry:
 def make_fake_catalog():
     return SimpleNamespace(
         catalog_index={
-            "context.case_count": {},
+            "context.workspace.case_count": {},
             "workspace.identity.name": {},
             "activity.workspace.initialize": {},
         },
@@ -219,7 +219,7 @@ def test_resolution_integration():
     assert isinstance(
         resolve_field_value(
             row,
-            "context.case_count",
+            "context.workspace.case_count",
         ),
         int,
     )

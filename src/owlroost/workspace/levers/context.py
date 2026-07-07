@@ -35,7 +35,11 @@ from owlroost.catalog.ontology import (
 from owlroost.core.utils import (
     normalize_module_path,
 )
+from owlroost.household.households import (
+    BUILTIN_HOUSEHOLD_LIBRARY,
+)
 from owlroost.workspace.specs import (
+    OverridePolicy,
     WorkspaceSpec,
 )
 
@@ -172,6 +176,76 @@ def _root(
     root=".",
 ) -> Path:
     return Path(root).resolve()
+
+
+# =========================================================
+# Household Libraries
+# =========================================================
+
+DEFAULT_HOUSEHOLD_LIBRARY_STRINGS = (
+    "./library/households",
+    "~/.roost/households",
+    "<builtin>",
+)
+
+
+def default_household_library_strings() -> list[str]:
+    """
+    Return the canonical configuration
+    strings used to initialize
+    workspace.toml.
+    """
+
+    return list(
+        DEFAULT_HOUSEHOLD_LIBRARY_STRINGS,
+    )
+
+
+def resolve_household_library_paths(
+    values: list[str],
+    root=".",
+) -> list[Path]:
+    """
+    Resolve configured household
+    library strings into filesystem
+    paths.
+    """
+
+    root = _root(root)
+
+    paths: list[Path] = []
+
+    for value in values:
+        if value == "<builtin>":
+            paths.append(
+                BUILTIN_HOUSEHOLD_LIBRARY,
+            )
+
+        elif value.startswith("~/"):
+            paths.append(
+                Path(value).expanduser(),
+            )
+
+        else:
+            paths.append(
+                (root / value).resolve(),
+            )
+
+    return paths
+
+
+def default_household_library_paths(
+    root=".",
+) -> list[Path]:
+    """
+    Return the default household
+    library search paths.
+    """
+
+    return resolve_household_library_paths(
+        default_household_library_strings(),
+        root,
+    )
 
 
 # =========================================================
@@ -569,10 +643,104 @@ def workspace_child_count(
     This intentionally does
     not recurse.
     """
-
     return characterize_filesystem(
         root,
     )["workspace_child_count"]
+
+
+def context_name(
+    root=".",
+    value: str | None = None,
+) -> str:
+    if value is None:
+        value = _root(root).name
+
+    return value
+
+
+def context_title(
+    root=".",
+    value: str | None = None,
+) -> str:
+    if value is None:
+        value = _root(root).name
+
+    return value
+
+
+def context_description(
+    root=".",
+    value: str | None = None,
+) -> str:
+    if value is None:
+        value = _root(root).name
+
+    return value
+
+
+def context_results_path(
+    root=".",
+    value: str | None = None,
+) -> Path:
+    if value is None:
+        value = "./results"
+
+    return (_root(root) / value).resolve()
+
+
+def context_cases_path(
+    root=".",
+    value: str | None = None,
+) -> Path:
+    if value is None:
+        value = "."
+
+    return (_root(root) / value).resolve()
+
+
+def context_workspace_path(
+    root=".",
+) -> Path:
+    return _root(root)
+
+
+# =========================================================
+# Search Paths
+# =========================================================
+
+
+def household_library_paths(
+    root=".",
+    values: list[str] | None = None,
+) -> list[Path]:
+    """
+    Return the effective household
+    library search path.
+
+    Parameters
+    ----------
+    root
+        Planning context root.
+
+    values
+        Household library search policy.
+        If omitted, the canonical default
+        search policy is used.
+
+    Returns
+    -------
+    list[Path]
+        Fully resolved household
+        library search paths.
+    """
+
+    if values is None:
+        values = default_household_library_strings()
+
+    return resolve_household_library_paths(
+        values,
+        root,
+    )
 
 
 # =========================================================
@@ -624,7 +792,7 @@ LEVERS = [
     # Context identity
     # -----------------------------------------------------
     dict(
-        name="directory_name",
+        name="workspace.directory_name",
         dtype=str,
         compute_fn=directory_name,
         description="Current planning context directory name.",
@@ -633,13 +801,13 @@ LEVERS = [
     # Case inventory
     # -----------------------------------------------------
     dict(
-        name="case_count",
+        name="workspace.case_count",
         dtype=int,
         compute_fn=case_count,
         description="Count of OWL case files in the current planning context.",
     ),
     dict(
-        name="valid_case_count",
+        name="workspace.valid_case_count",
         dtype=int,
         compute_fn=valid_case_count,
         description="Count of loadable OWL case files in the current planning context.",
@@ -648,22 +816,32 @@ LEVERS = [
     # Workspace inventory
     # -----------------------------------------------------
     dict(
-        name="workspace_initialized",
+        name="workspace.initialized",
         dtype=bool,
         compute_fn=workspace_initialized,
         description="Current directory is an initialized workspace.",
     ),
     dict(
-        name="workspace_parent_count",
+        name="workspace.parent_count",
         dtype=int,
         compute_fn=workspace_parent_count,
         description="Number of parent workspaces above current subdirectory.",
     ),
     dict(
-        name="workspace_child_count",
+        name="workspace.child_count",
         dtype=int,
         compute_fn=workspace_child_count,
         description="Number of immediate child workspaces.",
+    ),
+    #
+    # Household Libraries
+    #
+    dict(
+        name="paths.households",
+        dtype=list[Path],
+        compute_fn=household_library_paths,
+        override_policy=OverridePolicy.RECOMPUTE,
+        description=("Ordered search path for canonical household libraries."),
     ),
     # -----------------------------------------------------
     # Workflow readiness
@@ -695,6 +873,47 @@ LEVERS = [
         compute_fn=directory_kind,
         description="Semantic classification of the current directory.",
     ),
+    dict(
+        name="identity.name",
+        dtype=str,
+        compute_fn=context_name,
+        override_policy=OverridePolicy.NEVER,
+        description=("Canonical name of the current planning context."),
+    ),
+    dict(
+        name="identity.title",
+        dtype=str,
+        compute_fn=context_title,
+        override_policy=OverridePolicy.RECOMPUTE,
+        description=("Human-readable title of the current planning context."),
+    ),
+    dict(
+        name="identity.description",
+        dtype=str,
+        compute_fn=context_description,
+        override_policy=OverridePolicy.RECOMPUTE,
+        description=("Descriptive summary of the current planning context."),
+    ),
+    dict(
+        name="paths.workspace",
+        dtype=Path,
+        compute_fn=context_workspace_path,
+        description=("Absolute path to the current planning context root."),
+    ),
+    dict(
+        name="paths.cases",
+        dtype=Path,
+        compute_fn=context_cases_path,
+        override_policy=OverridePolicy.RECOMPUTE,
+        description=("Absolute path to the directory containing household case files."),
+    ),
+    dict(
+        name="paths.results",
+        dtype=Path,
+        compute_fn=context_results_path,
+        override_policy=OverridePolicy.RECOMPUTE,
+        description=("Absolute path to the directory used for generated planning results."),
+    ),
 ]
 
 # =========================================================
@@ -703,14 +922,21 @@ LEVERS = [
 
 
 def make_compute_fn(fn):
-    """
-    Adapt a filesystem characterization
-    function into a workspace lever.
-    """
+    def compute(
+        row,
+        override=None,
+    ):
+        root = row["_path"]
 
-    return lambda row: fn(
-        row["_path"],
-    )
+        if override is None:
+            return fn(root)
+
+        return fn(
+            root,
+            override,
+        )
+
+    return compute
 
 
 def register_levers(
@@ -736,6 +962,10 @@ def register_levers(
                 name=f"context.{lever['name']}",
                 dtype=lever["dtype"],
                 compute_fn=make_compute_fn(lever["compute_fn"]),
+                override_policy=lever.get(
+                    "override_policy",
+                    OverridePolicy.NEVER,
+                ),
                 description=lever["description"],
                 **ontology,
             )

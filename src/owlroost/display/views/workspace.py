@@ -77,8 +77,8 @@ def register_display_views(
                 # =====================================
                 # Identity
                 # =====================================
-                "context.directory_name",
-                "context.workspace_initialized",
+                "context.workspace.directory_name",
+                "context.workspace.initialized",
             ],
             description=("Summary view of workspace status"),
             **SHARED_VIEW_ONTOLOGY,

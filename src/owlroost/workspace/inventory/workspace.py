@@ -68,32 +68,7 @@ WORKSPACE_VARIABLE: dict[str, Any] = dict(
 # Inventory Definitions
 # =========================================================
 
-WORKSPACE_FIELDS: list[tuple[str, str]] = [
-    (
-        "workspace.identity.name",
-        "Workspace name.",
-    ),
-    (
-        "workspace.identity.title",
-        "Workspace title.",
-    ),
-    (
-        "workspace.identity.description",
-        "Workspace description.",
-    ),
-    (
-        "workspace.paths.workspace",
-        "Absolute path to the workspace.",
-    ),
-    (
-        "workspace.paths.cases",
-        "Absolute path to the cases directory.",
-    ),
-    (
-        "workspace.paths.results",
-        "Absolute path to the results directory.",
-    ),
-]
+WORKSPACE_FIELDS: list[tuple[str, str]] = []
 
 # =========================================================
 # Registration

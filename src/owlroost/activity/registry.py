@@ -71,6 +71,9 @@ class ActivityRegistry:
         Register one planning activity.
         """
 
+        if activity.name in self._activities:
+            raise ValueError(f"Duplicate activity: {activity.name}")
+
         self._activities[activity.name] = activity
 
     # =====================================================
@@ -223,6 +226,48 @@ class ActivityRegistry:
             for activity in self.activities()
             if activity_name in activity.prerequisite_activities
         ]
+
+    def validate(
+        self,
+        *,
+        catalog,
+    ) -> None:
+        """
+        Validate registered planning
+        activities against the semantic
+        catalog.
+
+        Raises
+        ------
+        ValueError
+            Invalid activity definition.
+        """
+
+        #
+        # Duplicate names are already
+        # prevented by register().
+        #
+
+        for activity in self.activities():
+            #
+            # Requirements
+            #
+
+            for requirement in activity.requirements:
+                if requirement.variable not in catalog.catalog_index:
+                    raise ValueError(
+                        f"{activity.name}: unknown semantic variable {requirement.variable!r}"
+                    )
+
+            #
+            # Prerequisite activities
+            #
+
+            for prerequisite in activity.prerequisite_activities:
+                if prerequisite not in self._activities:
+                    raise ValueError(
+                        f"{activity.name}: unknown prerequisite activity {prerequisite!r}"
+                    )
 
     @property
     def names(self) -> list[str]:

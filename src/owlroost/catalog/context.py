@@ -155,7 +155,7 @@ def build_catalog_context() -> CatalogContext:
     # Context
     # =====================================================
 
-    return CatalogContext(
+    context = CatalogContext(
         schema_registry=schema_registry,
         metrics_registry=metrics_registry,
         workspace_registry=workspace_registry,
@@ -166,3 +166,9 @@ def build_catalog_context() -> CatalogContext:
         catalog_rows=catalog_rows,
         catalog_index=catalog_index,
     )
+
+    activity_registry.validate(
+        catalog=context,
+    )
+
+    return context

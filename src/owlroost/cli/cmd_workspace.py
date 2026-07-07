@@ -229,12 +229,14 @@ def cmd_workspace(
         return
 
     if init:
-        if not ignore and not resolve(
-            "context.can_initialize_workspace",
+        if (
+            resolve(
+                "context.workspace_initialized",
+            )
+            and not force
         ):
             raise click.ClickException(
-                "Current directory cannot be initialized as a workspace. "
-                "Use --ignore to initialize anyway."
+                "Current directory is already a workspace. Use --force to reinitialize."
             )
 
         workspace_dir = init_workspace(

@@ -83,3 +83,6 @@ def cmd_vals(
             print(value)
         except Exception as e:
             print(str(e))
+
+
+#    pprint(planning_context["_context"]["paths"])

@@ -18,6 +18,62 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from owlroost.activity.materializers import materialize_activity, materialize_activity_trees
+from owlroost.workspace.specs import (
+    OverridePolicy,
+)
+
+# =========================================================
+# Generic, nested lookup
+# =========================================================
+
+_MISSING = object()
+
+
+def resolve_nested_value(
+    mapping,
+    parts,
+    default=_MISSING,
+):
+    """
+    Resolve a nested dictionary value.
+
+    Parameters
+    ----------
+    mapping
+        Root mapping.
+
+    parts
+        Sequence of path components.
+
+    default
+        Returned when any component
+        is absent.
+
+    Returns
+    -------
+    object
+    """
+
+    value = mapping
+
+    for part in parts:
+        if not isinstance(
+            value,
+            dict,
+        ):
+            return default
+
+        if part not in value:
+            return default
+
+        value = value[part]
+
+    return value
+
+
+# =========================================================
+# row lookups
+# =========================================================
 
 
 def row_lookup(
@@ -41,18 +97,14 @@ def row_lookup(
     root_name = f"_{namespace}"
 
     def compute_fn(row):
-        value = row.get(root_name, {})
-
-        for part in path_parts:
-            if not isinstance(value, dict):
-                return None
-
-            value = value.get(part)
-
-            if value is None:
-                return None
-
-        return value
+        return resolve_nested_value(
+            row.get(
+                root_name,
+                {},
+            ),
+            path_parts,
+            default=None,
+        )
 
     return compute_fn
 
@@ -64,12 +116,8 @@ def row_value(
     """
     Resolve a materialized row value.
 
-    The first component of the field name
-    selects the row namespace.
-
     Examples
     --------
-
     context.has_results
 
         -> row["_context"]["has_results"]
@@ -81,21 +129,14 @@ def row_value(
 
     namespace, *parts = field_name.split(".")
 
-    value = row.get(
-        f"_{namespace}",
-        {},
+    return resolve_nested_value(
+        row.get(
+            f"_{namespace}",
+            {},
+        ),
+        parts,
+        default=None,
     )
-
-    for part in parts:
-        if not isinstance(value, dict):
-            return None
-
-        value = value.get(part)
-
-        if value is None:
-            return None
-
-    return value
 
 
 # =========================================================
@@ -138,6 +179,59 @@ def _set_row_value(
         )
 
     current[parts[-1]] = value
+
+
+def apply_configuration_override(
+    row,
+    field,
+    value,
+):
+    """
+    Apply persisted workspace
+    configuration to a computed
+    semantic observation.
+    """
+
+    if field.override_policy is OverridePolicy.NEVER:
+        return value
+
+    workspace = row.get(
+        "_workspace",
+    )
+
+    if workspace is None:
+        return value
+
+    definition = workspace.get(
+        "definition",
+        {},
+    )
+
+    override = resolve_nested_value(
+        definition,
+        field.name.split("."),
+    )
+
+    if override is _MISSING:
+        return value
+
+    #
+    # Replace the computed semantic value.
+    #
+    if field.override_policy is OverridePolicy.REPLACE:
+        return override
+
+    #
+    # Recompute the semantic value from
+    # the configured override.
+    #
+    if field.override_policy is OverridePolicy.RECOMPUTE:
+        return field.compute_fn(
+            row,
+            override,
+        )
+
+    return value
 
 
 def materialize_context(
@@ -185,6 +279,12 @@ def materialize_context(
 
         except Exception:
             continue
+
+        value = apply_configuration_override(
+            row,
+            field,
+            value,
+        )
 
         _set_row_value(
             row,

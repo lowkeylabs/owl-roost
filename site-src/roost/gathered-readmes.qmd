@@ -10,7 +10,7 @@ title: ""
 
 {{< include ../../src/owlroost/workspace/README.md >}}
 
-{{< include ../../src/owlroost/guide/README.md >}}
+{{< include ../../src/owlroost/activity/README.md >}}
 
 {{< include ../../src/owlroost/study/README.md >}}
 
@@ -18,6 +18,6 @@ title: ""
 
 {{< include ../../src/owlroost/display/README.md >}}
 
-{{< include ../../src/owlroost/hydra/README.md >}}
+{{< include ../../src/owlroost/executive/README.md >}}
 
 {{< include ../../src/owlroost/household/README.md >}}

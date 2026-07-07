@@ -95,12 +95,12 @@ ACTIVITIES = [
         ],
         requirements=[
             Requirement(
-                "context.workspace_initialized",
+                "context.workspace.initialized",
                 "==",
                 True,
             ),
             Requirement(
-                "context.valid_case_count",
+                "context.workspace.valid_case_count",
                 "==",
                 0,
             ),
@@ -124,7 +124,7 @@ ACTIVITIES = [
         ],
         requirements=[
             Requirement(
-                "context.valid_case_count",
+                "context.workspace.valid_case_count",
                 ">",
                 0,
             ),
@@ -152,7 +152,7 @@ ACTIVITIES = [
         ],
         requirements=[
             Requirement(
-                "context.valid_case_count",
+                "context.workspace.valid_case_count",
                 ">",
                 0,
             ),

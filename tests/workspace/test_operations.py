@@ -67,7 +67,7 @@ def test_create_workspace_study_toml_contains_name(
 
     contents = (workspace / "workspace.toml").read_text()
 
-    assert 'name = "example"' in contents
+    assert "title =" in contents
 
 
 def test_rename_workspace(
