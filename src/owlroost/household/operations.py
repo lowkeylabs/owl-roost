@@ -44,6 +44,7 @@ Future revisions may support:
 
 from __future__ import annotations
 
+import importlib.util
 import re
 import shutil
 from pathlib import Path
@@ -134,6 +135,41 @@ def household_name_from_case(
     )
 
     return name.strip("-")
+
+
+def household_plan(
+    household: HouseholdSpec,
+):
+    """
+    Construct the OWL Plan represented by
+    a Household Project.
+
+    Executable households take precedence
+    over serialized households.
+    """
+
+    if household.household_file.is_file():
+        spec = importlib.util.spec_from_file_location(
+            household.id,
+            household.household_file,
+        )
+
+        assert spec is not None
+        assert spec.loader is not None
+
+        module = importlib.util.module_from_spec(
+            spec,
+        )
+
+        spec.loader.exec_module(
+            module,
+        )
+
+        return module.create_plan()
+
+    return resolve_household(
+        household.case_file,
+    )
 
 
 # =========================================================
@@ -476,7 +512,7 @@ def export_case(
     # Canonical destination names.
     #
 
-    case_file = destination / f"case_{household.id}.toml"
+    case_file = destination / f"Case_{household.id}.toml"
 
     hfp_file = destination / f"HFP_{household.id}.xlsx"
 
@@ -501,9 +537,12 @@ def export_case(
     # Construct the OWL Plan.
     #
 
-    plan = resolve_household(
-        household.case_file,
+    plan = household_plan(
+        household,
     )
+
+    # expensive - this runs OWL LP!
+    # plan.resolve()
 
     #
     # Save canonical workspace artifacts.

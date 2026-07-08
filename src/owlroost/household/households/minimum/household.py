@@ -38,6 +38,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import owlplanner as owl
+
+from owlroost.workspace.owl_utils import (
+    save_household,
+)
+
 
 def create_plan() -> Any:
     """
@@ -56,39 +62,29 @@ def create_plan() -> Any:
         Placeholder for an OWL Plan.
     """
 
-    return None
+    plan = owl.Plan(["Peter", "Wendy"], ["1962-01-15", "1965-01-16"], [89, 92], "minimum")
 
+    plan.setAccountBalances(
+        taxable=[90.5, 60],
+        taxDeferred=[600.2, 150],
+        taxFree=[50 + 20.6, 40.8],
+        startDate="01-01",
+    )
 
-def write_household(
-    plan: Any,
-    directory: Path = Path("."),
-) -> None:
-    """
-    Write household artifacts.
+    plan.setAllocationRatios(
+        "account",
+        taxable=[[[60, 40, 0, 0], [70, 30, 0, 0]], [[60, 40, 0, 0], [80, 20, 0, 0]]],
+        taxDeferred=[[[60, 40, 0, 0], [70, 30, 0, 0]], [[60, 40, 0, 0], [70, 30, 0, 0]]],
+        taxFree=[[[100, 0, 0, 0], [100, 0, 0, 0]], [[50, 50, 0, 0], [60, 40, 0, 0]]],
+    )
 
-    Parameters
-    ----------
-    plan
-        Household Plan returned by
-        ``create_plan()``.
+    plan.setSpendingProfile("flat")
+    plan.setRates("conservative")
 
-    directory
-        Destination directory.
+    options = {"bequest": 0}
+    plan.solve("maxSpending", options=options)
 
-    Notes
-    -----
-    Future revisions will serialize one
-    or more household artifacts including:
-
-    * case.toml
-    * HFP.xlsx
-
-    The minimum household intentionally
-    provides only a placeholder
-    implementation.
-    """
-
-    raise RuntimeError("write_household() has not yet been implemented.")
+    return plan
 
 
 def main() -> None:
@@ -105,8 +101,20 @@ def main() -> None:
 
     plan = create_plan()
 
-    write_household(
+    plan.resolve()
+
+    destination = Path(".").resolve()
+    id = destination.parent.name
+
+    case_file = destination / f"case_{id}.toml"
+
+    hfp_file = destination / f"hfp_{id}.xlsx"
+
+    save_household(
         plan,
+        destination,
+        case_file=case_file.name,
+        hfp_file=hfp_file.name,
     )
 
 

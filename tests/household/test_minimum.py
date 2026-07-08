@@ -23,8 +23,6 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-import pytest
-
 
 def load_household_module(
     household_file: Path,
@@ -141,11 +139,6 @@ def test_minimum_household_exports_required_functions(
 
     assert hasattr(
         module,
-        "write_household",
-    )
-
-    assert hasattr(
-        module,
         "main",
     )
 
@@ -174,30 +167,7 @@ def test_minimum_create_plan(
     # Placeholder implementation.
     #
 
-    assert plan is None
-
-
-def test_minimum_write_household_not_implemented(
-    registry,
-):
-    """
-    Placeholder implementation raises.
-    """
-
-    spec = registry.get_household(
-        "builtin/minimum",
-    )
-
-    module = load_household_module(
-        spec.household_file,
-    )
-
-    with pytest.raises(
-        RuntimeError,
-    ):
-        module.write_household(
-            None,
-        )
+    assert plan is not None
 
 
 def test_minimum_household_artifacts(
