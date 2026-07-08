@@ -10,16 +10,19 @@ REPO_URL = "https://github.com/mdlacasse/Owl.git"
 DEPENDENCY_PREFIX = "owlplanner @ git+https://github.com/mdlacasse/Owl.git@"
 
 
-def get_latest_commit():
-    """Return latest commit SHA from GitHub repo."""
+def get_latest_commit(branch="main"):
     result = subprocess.run(
-        ["git", "ls-remote", REPO_URL, "HEAD"],
+        [
+            "git",
+            "ls-remote",
+            REPO_URL,
+            f"refs/heads/{branch}",
+        ],
         capture_output=True,
         text=True,
         check=True,
     )
-    sha = result.stdout.split()[0]
-    return sha
+    return result.stdout.split()[0]
 
 
 def update_pyproject(pyproject_path: Path, new_sha: str, dry_run=False):
@@ -55,6 +58,11 @@ def main():
         "--pyproject",
         default="pyproject.toml",
         help="Path to pyproject.toml",
+    )
+    parser.add_argument(
+        "--branch",
+        default="main",
+        help="OWL branch to track",
     )
     parser.add_argument(
         "--dry-run",

@@ -116,10 +116,7 @@ def load_household_manifest(
     except tomllib.TOMLDecodeError as exc:
         raise ValueError(f"Invalid TOML: {manifest}") from exc
 
-    required_fields = (
-        "id",
-        "title",
-    )
+    required_fields = ("title",)
 
     missing_fields = [field for field in required_fields if field not in data]
 
@@ -139,15 +136,9 @@ def load_household_manifest(
     if manifest_version != CURRENT_MANIFEST_VERSION:
         raise ValueError(f"{manifest}: unsupported manifest_version {manifest_version}")
 
-    household_id = data["id"]
+    household_id = project_dir.resolve().name
 
     title = data["title"]
-
-    if not isinstance(
-        household_id,
-        str,
-    ):
-        raise ValueError(f"{manifest}: 'id' must be a string.")
 
     if not isinstance(
         title,

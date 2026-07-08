@@ -104,11 +104,14 @@ def load_household(
     # Construct Plan.
     #
 
-    return config_to_plan(
+    plan = config_to_plan(
         diconf,
         dirname=dirname,
         logstreams=logstreams,
+        loadHFP=True,
     )
+
+    return plan
 
 
 def validate_household(
@@ -183,3 +186,121 @@ def resolve_household(
     plan.resolve()
 
     return plan
+
+
+def save_household(
+    plan,
+    output_dir,
+):
+    """
+    Write a resolved household
+    into a household library.
+
+    Parameters
+    ----------
+    plan
+        OWL Plan.
+
+    output_dir
+        Destination directory.
+
+    Returns
+    -------
+    pathlib.Path
+        Output directory.
+    """
+
+    output_dir = Path(
+        output_dir,
+    ).resolve()
+
+    output_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    #
+    # Save household TOML.
+    #
+
+    plan.saveConfig(
+        str(
+            output_dir / "household.toml",
+        )
+    )
+
+    #
+    # Save resolved HFP.
+    #
+
+    plan.saveHFP(
+        str(
+            output_dir / "household.xlsx",
+        )
+    )
+
+    return output_dir
+
+
+def resolve_and_save_household(
+    toml_file,
+    output_dir,
+):
+    """
+    Resolve a household and
+    write the resulting
+    household library entry.
+
+    Parameters
+    ----------
+    toml_file
+        Household TOML.
+
+    output_dir
+        Destination directory.
+
+    Returns
+    -------
+    owlplanner.Plan
+    """
+
+    plan = resolve_household(
+        toml_file,
+    )
+
+    save_household(
+        plan,
+        output_dir,
+    )
+
+    return plan
+
+
+def save_resolved_household(
+    plan,
+    output_dir,
+):
+    """
+    Resolve and save an
+    existing OWL Plan.
+
+    Parameters
+    ----------
+    plan
+        OWL Plan.
+
+    output_dir
+        Destination directory.
+
+    Returns
+    -------
+    pathlib.Path
+        Output directory.
+    """
+
+    plan.resolve()
+
+    return save_household(
+        plan,
+        output_dir,
+    )

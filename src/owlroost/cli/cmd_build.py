@@ -312,6 +312,14 @@ def run_hydra_build(
     ),
     help=("Folder containing case*.toml and HFP_*.xlsx files."),
 )
+@click.option(
+    "--import-to",
+    default=None,
+    metavar="LIBRARY",
+    help=(
+        "Import selected cases into the named household library (workspace, user, builtin, ...)."
+    ),
+)
 def cmd_build(
     ctx,
     args,
@@ -328,6 +336,7 @@ def cmd_build(
     progress,
     run,
     case_folder,
+    import_to,
 ):
     """
     Display available cases and build sessions.
@@ -486,6 +495,38 @@ def cmd_build(
             selectors,
         )
 
+    selected_rows = rows
+
+    if not selected_rows:
+        raise click.ClickException("No matching case selections.")
+
+    # ----------------------------------------
+    # Process any imports
+    # ----------------------------------------
+
+    if is_cases_command and import_to is not None:
+        from owlroost.household.bootstrap import (
+            household_library,
+        )
+        from owlroost.household.operations import (
+            import_case,
+        )
+
+        library = household_library(
+            import_to,
+            root=case_folder,
+        )
+
+        for row in selected_rows:
+            import_case(
+                case_file=Path(
+                    row["_path"],
+                ),
+                library=library,
+            )
+
+        return
+
     # ----------------------------------------
     # Resolve renderer
     # ----------------------------------------
@@ -563,12 +604,8 @@ def cmd_build(
         return
 
     # ----------------------------------------
-    # Resolve selected case
+    # Process selected rows
     # ----------------------------------------
-    selected_rows = rows
-
-    if not selected_rows:
-        raise click.ClickException("No matching case selections.")
 
     labels = []
 

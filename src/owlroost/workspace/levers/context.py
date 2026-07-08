@@ -242,7 +242,7 @@ def resolve_household_libraries(
 
         if location == "<builtin>":
             library_root = BUILTIN_HOUSEHOLD_LIBRARY
-            read_only = True
+            read_only = False
 
         elif location.startswith(
             "~/",

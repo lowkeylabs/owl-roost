@@ -44,12 +44,17 @@ Future revisions may support:
 
 from __future__ import annotations
 
+import re
 import shutil
 from pathlib import Path
 
 from owlroost.household.specs import (
     HouseholdLibrarySpec,
     HouseholdSpec,
+)
+from owlroost.workspace.owl_utils import (
+    resolve_household,
+    save_household,
 )
 
 # =========================================================
@@ -67,6 +72,128 @@ def household_root(
     """
 
     return library.root / name
+
+
+def household_name_from_case(
+    case_file: Path,
+) -> str:
+    """
+    Return the canonical household
+    project name derived from a
+    ROOST case filename.
+
+    Parameters
+    ----------
+    case_file
+        ROOST case TOML.
+
+    Returns
+    -------
+    str
+    """
+
+    name = Path(case_file).stem
+
+    #
+    # Strip the conventional prefix.
+    #
+
+    if name.lower().startswith(
+        "case_",
+    ):
+        name = name[5:]
+
+    #
+    # Canonical filesystem name.
+    #
+
+    name = name.lower()
+
+    name = name.replace(
+        "+",
+        "-",
+    )
+
+    name = name.replace(
+        "_",
+        "-",
+    )
+
+    name = re.sub(
+        r"[^a-z0-9-]+",
+        "-",
+        name,
+    )
+
+    name = re.sub(
+        r"-+",
+        "-",
+        name,
+    )
+
+    return name.strip("-")
+
+
+# =========================================================
+# Manifest
+# =========================================================
+
+
+def write_manifest(
+    household: HouseholdSpec,
+) -> Path:
+    """
+    Write the canonical household
+    manifest.
+
+    Parameters
+    ----------
+    household
+        Household to serialize.
+
+    Returns
+    -------
+    Path
+        Manifest filename.
+    """
+
+    manifest = household.root / "manifest.toml"
+
+    lines: list[str] = [
+        "manifest_version = 1",
+        "",
+        f'title = "{household.title}"',
+    ]
+
+    if household.description:
+        lines.extend(
+            [
+                "",
+                'description = """',
+                household.description.rstrip(),
+                '"""',
+            ]
+        )
+
+    if household.tags:
+        lines.extend(
+            [
+                "",
+                "tags = [",
+            ]
+        )
+
+        for tag in household.tags:
+            lines.append(f'    "{tag}",')
+
+        lines.append("]")
+
+    manifest.write_text(
+        "\n".join(lines) + "\n",
+        encoding="utf-8",
+    )
+
+    return manifest
 
 
 # =========================================================
@@ -221,4 +348,86 @@ def delete_household(
 
     shutil.rmtree(
         household.root,
+    )
+
+
+def import_case(
+    case_file: Path,
+    library: HouseholdLibrarySpec,
+) -> HouseholdSpec:
+    """
+    Import one ROOST case into a
+    Household Library.
+
+    Parameters
+    ----------
+    case_file
+        Source case.toml file.
+
+    library
+        Destination household library.
+
+    Returns
+    -------
+    HouseholdSpec
+        Imported household.
+    """
+
+    case_file = Path(
+        case_file,
+    ).resolve()
+
+    #
+    # Canonical project name.
+    #
+
+    project_name = household_name_from_case(
+        case_file,
+    )
+
+    project_root = create_household(
+        library,
+        project_name,
+    )
+
+    #
+    # Construct and resolve the
+    # OWL household.
+    #
+
+    plan = resolve_household(
+        case_file,
+    )
+
+    #
+    # Save canonical household
+    # artifacts.
+    #
+
+    household = HouseholdSpec(
+        id=project_name,
+        title=project_name,
+        library=library,
+        root=project_root,
+    )
+
+    write_manifest(
+        household,
+    )
+
+    save_household(
+        plan,
+        project_root,
+    )
+
+    #
+    # Return the corresponding
+    # HouseholdSpec.
+    #
+
+    return HouseholdSpec(
+        id=project_name,
+        title=project_name,
+        library=library,
+        root=project_root,
     )

@@ -114,7 +114,7 @@ rebuild-roost:
 # OWL Upgrade / Regeneration
 # ==========================================================
 
-owl-upgrade:
+owl-upgrade-main:
 	@echo ""
 	@echo "=================================================="
 	@echo "UPGRADING OWL PIN + REGENERATING HYDRA CONFIG"
@@ -130,7 +130,26 @@ owl-upgrade:
 	@echo "  5. Run full pytest suite"
 	@echo ""
 
-	uv run scripts/update_owl_pin.py
+	uv run scripts/update_owl_pin.py --branch=main
+	make rebuild-roost
+
+owl-upgrade-dev:
+	@echo ""
+	@echo "=================================================="
+	@echo "UPGRADING OWL PIN + REGENERATING HYDRA CONFIG"
+	@echo "=================================================="
+	@echo ""
+	@echo "This may introduce BREAKING CHANGES."
+	@echo ""
+	@echo "Steps:"
+	@echo "  1. Update Owl pin"
+	@echo "  2. Sync environment"
+	@echo "  3. Regenerate Hydra config"
+	@echo "  4. Run schema consistency checks"
+	@echo "  5. Run full pytest suite"
+	@echo ""
+
+	uv run scripts/update_owl_pin.py --branch=dev
 	make rebuild-roost
 
 

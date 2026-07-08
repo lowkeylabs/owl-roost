@@ -118,6 +118,27 @@ def household_libraries(
     )
 
 
+def household_library(
+    name: str,
+    root=".",
+) -> HouseholdLibrarySpec:
+    """
+    Return one configured household
+    library.
+
+    Raises
+    ------
+    KeyError
+        Unknown household library.
+    """
+
+    for library in household_libraries(root):
+        if library.name == name:
+            return library
+
+    raise KeyError(f"Unknown household library: {name}")
+
+
 # =========================================================
 # Registry
 # =========================================================

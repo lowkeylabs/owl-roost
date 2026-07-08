@@ -786,6 +786,13 @@ OWL_PARAMETER_DOCS = {
         "units": None,
         "notes": None,
     },
+    "withDuals": {
+        "section": "solver_options",
+        "type": "boolean",
+        "description": "*(Advanced)* After the final solve, re-solve the LP with all binary variables fixed at their solution values (always via HiGHS) to extract constraint duals (shadow prices) and reduced costs into plan._dual_data. Consumed by the explain_results MCP tool. Sensitivities are marginal and hold bracket selections and self-consistent quantities fixed.",
+        "units": None,
+        "notes": None,
+    },
     "withLTCG": {
         "section": "solver_options",
         "type": "string",
@@ -825,6 +832,13 @@ OWL_PARAMETER_DOCS = {
         "section": "solver_options",
         "type": "string or float",
         "description": 'Controls how the taxable fraction of Social Security benefits (Ψ) is determined. The IRS provisional income (PI) formula taxes 0% of SS below \\$25k/\\$32k PI (single/MFJ), up to 50% between those and \\$34k/\\$44k, and up to 85% above. "loop" — recomputes Ψ each SC-loop iteration based on that year\'s projected income (recommended). "optimize" — encodes the IRS piecewise formula exactly as a MIP with binary variables (expert; can require a larger gap). Float in [0, 0.85] — pins Ψ to a fixed value: 0.0 (income well below the lower threshold), 0.5 (income in the mid range), or 0.85 (income above the upper threshold).',
+        "units": "years",
+        "notes": None,
+    },
+    "withdrawalOrder": {
+        "section": "solver_options",
+        "type": "string",
+        "description": 'Withdrawal-order policy. "optimal" (default): the optimizer freely chooses which accounts to draw from each year. "taxable_first": enforce the conventional ordering — taxable first, then tax-deferred (RMDs are always taken), then Roth — via per-year household-level gating binaries. Mainly used to model a naive baseline strategy (see the compare_to_baseline MCP tool), or to measure the cost of a hand-managed ordering habit.',
         "units": "years",
         "notes": None,
     },

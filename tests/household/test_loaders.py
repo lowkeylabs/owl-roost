@@ -140,36 +140,6 @@ def test_load_household_manifest_missing_file(
         )
 
 
-def test_load_household_manifest_requires_id(
-    tmp_path,
-):
-    """
-    Household id is required.
-    """
-
-    lib = library(tmp_path)
-
-    project = tmp_path / "example"
-
-    project.mkdir()
-
-    (project / "manifest.toml").write_text(
-        """
-manifest_version = 1
-
-title = "Example"
-"""
-    )
-
-    with pytest.raises(
-        ValueError,
-    ):
-        load_household_manifest(
-            project,
-            lib,
-        )
-
-
 def test_load_household_manifest_requires_title(
     tmp_path,
 ):
