@@ -41,7 +41,7 @@ from owlroost.household.specs import (
 
 HOUSEHOLD_ONTOLOGY = dict(
     owner="ROOST",
-    semantic_domain="household",
+    semantic_domain="planning",
     value_origin="roost-computed",
     projection_kind="canonical",
     analytic_kind="primary",

@@ -32,6 +32,8 @@ Household subsystem owns:
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import click
 
 from owlroost.catalog.context import (
@@ -68,6 +70,9 @@ from owlroost.household.bootstrap import (
 )
 from owlroost.household.loaders import (
     load_household_rows,
+)
+from owlroost.household.operations import (
+    export_case,
 )
 
 DEFAULT_LEVEL = "household"
@@ -119,6 +124,11 @@ DEFAULT_VIEW = "household"
     type=str,
     help="Explanation facets.",
 )
+@click.option(
+    "--export",
+    is_flag=True,
+    help=("Export selected households into the current workspace."),
+)
 def cmd_household(
     selectors,
     view,
@@ -129,6 +139,7 @@ def cmd_household(
     top,
     pivot,
     explain,
+    export,
 ):
     """
     Browse registered Household Projects.
@@ -243,6 +254,50 @@ def cmd_household(
 
         if not rows:
             raise click.ClickException("No matching household selections.")
+
+    if export:
+        destination = Path(".")
+
+        failures = []
+
+        for row in rows:
+            household = household_registry.get_household(
+                row["household.global_id"],
+            )
+
+            try:
+                export_case(
+                    household,
+                    destination,
+                )
+
+                click.echo(f"Exported {household.global_id}")
+
+            except FileExistsError:
+                failures.append(
+                    (
+                        household.global_id,
+                        "already exists",
+                    )
+                )
+
+            except Exception as exc:
+                failures.append(
+                    (
+                        household.global_id,
+                        str(exc),
+                    )
+                )
+
+        if failures:
+            click.echo()
+
+            click.echo("Some households could not be exported:")
+
+            for household_id, message in failures:
+                click.echo(f"  {household_id}: {message}")
+
+        return
 
     # =====================================================
     # Renderer

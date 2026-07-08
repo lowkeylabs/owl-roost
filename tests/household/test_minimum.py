@@ -40,7 +40,6 @@ def load_household_module(
     )
 
     assert spec is not None
-
     assert spec.loader is not None
 
     module = importlib.util.module_from_spec(
@@ -63,10 +62,12 @@ def test_minimum_household_project_exists(
     """
 
     spec = registry.get_household(
-        "minimum",
+        "builtin/minimum",
     )
 
     assert spec.exists
+    assert spec.id == "minimum"
+    assert spec.global_id == "builtin/minimum"
 
 
 def test_minimum_household_contains_manifest(
@@ -78,7 +79,7 @@ def test_minimum_household_contains_manifest(
     """
 
     spec = registry.get_household(
-        "minimum",
+        "builtin/minimum",
     )
 
     assert spec.manifest_file.is_file()
@@ -93,7 +94,7 @@ def test_minimum_household_contains_household_py(
     """
 
     spec = registry.get_household(
-        "minimum",
+        "builtin/minimum",
     )
 
     assert spec.household_file.is_file()
@@ -107,7 +108,7 @@ def test_minimum_household_imports(
     """
 
     spec = registry.get_household(
-        "minimum",
+        "builtin/minimum",
     )
 
     module = load_household_module(
@@ -126,7 +127,7 @@ def test_minimum_household_exports_required_functions(
     """
 
     spec = registry.get_household(
-        "minimum",
+        "builtin/minimum",
     )
 
     module = load_household_module(
@@ -160,7 +161,7 @@ def test_minimum_create_plan(
     """
 
     spec = registry.get_household(
-        "minimum",
+        "builtin/minimum",
     )
 
     module = load_household_module(
@@ -172,6 +173,7 @@ def test_minimum_create_plan(
     #
     # Placeholder implementation.
     #
+
     assert plan is None
 
 
@@ -183,7 +185,7 @@ def test_minimum_write_household_not_implemented(
     """
 
     spec = registry.get_household(
-        "minimum",
+        "builtin/minimum",
     )
 
     module = load_household_module(
@@ -207,7 +209,7 @@ def test_minimum_household_artifacts(
     """
 
     spec = registry.get_household(
-        "minimum",
+        "builtin/minimum",
     )
 
     assert spec.artifact_names == (

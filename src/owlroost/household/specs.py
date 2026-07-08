@@ -65,7 +65,11 @@ HOUSEHOLD_FIELDS: tuple[
 ] = (
     HouseholdFieldSpec(
         "id",
-        "Stable household identifier.",
+        "Library-local household identifier.",
+    ),
+    HouseholdFieldSpec(
+        "global_id",
+        "Globally unique household identifier.",
     ),
     HouseholdFieldSpec(
         "name",
@@ -169,8 +173,6 @@ class HouseholdSpec:
     household project.
     """
 
-    id: str
-
     title: str
 
     library: HouseholdLibrarySpec
@@ -203,13 +205,13 @@ class HouseholdSpec:
     def case_file(
         self,
     ) -> Path:
-        return self.root / "case.toml"
+        return self.root / "case_household.toml"
 
     @property
     def hfp_file(
         self,
     ) -> Path:
-        return self.root / "HFP.xlsx"
+        return self.root / "case_household.xlsx"
 
     @property
     def exists(
@@ -235,6 +237,26 @@ class HouseholdSpec:
         return tuple(
             artifacts,
         )
+
+    @property
+    def id(
+        self,
+    ) -> str:
+        return f"{self.root.name}"
+
+    @property
+    def global_id(
+        self,
+    ) -> str:
+        """
+        Globally unique household identifier.
+
+        Returns
+        -------
+        str
+        """
+
+        return f"{self.library.name}/{self.id}"
 
     @property
     def name(
@@ -279,6 +301,7 @@ class HouseholdSpec:
 
         row = {
             "id": self.id,
+            "global_id": self.global_id,
             "name": self.name,
             "title": self.title,
             "description": self.description,

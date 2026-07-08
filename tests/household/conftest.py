@@ -101,7 +101,6 @@ def household(
     root.mkdir()
 
     return HouseholdSpec(
-        id="smith",
         title="Smith Household",
         library=writable_library,
         root=root,

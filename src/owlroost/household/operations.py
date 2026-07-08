@@ -405,10 +405,9 @@ def import_case(
     #
 
     household = HouseholdSpec(
-        id=project_name,
+        root=project_root,
         title=project_name,
         library=library,
-        root=project_root,
     )
 
     write_manifest(
@@ -426,8 +425,95 @@ def import_case(
     #
 
     return HouseholdSpec(
-        id=project_name,
+        root=project_root,
         title=project_name,
         library=library,
-        root=project_root,
+    )
+
+
+def export_case(
+    household: HouseholdSpec,
+    destination: Path,
+) -> tuple[Path, Path]:
+    """
+    Export one Household Project as a
+    ROOST case into a workspace.
+
+    Parameters
+    ----------
+    household
+        Household to export.
+
+    destination
+        Destination directory.
+
+    Returns
+    -------
+    tuple[Path, Path]
+        Written case TOML and HFP paths.
+
+    Raises
+    ------
+    FileExistsError
+        One or more destination files
+        already exist.
+    """
+
+    destination = Path(
+        destination,
+    ).resolve()
+
+    destination.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    #
+    # Canonical destination names.
+    #
+
+    case_file = destination / f"case_{household.id}.toml"
+
+    hfp_file = destination / f"HFP_{household.id}.xlsx"
+
+    #
+    # Refuse to overwrite.
+    #
+
+    duplicates = [
+        path
+        for path in (
+            case_file,
+            hfp_file,
+        )
+        if path.exists()
+    ]
+
+    if duplicates:
+        raise FileExistsError(
+            "Destination file(s) already exist: " + ", ".join(str(path) for path in duplicates)
+        )
+
+    #
+    # Construct the OWL Plan.
+    #
+
+    plan = resolve_household(
+        household.case_file,
+    )
+
+    #
+    # Save canonical workspace artifacts.
+    #
+
+    save_household(
+        plan,
+        destination,
+        case_file=case_file.name,
+        hfp_file=hfp_file.name,
+    )
+
+    return (
+        case_file,
+        hfp_file,
     )

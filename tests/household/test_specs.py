@@ -85,11 +85,14 @@ def test_household_spec_attributes(
     attributes.
     """
 
+    project = tmp_path / "example"
+
+    project.mkdir()
+
     spec = HouseholdSpec(
-        id="example",
         title="Example Household",
-        library=_library(tmp_path),
-        root=tmp_path,
+        library=_library(project),
+        root=project,
         description="Example description.",
         tags=(
             "example",
@@ -98,9 +101,10 @@ def test_household_spec_attributes(
     )
 
     assert spec.id == "example"
+    assert spec.global_id == "test/example"
     assert spec.title == "Example Household"
     assert spec.library.name == "test"
-    assert spec.root == tmp_path
+    assert spec.root == project
     assert spec.description == "Example description."
     assert spec.tags == (
         "example",
@@ -116,7 +120,6 @@ def test_household_file(
     """
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(tmp_path),
         root=tmp_path,
@@ -133,7 +136,6 @@ def test_manifest_file(
     """
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(tmp_path),
         root=tmp_path,
@@ -150,7 +152,6 @@ def test_readme_file(
     """
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(tmp_path),
         root=tmp_path,
@@ -167,13 +168,12 @@ def test_case_file(
     """
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(tmp_path),
         root=tmp_path,
     )
 
-    assert spec.case_file == (tmp_path / "case.toml")
+    assert spec.case_file == (tmp_path / "case_household.toml")
 
 
 def test_hfp_file(
@@ -184,13 +184,12 @@ def test_hfp_file(
     """
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(tmp_path),
         root=tmp_path,
     )
 
-    assert spec.hfp_file == (tmp_path / "HFP.xlsx")
+    assert spec.hfp_file == (tmp_path / "case_household.xlsx")
 
 
 def test_exists_false(
@@ -204,7 +203,6 @@ def test_exists_false(
     missing = tmp_path / "missing"
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(missing),
         root=missing,
@@ -226,7 +224,6 @@ def test_exists_true(
     project.mkdir()
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(project),
         root=project,
@@ -244,7 +241,6 @@ def test_artifact_names_empty(
     """
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(tmp_path),
         root=tmp_path,
@@ -266,7 +262,6 @@ def test_artifact_names(
     (tmp_path / "b.txt").write_text("")
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(tmp_path),
         root=tmp_path,
@@ -291,7 +286,6 @@ def test_has_artifact(
     )
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(tmp_path),
         root=tmp_path,
@@ -302,7 +296,7 @@ def test_has_artifact(
     )
 
     assert not spec.has_artifact(
-        "case.toml",
+        "case_household.toml",
     )
 
 
@@ -319,7 +313,6 @@ def test_name(
     project.mkdir()
 
     spec = HouseholdSpec(
-        id="example",
         title="Example",
         library=_library(project),
         root=project,
@@ -336,11 +329,14 @@ def test_to_row(
     a display row.
     """
 
+    project = tmp_path / "example"
+
+    project.mkdir()
+
     spec = HouseholdSpec(
-        id="example",
         title="Example",
-        library=_library(tmp_path),
-        root=tmp_path,
+        library=_library(project),
+        root=project,
         description="Example description.",
         tags=(
             "tutorial",
@@ -350,13 +346,12 @@ def test_to_row(
 
     row = spec.to_row()
 
+    assert row["household.global_id"] == "test/example"
     assert row["household.id"] == "example"
-
-    assert row["household.title"] == "Example"
+    assert row["household.root"] == str(project)
+    assert row["household.relative_root"] == "example"
 
     assert row["household.description"] == "Example description."
-
-    assert row["household.root"] == str(tmp_path)
 
     assert row["household.exists"]
 

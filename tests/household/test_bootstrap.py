@@ -76,12 +76,7 @@ def test_build_household_registry_discovers_households():
 
     registry = build_household_registry()
 
-    assert (
-        len(
-            registry,
-        )
-        >= 1
-    )
+    assert len(registry) >= 1
 
 
 def test_build_household_registry_discovers_minimum():
@@ -93,7 +88,7 @@ def test_build_household_registry_discovers_minimum():
     registry = build_household_registry()
 
     assert registry.has_household(
-        "minimum",
+        "builtin/minimum",
     )
 
 
@@ -106,4 +101,22 @@ def test_build_household_registry_contains_expected_ids():
 
     registry = build_household_registry()
 
-    assert "minimum" in registry.household_ids()
+    assert "builtin/minimum" in registry.household_ids()
+
+
+def test_build_household_registry_minimum_spec():
+    """
+    The built-in minimum household
+    exposes both local and global
+    identifiers.
+    """
+
+    registry = build_household_registry()
+
+    spec = registry.get_household(
+        "builtin/minimum",
+    )
+
+    assert spec.id == "minimum"
+    assert spec.global_id == "builtin/minimum"
+    assert spec.library.name == "builtin"

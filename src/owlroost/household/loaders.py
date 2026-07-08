@@ -136,8 +136,6 @@ def load_household_manifest(
     if manifest_version != CURRENT_MANIFEST_VERSION:
         raise ValueError(f"{manifest}: unsupported manifest_version {manifest_version}")
 
-    household_id = project_dir.resolve().name
-
     title = data["title"]
 
     if not isinstance(
@@ -161,7 +159,6 @@ def load_household_manifest(
         raise ValueError(f"{manifest}: 'tags' must be a list.")
 
     return HouseholdSpec(
-        id=household_id,
         title=title,
         library=library,
         root=project_dir,

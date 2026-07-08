@@ -39,6 +39,17 @@ TEST_LIBRARY = HouseholdLibrarySpec(
 )
 
 
+def global_id(
+    household_id: str,
+) -> str:
+    """
+    Return the registry identifier for
+    a test household.
+    """
+
+    return f"{TEST_LIBRARY.name}/{household_id}"
+
+
 def household(
     household_id: str,
     title: str | None = None,
@@ -51,11 +62,12 @@ def household(
     if title is None:
         title = household_id.title()
 
+    root = TEST_LIBRARY.root / household_id
+
     return HouseholdSpec(
-        id=household_id,
         title=title,
         library=TEST_LIBRARY,
-        root=TEST_LIBRARY.root / household_id,
+        root=root,
     )
 
 
@@ -94,10 +106,10 @@ def test_register_household():
     assert len(registry) == 1
 
     assert registry.has_household(
-        "example",
+        global_id("example"),
     )
 
-    assert "example" in registry
+    assert global_id("example") in registry
 
 
 def test_register_duplicate_household_raises():
@@ -135,21 +147,22 @@ def test_register_many():
 
     registry.register_many(
         [
-            household("a", "A"),
-            household("b", "B"),
+            household(
+                "a",
+                "A",
+            ),
+            household(
+                "b",
+                "B",
+            ),
         ]
     )
 
-    assert (
-        len(
-            registry,
-        )
-        == 2
-    )
+    assert len(registry) == 2
 
     assert registry.household_ids() == (
-        "a",
-        "b",
+        global_id("a"),
+        global_id("b"),
     )
 
 
@@ -172,7 +185,7 @@ def test_get_household():
 
     assert (
         registry.get_household(
-            "example",
+            global_id("example"),
         )
         is spec
     )
@@ -190,7 +203,7 @@ def test_unknown_household_raises():
         KeyError,
     ):
         registry.get_household(
-            "missing",
+            global_id("missing"),
         )
 
 
@@ -217,8 +230,8 @@ def test_household_ids_sorted():
     )
 
     assert registry.household_ids() == (
-        "alpha",
-        "zebra",
+        global_id("alpha"),
+        global_id("zebra"),
     )
 
 
@@ -291,11 +304,11 @@ def test_registry_fixture_contains_minimum(
     """
 
     assert registry.has_household(
-        "minimum",
+        "builtin/minimum",
     )
 
     spec = registry.get_household(
-        "minimum",
+        "builtin/minimum",
     )
 
     assert spec.id == "minimum"

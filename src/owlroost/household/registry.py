@@ -101,10 +101,10 @@ class HouseholdRegistry:
             Duplicate household id.
         """
 
-        if spec.id in self._households:
-            raise ValueError(f"Duplicate household id: {spec.id}")
+        if spec.global_id in self._households:
+            raise ValueError(f"Duplicate household id: {spec.global_id}")
 
-        self._households[spec.id] = spec
+        self._households[spec.global_id] = spec
 
     def register_many(
         self,

@@ -71,7 +71,6 @@ def test_create_household(
     )
 
     assert root.is_dir()
-
     assert root.name == "smith"
 
 
@@ -133,9 +132,7 @@ def test_rename_household(
     )
 
     assert new_root.exists()
-
     assert new_root.name == "jones"
-
     assert not household.root.exists()
 
 
@@ -152,11 +149,12 @@ def test_rename_household_readonly_raises(
     root.mkdir()
 
     household = HouseholdSpec(
-        id="smith",
         title="Smith",
         library=readonly_library,
         root=root,
     )
+
+    assert household.id == "smith"
 
     with pytest.raises(
         PermissionError,
@@ -200,11 +198,12 @@ def test_delete_household_readonly_raises(
     root.mkdir()
 
     household = HouseholdSpec(
-        id="smith",
         title="Smith",
         library=readonly_library,
         root=root,
     )
+
+    assert household.id == "smith"
 
     with pytest.raises(
         PermissionError,

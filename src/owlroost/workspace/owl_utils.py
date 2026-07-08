@@ -191,6 +191,9 @@ def resolve_household(
 def save_household(
     plan,
     output_dir,
+    *,
+    case_file: str = "case_household.toml",
+    hfp_file: str = "case_household.xlsx",
 ):
     """
     Write a resolved household
@@ -225,7 +228,7 @@ def save_household(
 
     plan.saveConfig(
         str(
-            output_dir / "household.toml",
+            output_dir / case_file,
         )
     )
 
@@ -235,7 +238,7 @@ def save_household(
 
     plan.saveHFP(
         str(
-            output_dir / "household.xlsx",
+            output_dir / hfp_file,
         )
     )
 
