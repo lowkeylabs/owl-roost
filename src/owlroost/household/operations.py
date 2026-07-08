@@ -109,10 +109,12 @@ def household_name_from_case(
 
     name = name.lower()
 
-    name = name.replace(
-        "+",
-        "-",
-    )
+    # while not good practice, "+" is allowable.
+    if 0:
+        name = name.replace(
+            "+",
+            "-",
+        )
 
     name = name.replace(
         "_",
