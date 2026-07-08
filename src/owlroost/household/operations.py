@@ -408,7 +408,7 @@ def import_case(
 
     household = HouseholdSpec(
         root=project_root,
-        title=project_name,
+        title=project_name.replace("-", " ").title(),
         library=library,
     )
 
@@ -419,6 +419,8 @@ def import_case(
     save_household(
         plan,
         project_root,
+        case_file="case_household.toml",
+        hfp_file="case_household.xlsx",
     )
 
     #
@@ -482,14 +484,13 @@ def export_case(
     # Refuse to overwrite.
     #
 
-    duplicates = [
-        path
-        for path in (
-            case_file,
-            hfp_file,
-        )
-        if path.exists()
-    ]
+    duplicates = []
+
+    if case_file.exists():
+        duplicates.append(case_file)
+
+    if hfp_file.exists():
+        duplicates.append(hfp_file)
 
     if duplicates:
         raise FileExistsError(

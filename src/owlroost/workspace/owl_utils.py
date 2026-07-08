@@ -183,7 +183,7 @@ def resolve_household(
         toml_file,
     )
 
-    plan.resolve()
+    # plan.resolve()
 
     return plan
 
@@ -248,6 +248,9 @@ def save_household(
 def resolve_and_save_household(
     toml_file,
     output_dir,
+    *,
+    case_file: str = "case_household.toml",
+    hfp_file: str = "case_household.xlsx",
 ):
     """
     Resolve a household and
@@ -262,6 +265,12 @@ def resolve_and_save_household(
     output_dir
         Destination directory.
 
+    case_file
+        Destination TOML filename.
+
+    hfp_file
+        Destination HFP filename.
+
     Returns
     -------
     owlplanner.Plan
@@ -274,6 +283,8 @@ def resolve_and_save_household(
     save_household(
         plan,
         output_dir,
+        case_file=case_file,
+        hfp_file=hfp_file,
     )
 
     return plan
@@ -282,6 +293,9 @@ def resolve_and_save_household(
 def save_resolved_household(
     plan,
     output_dir,
+    *,
+    case_file: str = "case_household.toml",
+    hfp_file: str = "case_household.xlsx",
 ):
     """
     Resolve and save an
@@ -295,6 +309,12 @@ def save_resolved_household(
     output_dir
         Destination directory.
 
+    case_file
+        Destination TOML filename.
+
+    hfp_file
+        Destination HFP filename.
+
     Returns
     -------
     pathlib.Path
@@ -306,4 +326,6 @@ def save_resolved_household(
     return save_household(
         plan,
         output_dir,
+        case_file=case_file,
+        hfp_file=hfp_file,
     )
