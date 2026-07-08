@@ -356,7 +356,8 @@ def test_materialize_missing_profile_uses_defaults():
 
     column = table.columns[0]
 
-    assert column.label == "x"
+    assert column.field_name == "x"
+    assert column.label == "X"
 
     assert column.content_align == "left"
 

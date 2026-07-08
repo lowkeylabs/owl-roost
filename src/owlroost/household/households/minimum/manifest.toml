@@ -18,7 +18,6 @@ documentation, and regression tests.
 """
 
 tags = [
-    "builtin",
     "synthetic",
     "minimum",
 ]

@@ -231,9 +231,19 @@ class DisplayField:
     notes: str | None = None
 
     @staticmethod
-    def default_profiles():
+    def default_profiles(
+        field_name: str,
+    ) -> dict[str, DisplayProfile]:
+        from owlroost.display.sync import (
+            path_to_table_label,
+        )
+
         return {
-            "table": DisplayProfile(),
+            "table": DisplayProfile(
+                label=path_to_table_label(
+                    field_name,
+                ),
+            ),
         }
 
     # =====================================================
@@ -364,7 +374,7 @@ class DisplayField:
         )
 
         if not profiles:
-            profiles = cls.default_profiles()
+            profiles = cls.default_profiles(field_name)
 
         # =====================================================
         # Required Ontology Validation
@@ -441,7 +451,7 @@ class DisplayField:
         """
 
         if not self.profiles:
-            self.profiles = self.default_profiles()
+            self.profiles = self.default_profiles(self.field_name)
 
         if self.path is None:
             self.path = self.field_name

@@ -41,9 +41,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from owlroost.workspace.levers.context import (
-    default_household_library_strings,
-)
+from owlroost.workspace.levers.context import default_household_library_config
 
 # =========================================================
 # Section Rendering
@@ -107,10 +105,6 @@ def _render_household_libraries() -> list[str]:
     """
     Render household library search
     policy.
-
-    Edit, reorder, remove, or extend
-    this list to customize the search
-    policy for this workspace.
     """
 
     lines = [
@@ -119,24 +113,22 @@ def _render_household_libraries() -> list[str]:
         "# -----------------------------------------------------",
         "#",
         "# Override the default household",
-        "# library search path for this",
+        "# libraries visible to this",
         "# workspace.",
         "#",
-        "# Household libraries are searched",
-        "# in the order listed below.",
-        "#",
-        "# Paths may be relative to this",
-        "# workspace, use '~' for the user",
-        "# home directory, or '<builtin>'",
-        "# for the ROOST built-in library.",
-        "",
-        "households = [",
+        "# Libraries are searched in",
+        "# the order listed below.",
     ]
 
-    for value in default_household_library_strings():
-        lines.append(f'    "{value}",')
-
-    lines.append("]")
+    for name, location in default_household_library_config():
+        lines.extend(
+            [
+                "",
+                "[[context.households]]",
+                f'name = "{name}"',
+                f'location = "{location}"',
+            ]
+        )
 
     return lines
 

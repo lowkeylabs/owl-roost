@@ -34,10 +34,28 @@ from owlroost.household.loaders import (
 from owlroost.household.registry import (
     HouseholdRegistry,
 )
+from owlroost.household.specs import (
+    HouseholdLibrarySpec,
+)
 
 # =========================================================
 # Helpers
 # =========================================================
+
+
+def library(
+    root: Path,
+) -> HouseholdLibrarySpec:
+    """
+    Construct a writable Household
+    Library for testing.
+    """
+
+    return HouseholdLibrarySpec(
+        name="test",
+        root=root,
+        read_only=False,
+    )
 
 
 def write_manifest(
@@ -80,6 +98,8 @@ def test_load_household_manifest(
     HouseholdSpec.
     """
 
+    lib = library(tmp_path)
+
     project = tmp_path / "example"
 
     write_manifest(
@@ -88,12 +108,12 @@ def test_load_household_manifest(
 
     spec = load_household_manifest(
         project,
+        lib,
     )
 
     assert spec.id == "example"
-
     assert spec.title == "Example Household"
-
+    assert spec.library is lib
     assert spec.root == project
 
 
@@ -105,6 +125,8 @@ def test_load_household_manifest_missing_file(
     FileNotFoundError.
     """
 
+    lib = library(tmp_path)
+
     project = tmp_path / "example"
 
     project.mkdir()
@@ -114,6 +136,7 @@ def test_load_household_manifest_missing_file(
     ):
         load_household_manifest(
             project,
+            lib,
         )
 
 
@@ -123,6 +146,8 @@ def test_load_household_manifest_requires_id(
     """
     Household id is required.
     """
+
+    lib = library(tmp_path)
 
     project = tmp_path / "example"
 
@@ -141,6 +166,7 @@ title = "Example"
     ):
         load_household_manifest(
             project,
+            lib,
         )
 
 
@@ -150,6 +176,8 @@ def test_load_household_manifest_requires_title(
     """
     Household title is required.
     """
+
+    lib = library(tmp_path)
 
     project = tmp_path / "example"
 
@@ -168,6 +196,7 @@ id = "example"
     ):
         load_household_manifest(
             project,
+            lib,
         )
 
 
@@ -177,6 +206,8 @@ def test_load_household_manifest_invalid_toml(
     """
     Invalid TOML raises ValueError.
     """
+
+    lib = library(tmp_path)
 
     project = tmp_path / "example"
 
@@ -193,6 +224,7 @@ id =
     ):
         load_household_manifest(
             project,
+            lib,
         )
 
 
@@ -210,7 +242,7 @@ def test_discover_household_library_empty(
     """
 
     households = discover_household_library(
-        tmp_path,
+        library(tmp_path),
     )
 
     assert households == []
@@ -224,22 +256,21 @@ def test_discover_household_library_discovers_household(
     manifest is discovered.
     """
 
+    lib = library(tmp_path)
+
     write_manifest(
         tmp_path / "example",
     )
 
     households = discover_household_library(
-        tmp_path,
+        lib,
     )
 
-    assert (
-        len(
-            households,
-        )
-        == 1
-    )
+    assert len(households) == 1
 
     assert households[0].id == "example"
+
+    assert households[0].library is lib
 
 
 def test_discover_household_library_ignores_non_projects(
@@ -253,7 +284,7 @@ def test_discover_household_library_ignores_non_projects(
     (tmp_path / "foo").mkdir()
 
     households = discover_household_library(
-        tmp_path,
+        library(tmp_path),
     )
 
     assert households == []
@@ -280,7 +311,7 @@ def test_discover_household_library_returns_sorted_households(
     )
 
     households = discover_household_library(
-        tmp_path,
+        library(tmp_path),
     )
 
     assert [spec.id for spec in households] == [
@@ -302,6 +333,8 @@ def test_load_household_row(
     into one display row.
     """
 
+    lib = library(tmp_path)
+
     project = tmp_path / "example"
 
     write_manifest(
@@ -310,15 +343,16 @@ def test_load_household_row(
 
     spec = load_household_manifest(
         project,
+        lib,
     )
 
     row = load_household_row(
         spec,
     )
 
-    assert row["id"] == "example"
-
-    assert row["title"] == "Example Household"
+    assert row["household.id"] == "example"
+    assert row["household.title"] == "Example Household"
+    assert row["household.library"] == "test"
 
 
 def test_load_household_rows(
@@ -345,7 +379,7 @@ def test_load_household_rows(
 
     registry.register_many(
         discover_household_library(
-            tmp_path,
+            library(tmp_path),
         )
     )
 
@@ -353,7 +387,7 @@ def test_load_household_rows(
         registry,
     )
 
-    assert [row["id"] for row in rows] == [
+    assert [row["household.id"] for row in rows] == [
         "alpha",
         "zebra",
     ]

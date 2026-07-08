@@ -9,9 +9,10 @@ Household subsystem bootstrap.
 
 Notes
 -----
-Builds the complete Household Registry by
-discovering Household Projects from all
-visible Household Libraries.
+Construct the Household Registry by
+discovering Household Projects within
+the effective Household Libraries for
+the current planning context.
 
 Architectural Invariants
 ------------------------
@@ -19,43 +20,42 @@ Architectural Invariants
 Bootstrap owns:
 
     * Registry construction
-    * Search policy
     * Registry assembly
 
 Bootstrap does not own:
 
+    * Planning context resolution
     * Filesystem discovery
     * Manifest parsing
     * Household construction
     * Household mutation
 
+Planning context resolution belongs to
+the workspace subsystem.
+
 Filesystem discovery belongs to the
-loaders.
+household loaders.
 
 Registration belongs to the registry.
 
 Future Directions
 -----------------
 
-Future revisions may search additional
-libraries including:
+Future revisions may construct
+registries for alternate planning
+contexts or explicitly supplied
+household libraries.
 
-* Current workspace
-* User household library (XDG)
-* CLI-specified libraries
-* Package-installed libraries
-
-The public interface should remain stable:
+The public interface should remain
+stable:
 
     build_household_registry()
 """
 
 from __future__ import annotations
 
-from pathlib import Path
-
-from owlroost.household.households import (
-    BUILTIN_HOUSEHOLD_LIBRARY,
+from owlroost.catalog.context import (
+    build_catalog_context,
 )
 from owlroost.household.loaders import (
     discover_household_library,
@@ -63,44 +63,64 @@ from owlroost.household.loaders import (
 from owlroost.household.registry import (
     HouseholdRegistry,
 )
+from owlroost.household.specs import (
+    HouseholdLibrarySpec,
+)
+from owlroost.operations.resolve import (
+    build_resolver,
+)
+from owlroost.workspace.loaders import (
+    load_context_row,
+)
+from owlroost.workspace.materializers import (
+    materialize_planning_context,
+)
+
+# =========================================================
+# Household Libraries
+# =========================================================
 
 
-def household_search_paths() -> list[Path]:
+def household_libraries(
+    root=".",
+) -> list[HouseholdLibrarySpec]:
     """
-    Return Household Libraries searched by
-    default.
+    Return the effective Household
+    Libraries visible to the current
+    planning context.
 
-    Libraries are searched in precedence
-    order.
-
-    Missing directories are ignored by the
-    loaders.
+    Parameters
+    ----------
+    root
+        Planning context root.
 
     Returns
     -------
-    list[Path]
+    list[HouseholdLibrarySpec]
     """
 
-    return [
-        #
-        # Current project library.
-        #
-        Path.cwd() / "households",
-        #
-        # Future:
-        #
-        # XDG user household library.
-        #
-        # Path.home()
-        #     / ".local"
-        #     / "share"
-        #     / "roost"
-        #     / "households",
-        #
-        # Built-in library.
-        #
-        BUILTIN_HOUSEHOLD_LIBRARY,
-    ]
+    catalog = build_catalog_context()
+
+    planning_context = materialize_planning_context(
+        load_context_row(
+            root,
+        ),
+        catalog,
+    )
+
+    resolve = build_resolver(
+        catalog,
+        planning_context,
+    )
+
+    return resolve(
+        "context.household.libraries",
+    )
+
+
+# =========================================================
+# Registry
+# =========================================================
 
 
 def build_household_registry() -> HouseholdRegistry:
@@ -115,12 +135,11 @@ def build_household_registry() -> HouseholdRegistry:
 
     registry = HouseholdRegistry()
 
-    for library in household_search_paths():
-        for household in discover_household_library(
-            library,
-        ):
-            registry.register_household(
-                household,
+    for library in household_libraries():
+        registry.register_many(
+            discover_household_library(
+                library,
             )
+        )
 
     return registry

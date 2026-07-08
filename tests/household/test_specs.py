@@ -5,19 +5,76 @@
 # See LICENSE file in repository root.
 
 """
-Tests for HouseholdSpec.
+Tests for Household specifications.
 
 Notes
 -----
 Verifies the canonical representation
-of Household Projects.
+of Household Libraries and Household
+Projects.
 """
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from owlroost.household.specs import (
+    HouseholdLibrarySpec,
     HouseholdSpec,
 )
+
+
+def _library(
+    root: Path,
+) -> HouseholdLibrarySpec:
+    """
+    Construct a writable Household
+    Library for testing.
+    """
+
+    return HouseholdLibrarySpec(
+        name="test",
+        root=root.parent,
+        read_only=False,
+    )
+
+
+def test_household_library_spec_attributes(
+    tmp_path,
+):
+    """
+    Constructor preserves supplied
+    attributes.
+    """
+
+    library = HouseholdLibrarySpec(
+        name="workspace",
+        root=tmp_path,
+        read_only=False,
+    )
+
+    assert library.name == "workspace"
+    assert library.root == tmp_path
+    assert not library.read_only
+    assert library.writable
+
+
+def test_household_library_spec_readonly(
+    tmp_path,
+):
+    """
+    Read-only libraries are not
+    writable.
+    """
+
+    library = HouseholdLibrarySpec(
+        name="builtin",
+        root=tmp_path,
+        read_only=True,
+    )
+
+    assert library.read_only
+    assert not library.writable
 
 
 def test_household_spec_attributes(
@@ -31,6 +88,7 @@ def test_household_spec_attributes(
     spec = HouseholdSpec(
         id="example",
         title="Example Household",
+        library=_library(tmp_path),
         root=tmp_path,
         description="Example description.",
         tags=(
@@ -40,13 +98,10 @@ def test_household_spec_attributes(
     )
 
     assert spec.id == "example"
-
     assert spec.title == "Example Household"
-
+    assert spec.library.name == "test"
     assert spec.root == tmp_path
-
     assert spec.description == "Example description."
-
     assert spec.tags == (
         "example",
         "tutorial",
@@ -63,6 +118,7 @@ def test_household_file(
     spec = HouseholdSpec(
         id="example",
         title="Example",
+        library=_library(tmp_path),
         root=tmp_path,
     )
 
@@ -79,6 +135,7 @@ def test_manifest_file(
     spec = HouseholdSpec(
         id="example",
         title="Example",
+        library=_library(tmp_path),
         root=tmp_path,
     )
 
@@ -95,6 +152,7 @@ def test_readme_file(
     spec = HouseholdSpec(
         id="example",
         title="Example",
+        library=_library(tmp_path),
         root=tmp_path,
     )
 
@@ -111,6 +169,7 @@ def test_case_file(
     spec = HouseholdSpec(
         id="example",
         title="Example",
+        library=_library(tmp_path),
         root=tmp_path,
     )
 
@@ -127,6 +186,7 @@ def test_hfp_file(
     spec = HouseholdSpec(
         id="example",
         title="Example",
+        library=_library(tmp_path),
         root=tmp_path,
     )
 
@@ -141,10 +201,13 @@ def test_exists_false(
     report False.
     """
 
+    missing = tmp_path / "missing"
+
     spec = HouseholdSpec(
         id="example",
         title="Example",
-        root=tmp_path / "missing",
+        library=_library(missing),
+        root=missing,
     )
 
     assert not spec.exists
@@ -165,6 +228,7 @@ def test_exists_true(
     spec = HouseholdSpec(
         id="example",
         title="Example",
+        library=_library(project),
         root=project,
     )
 
@@ -182,6 +246,7 @@ def test_artifact_names_empty(
     spec = HouseholdSpec(
         id="example",
         title="Example",
+        library=_library(tmp_path),
         root=tmp_path,
     )
 
@@ -197,14 +262,13 @@ def test_artifact_names(
     """
 
     (tmp_path / "z.txt").write_text("")
-
     (tmp_path / "a.txt").write_text("")
-
     (tmp_path / "b.txt").write_text("")
 
     spec = HouseholdSpec(
         id="example",
         title="Example",
+        library=_library(tmp_path),
         root=tmp_path,
     )
 
@@ -229,6 +293,7 @@ def test_has_artifact(
     spec = HouseholdSpec(
         id="example",
         title="Example",
+        library=_library(tmp_path),
         root=tmp_path,
     )
 
@@ -239,6 +304,28 @@ def test_has_artifact(
     assert not spec.has_artifact(
         "case.toml",
     )
+
+
+def test_name(
+    tmp_path,
+):
+    """
+    Household name is derived from the
+    project directory.
+    """
+
+    project = tmp_path / "smith"
+
+    project.mkdir()
+
+    spec = HouseholdSpec(
+        id="example",
+        title="Example",
+        library=_library(project),
+        root=project,
+    )
+
+    assert spec.name == "smith"
 
 
 def test_to_row(
@@ -252,6 +339,7 @@ def test_to_row(
     spec = HouseholdSpec(
         id="example",
         title="Example",
+        library=_library(tmp_path),
         root=tmp_path,
         description="Example description.",
         tags=(
@@ -262,18 +350,19 @@ def test_to_row(
 
     row = spec.to_row()
 
-    assert row["id"] == "example"
+    assert row["household.id"] == "example"
 
-    assert row["title"] == "Example"
+    assert row["household.title"] == "Example"
 
-    assert row["description"] == "Example description."
+    assert row["household.description"] == "Example description."
 
-    assert row["root"] == str(
-        tmp_path,
+    assert row["household.root"] == str(tmp_path)
+
+    assert row["household.exists"]
+
+    assert row["household.artifact_count"] == 0
+
+    assert row["household.tags"] == (
+        "tutorial",
+        "builtin",
     )
-
-    assert row["exists"]
-
-    assert row["artifacts"] == 0
-
-    assert row["tags"] == ("tutorial, builtin")

@@ -63,7 +63,22 @@ def _display_parts(
     field_name: str,
 ):
     """
-    Convert a field path into display parts.
+    Convert a canonical field name into
+    human-readable display parts.
+
+    Examples
+    --------
+    household.id
+        -> ["Id"]
+
+    household.artifact_count
+        -> ["Artifact", "Count"]
+
+    balance_sheet.net_worth
+        -> ["Net", "Worth"]
+
+    spending.today__median
+        -> ["Today", "median"]
     """
 
     agg = None
@@ -74,23 +89,28 @@ def _display_parts(
             1,
         )
 
-    path_parts = field_name.split(".")
+    #
+    # Remove the namespace.
+    #
+    parts = field_name.split(".")
 
-    # drop namespace
-    if len(path_parts) > 1:
-        path_parts = path_parts[1:]
+    if len(parts) > 1:
+        parts = parts[1:]
 
-    parts = []
+    display_parts: list[str] = []
 
-    for part in path_parts:
-        parts.extend(piece.title() for piece in part.split("_"))
+    for part in parts:
+        for piece in part.split("_"):
+            display_parts.append(
+                piece.title(),
+            )
 
     if agg is not None:
-        parts.append(
+        display_parts.append(
             agg.lower(),
         )
 
-    return parts
+    return display_parts
 
 
 def path_to_table_label(
@@ -99,7 +119,6 @@ def path_to_table_label(
     """
     Generate compact table-oriented label.
     """
-
     return "\n".join(
         _display_parts(
             field_name,

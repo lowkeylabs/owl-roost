@@ -5,12 +5,22 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Household display field registration.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Registers the canonical Household
+display fields.
+
+Architectural Invariants
+------------------------
+
+This module owns display registration
+only.
+
+The canonical household field
+definitions are owned by
+``household.specs``.
 """
 
 from __future__ import annotations
@@ -23,6 +33,10 @@ from owlroost.core.utils import (
 )
 from owlroost.display.specs import (
     DisplayField,
+)
+from owlroost.household.specs import (
+    HOUSEHOLD_FIELDS,
+    household_field_name,
 )
 
 HOUSEHOLD_ONTOLOGY = dict(
@@ -39,43 +53,19 @@ HOUSEHOLD_ONTOLOGY = dict(
 
 def register_display_fields(
     reg,
-):
-    fields = [
-        (
-            "id",
-            "Household identifier.",
-        ),
-        (
-            "title",
-            "Household title.",
-        ),
-        (
-            "description",
-            "Household description.",
-        ),
-        (
-            "tags",
-            "Household tags.",
-        ),
-        (
-            "root",
-            "Household project directory.",
-        ),
-        (
-            "artifact_count",
-            "Number of files contained in the household project.",
-        ),
-        (
-            "artifact_names",
-            "Household project artifacts.",
-        ),
-    ]
+) -> None:
+    """
+    Register canonical Household
+    display fields.
+    """
 
-    for name, description in fields:
+    for field in HOUSEHOLD_FIELDS:
         reg.register_display_field(
             DisplayField.field(
-                name,
-                description=description,
+                household_field_name(
+                    field.name,
+                ),
+                description=field.description,
                 **HOUSEHOLD_ONTOLOGY,
             )
         )

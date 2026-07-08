@@ -61,6 +61,7 @@ from owlroost.household.registry import (
     HouseholdRegistry,
 )
 from owlroost.household.specs import (
+    HouseholdLibrarySpec,
     HouseholdSpec,
 )
 
@@ -71,6 +72,7 @@ CURRENT_MANIFEST_VERSION = 1
 
 def load_household_manifest(
     project_dir: Path,
+    library: HouseholdLibrarySpec,
 ) -> HouseholdSpec:
     """
     Load one Household Project.
@@ -79,6 +81,10 @@ def load_household_manifest(
     ----------
     project_dir
         Household Project directory.
+
+    library
+        Household Library containing
+        the project.
 
     Returns
     -------
@@ -134,6 +140,7 @@ def load_household_manifest(
         raise ValueError(f"{manifest}: unsupported manifest_version {manifest_version}")
 
     household_id = data["id"]
+
     title = data["title"]
 
     if not isinstance(
@@ -165,6 +172,7 @@ def load_household_manifest(
     return HouseholdSpec(
         id=household_id,
         title=title,
+        library=library,
         root=project_dir,
         description=data.get(
             "description",
@@ -177,7 +185,7 @@ def load_household_manifest(
 
 
 def discover_household_library(
-    library_dir: Path,
+    library: HouseholdLibrarySpec,
 ) -> list[HouseholdSpec]:
     """
     Discover Household Projects within a
@@ -185,8 +193,9 @@ def discover_household_library(
 
     Parameters
     ----------
-    library_dir
-        Household Library.
+    library
+        Household Library to
+        discover.
 
     Returns
     -------
@@ -202,13 +211,13 @@ def discover_household_library(
     empty result.
     """
 
-    if not library_dir.is_dir():
+    if not library.root.is_dir():
         return []
 
     households: list[HouseholdSpec] = []
 
     for project_dir in sorted(
-        library_dir.iterdir(),
+        library.root.iterdir(),
         key=lambda p: p.name.lower(),
     ):
         if not project_dir.is_dir():
@@ -220,6 +229,7 @@ def discover_household_library(
         households.append(
             load_household_manifest(
                 project_dir,
+                library,
             )
         )
 

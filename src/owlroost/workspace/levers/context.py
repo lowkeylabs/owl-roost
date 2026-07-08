@@ -38,6 +38,7 @@ from owlroost.core.utils import (
 from owlroost.household.households import (
     BUILTIN_HOUSEHOLD_LIBRARY,
 )
+from owlroost.household.specs import HouseholdLibrarySpec
 from owlroost.workspace.specs import (
     OverridePolicy,
     WorkspaceSpec,
@@ -182,68 +183,108 @@ def _root(
 # Household Libraries
 # =========================================================
 
-DEFAULT_HOUSEHOLD_LIBRARY_STRINGS = (
-    "./library/households",
-    "~/.roost/households",
-    "<builtin>",
+DEFAULT_HOUSEHOLD_LIBRARY_CONFIG = (
+    ("workspace", "./library/households"),
+    ("user", "~/.roost/households"),
+    ("builtin", "<builtin>"),
 )
 
 
-def default_household_library_strings() -> list[str]:
+def default_household_library_config() -> list[tuple[str, str]]:
     """
-    Return the canonical configuration
-    strings used to initialize
-    workspace.toml.
+    Return the canonical household
+    library configuration used to
+    initialize new workspaces.
+
+    Returns
+    -------
+    list[tuple[str, str]]
+        Ordered pairs of
+        (library_name, location).
     """
 
     return list(
-        DEFAULT_HOUSEHOLD_LIBRARY_STRINGS,
+        DEFAULT_HOUSEHOLD_LIBRARY_CONFIG,
     )
 
 
-def resolve_household_library_paths(
-    values: list[str],
+def resolve_household_libraries(
+    values: list[tuple[str, str]],
     root=".",
-) -> list[Path]:
+) -> list[HouseholdLibrarySpec]:
     """
     Resolve configured household
-    library strings into filesystem
-    paths.
+    library definitions into
+    HouseholdLibrarySpec objects.
+
+    Parameters
+    ----------
+    values
+        Ordered household library
+        configuration.
+
+    root
+        Planning context root.
+
+    Returns
+    -------
+    list[HouseholdLibrarySpec]
     """
 
-    root = _root(root)
+    root = _root(
+        root,
+    )
 
-    paths: list[Path] = []
+    libraries: list[HouseholdLibrarySpec] = []
 
-    for value in values:
-        if value == "<builtin>":
-            paths.append(
-                BUILTIN_HOUSEHOLD_LIBRARY,
-            )
+    for name, location in values:
+        read_only = False
 
-        elif value.startswith("~/"):
-            paths.append(
-                Path(value).expanduser(),
-            )
+        if location == "<builtin>":
+            library_root = BUILTIN_HOUSEHOLD_LIBRARY
+            read_only = True
+
+        elif location.startswith(
+            "~/",
+        ):
+            library_root = Path(
+                location,
+            ).expanduser()
 
         else:
-            paths.append(
-                (root / value).resolve(),
+            library_root = (root / location).resolve()
+
+        libraries.append(
+            HouseholdLibrarySpec(
+                name=name,
+                root=library_root,
+                read_only=read_only,
             )
+        )
 
-    return paths
+    return libraries
 
 
-def default_household_library_paths(
+def default_household_libraries(
     root=".",
-) -> list[Path]:
+) -> list[HouseholdLibrarySpec]:
     """
-    Return the default household
-    library search paths.
+    Return the canonical household
+    libraries for the current
+    planning context.
+
+    Parameters
+    ----------
+    root
+        Planning context root.
+
+    Returns
+    -------
+    list[HouseholdLibrarySpec]
     """
 
-    return resolve_household_library_paths(
-        default_household_library_strings(),
+    return resolve_household_libraries(
+        default_household_library_config(),
         root,
     )
 
@@ -709,35 +750,20 @@ def context_workspace_path(
 # =========================================================
 
 
-def household_library_paths(
+def household_libraries(
     root=".",
-    values: list[str] | None = None,
-) -> list[Path]:
+    values: list[tuple[str, str]] | None = None,
+) -> list[HouseholdLibrarySpec]:
     """
     Return the effective household
-    library search path.
-
-    Parameters
-    ----------
-    root
-        Planning context root.
-
-    values
-        Household library search policy.
-        If omitted, the canonical default
-        search policy is used.
-
-    Returns
-    -------
-    list[Path]
-        Fully resolved household
-        library search paths.
+    libraries for the current planning
+    context.
     """
 
     if values is None:
-        values = default_household_library_strings()
+        values = default_household_library_config()
 
-    return resolve_household_library_paths(
+    return resolve_household_libraries(
         values,
         root,
     )
@@ -837,11 +863,11 @@ LEVERS = [
     # Household Libraries
     #
     dict(
-        name="paths.households",
-        dtype=list[Path],
-        compute_fn=household_library_paths,
+        name="household.libraries",
+        dtype=list[HouseholdLibrarySpec],
+        compute_fn=household_libraries,
         override_policy=OverridePolicy.RECOMPUTE,
-        description=("Ordered search path for canonical household libraries."),
+        description=("Ordered household libraries visible to the current planning context."),
     ),
     # -----------------------------------------------------
     # Workflow readiness

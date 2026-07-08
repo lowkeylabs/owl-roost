@@ -45,10 +45,11 @@ def register_display_views(
                 # Identity
                 # =====================================
                 ("section", "Identity"),
-                "id",
-                "title",
+                "household.id",
+                "household.library",
+                "household.title",
                 # ("description",{"mode":"pivot"}),
-                "tags",
+                "household.tags",
                 # =====================================
                 # Project
                 # =====================================

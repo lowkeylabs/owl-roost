@@ -28,8 +28,35 @@ from owlroost.household.registry import (
     HouseholdRegistry,
 )
 from owlroost.household.specs import (
+    HouseholdLibrarySpec,
     HouseholdSpec,
 )
+
+TEST_LIBRARY = HouseholdLibrarySpec(
+    name="test",
+    root=Path("/tmp"),
+    read_only=False,
+)
+
+
+def household(
+    household_id: str,
+    title: str | None = None,
+) -> HouseholdSpec:
+    """
+    Construct a HouseholdSpec for
+    registry testing.
+    """
+
+    if title is None:
+        title = household_id.title()
+
+    return HouseholdSpec(
+        id=household_id,
+        title=title,
+        library=TEST_LIBRARY,
+        root=TEST_LIBRARY.root / household_id,
+    )
 
 
 def test_registry_initially_empty():
@@ -55,10 +82,9 @@ def test_register_household():
 
     registry = HouseholdRegistry()
 
-    spec = HouseholdSpec(
-        id="example",
-        title="Example",
-        root=Path("/tmp/example"),
+    spec = household(
+        "example",
+        "Example",
     )
 
     registry.register_household(
@@ -82,10 +108,9 @@ def test_register_duplicate_household_raises():
 
     registry = HouseholdRegistry()
 
-    spec = HouseholdSpec(
-        id="example",
-        title="Example",
-        root=Path("/tmp/example"),
+    spec = household(
+        "example",
+        "Example",
     )
 
     registry.register_household(
@@ -110,16 +135,8 @@ def test_register_many():
 
     registry.register_many(
         [
-            HouseholdSpec(
-                id="a",
-                title="A",
-                root=Path("/tmp/a"),
-            ),
-            HouseholdSpec(
-                id="b",
-                title="B",
-                root=Path("/tmp/b"),
-            ),
+            household("a", "A"),
+            household("b", "B"),
         ]
     )
 
@@ -144,10 +161,9 @@ def test_get_household():
 
     registry = HouseholdRegistry()
 
-    spec = HouseholdSpec(
-        id="example",
-        title="Example",
-        root=Path("/tmp/example"),
+    spec = household(
+        "example",
+        "Example",
     )
 
     registry.register_household(
@@ -187,18 +203,16 @@ def test_household_ids_sorted():
     registry = HouseholdRegistry()
 
     registry.register_household(
-        HouseholdSpec(
-            id="zebra",
-            title="Zebra",
-            root=Path("/tmp/zebra"),
+        household(
+            "zebra",
+            "Zebra",
         )
     )
 
     registry.register_household(
-        HouseholdSpec(
-            id="alpha",
-            title="Alpha",
-            root=Path("/tmp/alpha"),
+        household(
+            "alpha",
+            "Alpha",
         )
     )
 
@@ -217,18 +231,16 @@ def test_household_specs_sorted():
     registry = HouseholdRegistry()
 
     registry.register_household(
-        HouseholdSpec(
-            id="zebra",
-            title="Zebra",
-            root=Path("/tmp/zebra"),
+        household(
+            "zebra",
+            "Zebra",
         )
     )
 
     registry.register_household(
-        HouseholdSpec(
-            id="alpha",
-            title="Alpha",
-            root=Path("/tmp/alpha"),
+        household(
+            "alpha",
+            "Alpha",
         )
     )
 
@@ -249,18 +261,16 @@ def test_registry_iteration():
     registry = HouseholdRegistry()
 
     registry.register_household(
-        HouseholdSpec(
-            id="b",
-            title="B",
-            root=Path("/tmp/b"),
+        household(
+            "b",
+            "B",
         )
     )
 
     registry.register_household(
-        HouseholdSpec(
-            id="a",
-            title="A",
-            root=Path("/tmp/a"),
+        household(
+            "a",
+            "A",
         )
     )
 
@@ -291,3 +301,5 @@ def test_registry_fixture_contains_minimum(
     assert spec.id == "minimum"
 
     assert spec.title == "Minimum Household"
+
+    assert spec.library.name == "builtin"

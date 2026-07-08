@@ -9,13 +9,13 @@ Household specifications.
 
 Notes
 -----
-Defines the canonical metadata describing a registered
-Household Project.
+Defines the canonical metadata describing
+Household Libraries and Household Projects.
 
 Architectural Invariants
 ------------------------
 
-A HouseholdSpec describes a household project.
+HouseholdSpec describes a household project.
 
 It does not contain runtime state.
 
@@ -27,25 +27,136 @@ The registry owns discovery.
 
 Loaders own construction.
 
-Future Directions
------------------
-
-Future revisions may expose additional metadata such as:
-
-* provenance
-* supported artifacts
-* supported exports
-* supported capabilities
-* educational metadata
-
-The goal is to keep HouseholdSpec lightweight while
-allowing the surrounding project directory to evolve.
+This module also owns the canonical
+household field definitions used by
+display, catalogs, and materialization.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+
+# =========================================================
+# Household Field Definitions
+# =========================================================
+
+HOUSEHOLD_NAMESPACE = "household"
+
+
+@dataclass(
+    frozen=True,
+    slots=True,
+)
+class HouseholdFieldSpec:
+    """
+    Canonical description of one
+    household field.
+    """
+
+    name: str
+
+    description: str
+
+
+HOUSEHOLD_FIELDS: tuple[
+    HouseholdFieldSpec,
+    ...,
+] = (
+    HouseholdFieldSpec(
+        "id",
+        "Stable household identifier.",
+    ),
+    HouseholdFieldSpec(
+        "name",
+        "Canonical household project name.",
+    ),
+    HouseholdFieldSpec(
+        "title",
+        "Human-readable household title.",
+    ),
+    HouseholdFieldSpec(
+        "description",
+        "Household description.",
+    ),
+    HouseholdFieldSpec(
+        "library",
+        "Containing household library.",
+    ),
+    HouseholdFieldSpec(
+        "relative_root",
+        "Project path relative to the containing household library.",
+    ),
+    HouseholdFieldSpec(
+        "root",
+        "Household project directory.",
+    ),
+    HouseholdFieldSpec(
+        "exists",
+        "Whether the project directory exists.",
+    ),
+    HouseholdFieldSpec(
+        "tags",
+        "Household tags.",
+    ),
+    HouseholdFieldSpec(
+        "artifact_count",
+        "Number of project artifacts.",
+    ),
+    HouseholdFieldSpec(
+        "artifact_names",
+        "Project artifact filenames.",
+    ),
+)
+
+
+def household_field_name(
+    name: str,
+) -> str:
+    """
+    Return the fully-qualified household
+    field name.
+    """
+
+    return f"{HOUSEHOLD_NAMESPACE}.{name}"
+
+
+# =========================================================
+# Household Libraries
+# =========================================================
+
+
+@dataclass(
+    frozen=True,
+    slots=True,
+)
+class HouseholdLibrarySpec:
+    """
+    Canonical description of a household
+    library.
+    """
+
+    name: str
+
+    root: Path
+
+    read_only: bool = False
+
+    @property
+    def writable(
+        self,
+    ) -> bool:
+        """
+        Return True if this library
+        accepts modifications.
+        """
+
+        return not self.read_only
+
+
+# =========================================================
+# Household Projects
+# =========================================================
 
 
 @dataclass(
@@ -56,42 +167,13 @@ class HouseholdSpec:
     """
     Canonical description of a registered
     household project.
-
-    Parameters
-    ----------
-    id
-        Stable registry identifier.
-
-    title
-        Human-readable household name.
-
-    root
-        Root directory of the household
-        project.
-
-    description
-        Short descriptive text.
-
-    tags
-        User-facing tags used for search,
-        categorization, and documentation.
-
-    Notes
-    -----
-    The household project directory is the
-    canonical identity of the project.
-
-    Files within that directory represent
-    household artifacts.
-
-    HouseholdSpec intentionally avoids
-    embedding runtime objects such as an
-    instantiated OWL Plan.
     """
 
     id: str
 
     title: str
+
+    library: HouseholdLibrarySpec
 
     root: Path
 
@@ -103,98 +185,42 @@ class HouseholdSpec:
     def household_file(
         self,
     ) -> Path:
-        """
-        Return the executable household
-        specification.
-
-        Returns
-        -------
-        Path
-        """
-
         return self.root / "household.py"
 
     @property
     def manifest_file(
         self,
     ) -> Path:
-        """
-        Return metadata file.
-
-        Returns
-        -------
-        Path
-        """
-
         return self.root / "manifest.toml"
 
     @property
     def readme_file(
         self,
     ) -> Path:
-        """
-        Return README.
-
-        Returns
-        -------
-        Path
-        """
-
         return self.root / "README.md"
 
     @property
     def case_file(
         self,
     ) -> Path:
-        """
-        Return canonical OWL case file.
-
-        Returns
-        -------
-        Path
-        """
-
         return self.root / "case.toml"
 
     @property
     def hfp_file(
         self,
     ) -> Path:
-        """
-        Return canonical Household
-        Financial Profile workbook.
-
-        Returns
-        -------
-        Path
-        """
-
         return self.root / "HFP.xlsx"
 
     @property
     def exists(
         self,
     ) -> bool:
-        """
-        Return True if the household
-        project directory exists.
-        """
-
         return self.root.is_dir()
 
     @property
     def artifact_names(
         self,
     ) -> tuple[str, ...]:
-        """
-        Return artifact filenames
-        present within the project.
-
-        Returns
-        -------
-        tuple[str, ...]
-        """
-
         artifacts: list[str] = []
 
         for path in sorted(
@@ -210,22 +236,35 @@ class HouseholdSpec:
             artifacts,
         )
 
+    @property
+    def name(
+        self,
+    ) -> str:
+        """
+        Canonical household project name.
+        """
+
+        return self.root.name
+
+    @property
+    def relative_root(
+        self,
+    ) -> Path:
+        """
+        Project path relative to its
+        containing library.
+        """
+
+        return self.root.relative_to(
+            self.library.root,
+        )
+
     def has_artifact(
         self,
         name: str,
     ) -> bool:
         """
         Test whether an artifact exists.
-
-        Parameters
-        ----------
-        name
-            Filename relative to the
-            household project root.
-
-        Returns
-        -------
-        bool
         """
 
         return (self.root / name).exists()
@@ -235,25 +274,27 @@ class HouseholdSpec:
     ) -> dict[str, object]:
         """
         Convert the household
-        specification into a display row.
-
-        Returns
-        -------
-        dict
+        specification into a catalog row.
         """
 
-        return {
+        row = {
             "id": self.id,
+            "name": self.name,
             "title": self.title,
             "description": self.description,
-            "tags": ", ".join(
-                self.tags,
+            "library": self.library.name,
+            "relative_root": str(
+                self.relative_root,
             ),
             "root": str(
                 self.root,
             ),
             "exists": self.exists,
-            "artifacts": len(
+            "tags": self.tags,
+            "artifact_count": len(
                 self.artifact_names,
             ),
+            "artifact_names": self.artifact_names,
         }
+
+        return {household_field_name(key): value for key, value in row.items()}

@@ -11,52 +11,50 @@ Notes
 -----
 Verifies that the public bootstrap
 constructs a populated Household
-Registry from the built-in Household
-Library.
+Registry from the effective
+Household Libraries.
 """
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from owlroost.household.bootstrap import (
     build_household_registry,
-    household_search_paths,
+    household_libraries,
 )
-from owlroost.household.households import (
-    BUILTIN_HOUSEHOLD_LIBRARY,
+from owlroost.household.specs import (
+    HouseholdLibrarySpec,
 )
 
 
-def test_household_search_paths_returns_builtin_library():
+def test_household_libraries_returns_library_specs():
     """
-    The built-in Household Library
-    participates in the default
-    search path.
-    """
-
-    paths = household_search_paths()
-
-    assert BUILTIN_HOUSEHOLD_LIBRARY in paths
-
-
-def test_household_search_paths_returns_paths():
-    """
-    Every search path is represented
-    as a pathlib.Path.
+    Household libraries are represented
+    by HouseholdLibrarySpec objects.
     """
 
-    paths = household_search_paths()
+    libraries = household_libraries()
 
-    assert paths
+    assert libraries
 
     assert all(
         isinstance(
-            path,
-            Path,
+            library,
+            HouseholdLibrarySpec,
         )
-        for path in paths
+        for library in libraries
     )
+
+
+def test_household_libraries_contains_builtin():
+    """
+    The built-in Household Library is
+    visible through the planning
+    context.
+    """
+
+    libraries = household_libraries()
+
+    assert any(library.name == "builtin" for library in libraries)
 
 
 def test_build_household_registry_returns_registry():
@@ -72,9 +70,8 @@ def test_build_household_registry_returns_registry():
 
 def test_build_household_registry_discovers_households():
     """
-    The built-in Household Library
-    contributes at least one
-    Household Project.
+    At least one Household Project is
+    discovered.
     """
 
     registry = build_household_registry()
@@ -109,6 +106,4 @@ def test_build_household_registry_contains_expected_ids():
 
     registry = build_household_registry()
 
-    ids = registry.household_ids()
-
-    assert "minimum" in ids
+    assert "minimum" in registry.household_ids()
