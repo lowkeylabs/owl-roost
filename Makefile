@@ -37,6 +37,7 @@ sync-dev:
 # ==========================================================
 
 pre-commit:
+	roost-audit tree --fix
 	uv run pre-commit run --all-files
 
 lint:
