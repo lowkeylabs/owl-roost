@@ -110,7 +110,7 @@ from owlroost.workspace.materializers import (
 )
 @click.option(
     "--assist",
-    default="next",
+    default="status",
     callback=parse_assist,
     help=(
         "Append activity view(s).\n"
@@ -223,25 +223,26 @@ def cmd_context(
     # Display context
     # =====================================================
 
-    table = materialize_view(
-        rows=rows,
-        registry=catalog.display_registry,
-        catalog_index=catalog.catalog_index,
-        level=level,
-        mode="pivot" if pivot else "table",
-        view_name=view,
-        explain_facets=explain_facets,
-        show_header=True,
-        title="Here are details about your current directory.\n",
-    )
+    if 0:
+        table = materialize_view(
+            rows=rows,
+            registry=catalog.display_registry,
+            catalog_index=catalog.catalog_index,
+            level=level,
+            mode="pivot" if pivot else "table",
+            view_name=view,
+            explain_facets=explain_facets,
+            show_header=True,
+            title="Here are details about your current directory.\n",
+        )
 
-    _output = render_table(
-        table,
-        resolve_renderer(
-            False,
-            False,
-        ),
-    )
+        _output = render_table(
+            table,
+            resolve_renderer(
+                False,
+                False,
+            ),
+        )
 
     # =====================================================
     # Planning activities
