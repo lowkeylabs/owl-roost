@@ -84,8 +84,8 @@ cli.add_command(cmd_vals, name="vals")
 cli.add_command(cmd_vals, name="settings")
 
 cli.add_command(cmd_workspace, name="workspace")
+cli.add_command(cmd_workspace, name=".")
 
 cli.add_command(cmd_context, name="context")
-cli.add_command(cmd_context, name=".")
 
 cli.add_command(cmd_household, name="library")

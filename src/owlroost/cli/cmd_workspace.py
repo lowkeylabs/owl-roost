@@ -33,6 +33,8 @@ Workspace subsystem owns:
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import click
 
 from owlroost.catalog.context import (
@@ -65,6 +67,12 @@ from owlroost.display.operations.table_ops import (
     inject_id_column,
 )
 from owlroost.operations.resolve import build_resolver
+from owlroost.package.builder import (
+    build_evidence_package,
+)
+from owlroost.package.publish import (
+    publish_evidence_package,
+)
 from owlroost.workspace.loaders import (
     load_context_row,
     load_workspace_rows,
@@ -152,6 +160,11 @@ from owlroost.workspace.operations import (
     is_flag=True,
     help="Ignore workspace suitability checks.",
 )
+@click.option(
+    "--publish",
+    is_flag=True,
+    help="Publish the current evidence package.",
+)
 @click.option("--assist", flag_value="", help="Append guidance to display.")
 @click.option("--discover", is_flag=True, help="Append guidance to display.")
 def cmd_workspace(
@@ -172,6 +185,7 @@ def cmd_workspace(
     ignore,
     assist,
     discover,
+    publish,
 ):
     """
     List and manage workspaces.
@@ -245,6 +259,20 @@ def cmd_workspace(
         )
 
         click.echo(f"Initialized workspace: {workspace_dir}")
+
+        return
+
+    if publish:
+        package = build_evidence_package(
+            planning_context,
+        )
+
+        destination = publish_evidence_package(
+            package,
+            Path(root) / "publish",
+        )
+
+        click.echo(f"Published evidence package to:\n{destination}")
 
         return
 
