@@ -73,6 +73,9 @@ from owlroost.package.builder import (
 from owlroost.package.publish import (
     publish_evidence_package,
 )
+from owlroost.workspace.builders import (
+    build_workspace_planning_context,
+)
 from owlroost.workspace.loaders import (
     load_context_row,
     load_workspace_rows,
@@ -213,14 +216,14 @@ def cmd_workspace(
     # Current planning context
     # =====================================================
 
-    planning_context = materialize_planning_context(
+    planning_row = materialize_planning_context(
         load_context_row(root),
         catalog,
     )
 
     resolve = build_resolver(
         catalog,
-        planning_context,
+        planning_row,
     )
 
     # =====================================================
@@ -263,8 +266,12 @@ def cmd_workspace(
         return
 
     if publish:
+        workspace_context = build_workspace_planning_context(
+            planning_row,
+        )
+
         package = build_evidence_package(
-            planning_context,
+            workspace_context,
         )
 
         destination = publish_evidence_package(
@@ -323,7 +330,7 @@ def cmd_workspace(
 
     else:
         rows = [
-            planning_context,
+            planning_row,
         ]
 
     rows = [
