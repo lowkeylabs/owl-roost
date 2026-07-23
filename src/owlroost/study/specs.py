@@ -305,3 +305,9 @@ class ExperimentSpec:
     ] = field(
         default_factory=dict,
     )
+
+    def hydra_overrides(self) -> list[str]:
+        return [
+            *self.fixed_overrides,
+            *self.variable_overrides,
+        ]

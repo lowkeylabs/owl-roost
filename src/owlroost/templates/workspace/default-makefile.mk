@@ -1,4 +1,6 @@
 # Shared ROOST Makefile
+# Default location for this file: ./owlroost/templates/workspace/default-makefile.mk
+# Location is assigned in ./owlroost/core/settings.py
 
 .PHONY: help validate cases results docs all clean realclean
 

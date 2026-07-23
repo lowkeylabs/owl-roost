@@ -84,7 +84,6 @@ from owlroost.workspace.materializers import (
     materialize_planning_context,
 )
 from owlroost.workspace.operations import (
-    create_workspace,
     init_workspace,
     rename_workspace,
     sync_results_catalog,
@@ -116,11 +115,6 @@ from owlroost.workspace.operations import (
     "--top",
     type=str,
     help="Limit rows.",
-)
-@click.option(
-    "--create",
-    type=str,
-    help="Create new workspace.",
 )
 @click.option(
     "--rename",
@@ -177,7 +171,6 @@ def cmd_workspace(
     filters,
     sort,
     top,
-    create,
     rename,
     root,
     pivot,
@@ -229,21 +222,6 @@ def cmd_workspace(
     # =====================================================
     # Immediate operations
     # =====================================================
-
-    if create:
-        if not resolve(
-            "context.can_create_workspace",
-        ):
-            raise click.ClickException("Cannot create a workspace here.")
-
-        workspace_dir = create_workspace(
-            create,
-            parent=root,
-        )
-
-        click.echo(f"Created workspace: {workspace_dir}")
-
-        return
 
     if init:
         if (

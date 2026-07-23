@@ -128,9 +128,28 @@ def build_session(
             capture_output=True,
         )
 
-        assert result.returncode == 0, f"\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+        #        assert result.returncode == 0, f"\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
 
-        assert session_root.exists()
+        #        assert session_root.exists()
+
+        if 1:
+            print("\nSTDOUT")
+            print(result.stdout)
+
+            print("\nSTDERR")
+            print(result.stderr)
+
+            results_root = Path("results") / case_path.stem
+
+            print("\nRESULTS TREE")
+            if results_root.exists():
+                for p in sorted(results_root.rglob("*")):
+                    print(p)
+            else:
+                print("No results directory")
+
+            assert result.returncode == 0
+            assert session_root.exists()
 
         return session_root
 

@@ -320,6 +320,11 @@ def run_hydra_build(
         "Import selected cases into the named household library (workspace, user, builtin, ...)."
     ),
 )
+@click.option(
+    "--experiment",
+    type=str,
+    help=("Comma-separated list of experiment names."),
+)
 def cmd_build(
     ctx,
     args,
@@ -337,6 +342,7 @@ def cmd_build(
     run,
     case_folder,
     import_to,
+    experiment,
 ):
     """
     Display available cases and build sessions.
@@ -360,20 +366,6 @@ def cmd_build(
 
     is_cases_command = _invoked_as == "cases"
 
-    direct_case_paths = resolve_direct_case_paths(
-        selectors,
-    )
-
-    if direct_case_paths:
-        run_direct_case_build(
-            direct_case_paths,
-            overrides,
-            progress=progress,
-            run=run,
-        )
-
-        return
-
     #    if overrides_request_trials(overrides):
     #        if run:
     #            click.echo("INFO: trials_per_run > 0 detected; " "enabling --build-only automatically.")
@@ -381,6 +373,69 @@ def cmd_build(
     #        build_only = True
 
     catalog = build_catalog_context()
+
+    # =====================================================
+    # Parse experiment, direct case paths and overrices
+    # (these are all used later, AFTER rows are loaded.)
+    # =====================================================
+
+    experiment_names = []
+
+    if experiment:
+        experiment_names = [x.strip() for x in experiment.split(",") if x.strip()]
+    experiments = []
+
+    for name in experiment_names:
+        spec = catalog.study_registry.get_experiment(name)
+
+        if spec is None:
+            raise click.ClickException(f"Unknown experiment: {name}")
+
+        experiments.append(spec)
+
+    direct_case_paths = resolve_direct_case_paths(
+        selectors,
+    )
+
+    overrides, override_errors = parse_override_request(
+        overrides,
+        catalog.schema_registry,
+    )
+
+    if 0 and override_errors:
+        raise click.BadParameter(
+            "\n".join(
+                override_errors,
+            )
+        )
+
+    # This code is used by the tests only.
+    # See bottom of file for CLI processing.
+
+    if direct_case_paths:
+        if experiments:
+            for experiment in experiments:
+                experiment_overrides = [
+                    *overrides,
+                    *experiment.hydra_overrides(),
+                ]
+
+                run_direct_case_build(
+                    direct_case_paths,
+                    experiment_overrides,
+                    progress=progress,
+                    run=run,
+                )
+
+        else:
+            run_direct_case_build(
+                direct_case_paths,
+                overrides,
+                progress=progress,
+                run=run,
+            )
+
+        return
 
     # =====================================================
     # Parse explain request
@@ -394,18 +449,6 @@ def cmd_build(
         raise click.BadParameter(
             "\n".join(
                 explain_errors,
-            )
-        )
-
-    overrides, override_errors = parse_override_request(
-        overrides,
-        catalog.schema_registry,
-    )
-
-    if 0 and override_errors:
-        raise click.BadParameter(
-            "\n".join(
-                override_errors,
             )
         )
 
@@ -623,15 +666,34 @@ def cmd_build(
     for row in selected_rows:
         case_path = Path(row["_path"]).resolve()
 
-        # ----------------------------------------
-        # Launch Hydra build
-        # ----------------------------------------
-        runs = run_hydra_build(
-            case_path,
-            list(overrides),
-        )
+        if 0:
+            print(f"Path: {case_path}")
+            print(f"Overrides: {overrides}")
+            print(f"Experiments: {experiments}")
 
-        generated_runs.extend(runs)
+        experiment_overrides = overrides
+
+        if experiments:
+            for experiment in experiments:
+                experiment_overrides = [
+                    *overrides,
+                    *experiment.hydra_overrides(),
+                ]
+
+                runs = run_hydra_build(
+                    case_path,
+                    list(experiment_overrides),
+                )
+
+                generated_runs.extend(runs)
+
+        else:
+            runs = run_hydra_build(
+                case_path,
+                list(experiment_overrides),
+            )
+
+            generated_runs.extend(runs)
 
     # ----------------------------------------
     # Build-only exit

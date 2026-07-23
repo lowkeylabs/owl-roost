@@ -52,56 +52,16 @@ from owlroost.workspace.default_toml import (
 )
 from owlroost.workspace.levers.context import workspace_initialized
 
-MINIMAL_MAKEFILE = """\
--include $(shell roost settings makefile)
--include ./makefile.mk
+# These files should exist and be stored in ./src/owlroost/templates/workspace
+# The user can create "makefile.mk" to hold local commands
+# The Makefile will autoload ./templates/workspace/default-makefile.mk
 
-# Add additional makefile targets
-# to makefile.mk file.  It will be included
-# as necessary.
-
-"""
-
-
-def create_workspace(
-    name,
-    *,
-    parent=".",
-):
-    """
-    Create a new workspace.
-
-    Parameters
-    ----------
-    name
-        Workspace directory name.
-
-    parent
-        Parent directory.
-    """
-
-    parent = Path(parent)
-
-    workspace_dir = parent / name
-
-    if workspace_dir.exists():
-        raise RoostError(f"Workspace already exists: {workspace_dir}")
-
-    workspace_dir.mkdir(
-        parents=True,
-    )
-
-    (workspace_dir / "workspace.toml").write_text(
-        render_workspace_toml(
-            workspace_dir,
-        )
-    )
-
-    (workspace_dir / "Makefile").write_text(
-        MINIMAL_MAKEFILE,
-    )
-
-    return workspace_dir
+WORKSPACE_TEMPLATE_FILES = [
+    "index.qmd",
+    "Makefile",
+    "_quarto.yml",
+    "_variables.yml",
+]
 
 
 def rename_workspace(
@@ -131,45 +91,30 @@ def rename_workspace(
     return target
 
 
-def validate_workspace(
-    workspace_dir,
-):
-    """
-    Validate workspace structure.
+def install_workspace_templates(
+    workspace_dir: Path,
+    *,
+    force: bool = False,
+) -> None:
+    """Install standard workspace template files."""
 
-    Returns
-    -------
-    list[str]
-        Validation errors.
-    """
+    template_dir = get_workspace_template_dir() / "workspace"
 
-    workspace_dir = Path(
-        workspace_dir,
-    )
+    for filename in WORKSPACE_TEMPLATE_FILES:
+        src = template_dir / filename
+        dst = workspace_dir / filename
 
-    errors = []
+        if not src.exists():
+            raise RoostError(f"Missing workspace template: {src}")
 
-    if not workspace_dir.exists():
-        errors.append(
-            "workspace directory does not exist",
-        )
-        return errors
-
-    if not (workspace_dir / "workspace.toml").exists():
-        errors.append(
-            "missing workspace.toml",
-        )
-
-    if not (workspace_dir / "Makefile").exists():
-        errors.append(
-            "missing Makefile",
-        )
-
-    return errors
+        if force or not dst.exists():
+            shutil.copy2(src, dst)
 
 
 def init_workspace(
     workspace_dir=".",
+    *,
+    parent="",
     force=False,
 ):
     """
@@ -182,8 +127,10 @@ def init_workspace(
     unless force=True.
     """
 
+    parent = Path(parent)
+
     workspace_dir = Path(
-        workspace_dir,
+        parent / workspace_dir,
     ).resolve()
 
     if not workspace_dir.exists():
@@ -198,10 +145,6 @@ def init_workspace(
 
     workspace_toml = workspace_dir / "workspace.toml"
 
-    makefile = workspace_dir / "Makefile"
-
-    index_qmd = workspace_dir / "index.qmd"
-
     # -----------------------------------------
     # workspace.toml
     # -----------------------------------------
@@ -213,29 +156,10 @@ def init_workspace(
             )
         )
 
-    # -----------------------------------------
-    # Makefile
-    # -----------------------------------------
-
-    if force or not makefile.exists():
-        makefile.write_text(
-            MINIMAL_MAKEFILE,
-        )
-
-    # -----------------------------------------
-    # index.qmd
-    # -----------------------------------------
-
-    template_index = get_workspace_template_dir() / "_index.qmd"
-
-    if not template_index.exists():
-        raise RoostError(f"Missing workspace template: {template_index}")
-
-    if force or not index_qmd.exists():
-        shutil.copy2(
-            template_index,
-            index_qmd,
-        )
+    install_workspace_templates(
+        workspace_dir,
+        force=force,
+    )
 
     return workspace_dir
 

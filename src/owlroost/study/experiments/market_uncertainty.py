@@ -56,10 +56,10 @@ def register_experiments(
             ],
             fixed_overrides=[
                 "rates_selection.method=bootstrap_sor",
-                "roost_settings.trials_per_run=20",
+                "roost_settings.trials_per_run=100",
             ],
             variable_overrides=[
-                "roost_sweeps.regime=full,dotcom,stagflation",
+                "roost_sweeps.named_window=full,dotcom,stagflation",
             ],
             defined_in=normalize_module_path(__file__),
         )
@@ -81,7 +81,7 @@ def register_experiments(
                 "rates_selection.method=historical_average",
             ],
             variable_overrides=[
-                "roost_sweeps.regime=full,dotcom,stagflation",
+                "roost_sweeps.named_window=full,dotcom,stagflation",
             ],
             defined_in=normalize_module_path(__file__),
         )

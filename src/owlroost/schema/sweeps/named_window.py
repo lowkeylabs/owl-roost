@@ -1,4 +1,4 @@
-# src/owlroost/schema/sweeps/regime.py
+# src/owlroost/schema/sweeps/named_window.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -31,11 +31,11 @@ def register_schema_fields(
 ):
     reg.register(
         FieldSpec(
-            name="roost_sweeps.regime",
+            name="roost_sweeps.named_window",
             dtype=str,
             path=(
                 "roost_sweeps",
-                "regime",
+                "named_window",
             ),
             source="sweep",
             owner="ROOST",
@@ -49,7 +49,7 @@ def register_schema_fields(
                 "rates_selection.from",
                 "rates_selection.to",
             ],
-            description=("Named historical market regime."),
+            description=("Named historical market time window."),
             defined_in=normalize_module_path(__file__),
         )
     )
@@ -64,7 +64,7 @@ def materialize_override_to_canonical(
     )
 
     regime = roost.pop(
-        "regime",
+        "named_window",
         None,
     )
 

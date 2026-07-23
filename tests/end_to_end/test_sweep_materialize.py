@@ -55,14 +55,14 @@ def test_materialize_regime(
     session = build_session(
         "case_alex+jamie.toml",
         "rates_selection.method=bootstrap_sor",
-        f"roost_sweeps.regime={regime}",
+        f"roost_sweeps.named_window={regime}",
     )
 
     # -------------------------------------------------
     # Verify materialized run through OWL
     # -------------------------------------------------
 
-    from owlroost.schema.sweeps.regime import (
+    from owlroost.schema.sweeps.named_window import (
         MARKET_REGIMES,
     )
 

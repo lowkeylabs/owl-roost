@@ -20,14 +20,11 @@ from owlroost.workspace.loaders import (
     load_workspace_row,
 )
 
-(
-    schema_registry,
-    metrics_registry,
-    workspace_registry,
-    display_registry,
-    catalog_rows,
-    catalog_index,
-) = build_catalog_context()
+# =====================================================
+# Catalog
+# =====================================================
+
+catalog = build_catalog_context()
 
 workspace_row = load_workspace_row( "." )
 
@@ -60,7 +57,7 @@ list goes here
 
 # this gets replaced with study.list_cases( view )  # what engine?
 
-rows = load_case_rows(CASE_FOLDER, metrics_registry=metrics_registry)
+rows = load_case_rows(CASE_FOLDER, metrics_registry=catalog.metrics_registry)
 
 if rows:
 
@@ -71,8 +68,8 @@ if rows:
 
     table = materialize_view(
         rows=rows,
-        registry=display_registry,
-        catalog_index=catalog_index,
+        registry=catalog.display_registry,
+        catalog_index=catalog.catalog_index,
         level=level,
         view_name=view,
         mode="pivot" if pivot else "table",
@@ -107,7 +104,7 @@ list goes here
 
 # this gets replaced with study.list_runs( view )
 
-rows = load_run_rows( metrics_registry=metrics_registry,results_root="results" )
+rows = load_run_rows( metrics_registry=catalog.metrics_registry,results_root="results" )
 
 if rows:
     pivot = False
@@ -117,8 +114,8 @@ if rows:
 
     table = materialize_view(
         rows=rows,
-        registry=display_registry,
-        catalog_index=catalog_index,
+        registry=catalog.display_registry,
+        catalog_index=catalog.catalog_index,
         level=level,
         view_name=view,
         mode="pivot" if pivot else "table",

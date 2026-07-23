@@ -110,7 +110,7 @@ def get_workspace_template_dir():
 
 
 def get_roost_makefile():
-    return get_workspace_template_dir() / "roost.mk"
+    return get_workspace_template_dir() / "workspace" / "default-makefile.mk"
 
 
 def get_settings():

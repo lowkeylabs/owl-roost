@@ -7,67 +7,9 @@ from owlroost.exceptions import (
     RoostError,
 )
 from owlroost.workspace.operations import (
-    create_workspace,
+    init_workspace,
     rename_workspace,
-    validate_workspace,
 )
-
-
-def test_create_workspace(
-    tmp_path,
-):
-    """
-    Workspace creation writes
-    required files.
-    """
-
-    workspace = create_workspace(
-        "example",
-        parent=tmp_path,
-    )
-
-    assert workspace.exists()
-
-    assert (workspace / "workspace.toml").exists()
-
-    assert (workspace / "Makefile").exists()
-
-
-def test_create_workspace_existing_raises(
-    tmp_path,
-):
-    """
-    Existing workspace names
-    are rejected.
-    """
-
-    (tmp_path / "example").mkdir()
-
-    with pytest.raises(
-        RoostError,
-    ):
-        create_workspace(
-            "example",
-            parent=tmp_path,
-        )
-
-
-def test_create_workspace_study_toml_contains_name(
-    tmp_path,
-):
-    """
-    Name is materialized into
-    workspace.toml.
-    """
-
-    workspace = create_workspace(
-        "example",
-        parent=tmp_path,
-    )
-
-    contents = (workspace / "workspace.toml").read_text()
-
-    assert "title =" in contents
 
 
 def test_rename_workspace(
@@ -78,7 +20,11 @@ def test_rename_workspace(
     be renamed.
     """
 
-    workspace = create_workspace(
+    source_dir = tmp_path / "old_name"
+    if not source_dir.exists():
+        source_dir.mkdir()
+
+    workspace = init_workspace(
         "old_name",
         parent=tmp_path,
     )
@@ -120,12 +66,18 @@ def test_rename_workspace_existing_target_raises(
     are rejected.
     """
 
-    source = create_workspace(
+    source_dir = tmp_path / "source"
+    target_dir = tmp_path / "target"
+
+    source_dir.mkdir()
+    target_dir.mkdir()
+
+    source = init_workspace(
         "source",
         parent=tmp_path,
     )
 
-    create_workspace(
+    init_workspace(
         "target",
         parent=tmp_path,
     )
@@ -137,65 +89,3 @@ def test_rename_workspace_existing_target_raises(
             source,
             "target",
         )
-
-
-def test_validate_workspace_valid(
-    tmp_path,
-):
-    """
-    Freshly created workspace
-    validates successfully.
-    """
-
-    workspace = create_workspace(
-        "example",
-        parent=tmp_path,
-    )
-
-    errors = validate_workspace(
-        workspace,
-    )
-
-    assert errors == []
-
-
-def test_validate_workspace_missing_study_toml(
-    tmp_path,
-):
-    """
-    Missing workspace.toml is
-    reported.
-    """
-
-    workspace = tmp_path / "example"
-
-    workspace.mkdir()
-
-    (workspace / "Makefile").write_text("")
-
-    errors = validate_workspace(
-        workspace,
-    )
-
-    assert "missing workspace.toml" in errors
-
-
-def test_validate_workspace_missing_makefile(
-    tmp_path,
-):
-    """
-    Missing Makefile is
-    reported.
-    """
-
-    workspace = tmp_path / "example"
-
-    workspace.mkdir()
-
-    (workspace / "workspace.toml").write_text("")
-
-    errors = validate_workspace(
-        workspace,
-    )
-
-    assert "missing Makefile" in errors
