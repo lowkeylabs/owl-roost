@@ -48,7 +48,8 @@ ABBREVIATIONS = {
     "rates_selection.method": {
         "historical_average": "histAvg",
         "historical": "hist",
-        "bootstrap_sor": "bSOR",
+        "historical_bootstrap": "hBoot",
+        "garch_dcc": "garDcc",
         "historical_lognormal": "hLogNorm",
     },
 }
@@ -612,6 +613,15 @@ def display_compact_rates(
         {},
     )
 
+    sweeps = row.get(
+        "_inputs",
+        {},
+    ).get(
+        "roost_sweeps",
+        {},
+    )
+    named_window = sweeps.get("named_window", None)
+
     method = rates.get(
         "method",
     )
@@ -629,6 +639,8 @@ def display_compact_rates(
 
     if method in {
         "bootstrap_sor",
+        "historical_bootstrap",
+        "garch_dcc",
         "historical",
         "historical_average",
         "historical_lognormal",
@@ -636,8 +648,12 @@ def display_compact_rates(
         start = rates.get("from")
         end = rates.get("to")
 
+        if named_window:
+            return rf"{short}\[{named_window}]"
+
         if start is not None and end is not None:
-            return f"{short}[{start}-{end}]"
+            window = f"{start}-{end}"
+            return f"{short}[{window}]"
 
         return short
 
@@ -664,6 +680,7 @@ def display_compact_rates(
     if method in {
         "optimistic",
         "conservative",
+        "trailing_30",
         "default",
     }:
         return short
@@ -672,4 +689,4 @@ def display_compact_rates(
     # Fallback
     # -----------------------------------------------------
 
-    return short
+    return f"{short}-untrapped"

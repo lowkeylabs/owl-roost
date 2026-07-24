@@ -19,10 +19,37 @@ from ..registry import (
     FieldSpec,
 )
 
+# These are ordered by most stressful to least stressful on a retirement plan
+# from sequence of returns perspective.
+
 MARKET_REGIMES = {
-    "full": (1928, 2025),
-    "dotcom": (1994, 2000),
-    "stagflation": (1966, 1982),
+    # Great for stress testing
+    "lost_decade": (
+        2000,
+        2015,
+    ),  # "slow-grind" - Two major bear markets with a slow recovery; emphasizes sequence-of-returns risk.
+    "stagflation": (
+        1966,
+        1982,
+    ),  # "double-shock" - High inflation, weak real returns, and difficult stock/bond conditions.
+    "dotcom": (
+        1994,
+        2008,
+    ),  # "bubble burst" - Technology boom followed by the dot-com crash and Global Financial Crisis.
+    # Good for baseline evaluation
+    "modern": (
+        1990,
+        2025,
+    ),  # Contemporary market era spanning dot-com, GFC, COVID, and post-pandemic inflation.
+    "full": (
+        1928,
+        2025,
+    ),  # Entire available market history; long-run baseline across all economic environments.
+    # Totally optimistic
+    "secular_bull": (
+        1982,
+        1999,
+    ),  # Extended bull market with declining interest rates and exceptional equity growth.
 }
 
 

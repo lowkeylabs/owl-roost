@@ -47,19 +47,19 @@ def register_experiments(
             title="Bootstrap Sequence of Returns",
             description=(
                 "Evaluate retirement outcomes using "
-                "bootstrap sequence-of-returns sampling "
-                "across multiple historical market "
+                "bootstrap sampling "
+                "across a historical market"
                 "regimes."
             ),
             required_levers=[
                 "workspace.levers.is_initialized",
             ],
             fixed_overrides=[
-                "rates_selection.method=bootstrap_sor",
+                "rates_selection.method=historical_bootstrap",
                 "roost_settings.trials_per_run=100",
             ],
             variable_overrides=[
-                "roost_sweeps.named_window=full,dotcom,stagflation",
+                "roost_sweeps.named_window=full,modern,lost_decade,stagflation,dotcom,secular_bull",
             ],
             defined_in=normalize_module_path(__file__),
         )
@@ -67,21 +67,25 @@ def register_experiments(
 
     reg.register_experiment(
         ExperimentSpec(
-            name="historical_average_regimes",
-            title="Historical Average Returns",
+            name="garch_dcc_regimes",
+            title="DCC-GARCH model with historical data",
             description=(
-                "Evaluate retirement outcomes using "
-                "historical average returns computed "
-                "over several historical market regimes."
+                "DCC-GARCH(1,1) model (Engle 2002) fitted "
+                "by two-step MLE on historical data. Captures"
+                "time-varying volatility (GARCH) and time-varying"
+                "cross-asset correlations (DCC). Produces realistic"
+                "volatility clustering and correlation spikes"
+                "during market stres."
             ),
             required_levers=[
                 "workspace.levers.is_initialized",
             ],
             fixed_overrides=[
-                "rates_selection.method=historical_average",
+                "rates_selection.method=garch_dcc",
+                "roost_settings.trials_per_run=100",
             ],
             variable_overrides=[
-                "roost_sweeps.named_window=full,dotcom,stagflation",
+                "roost_sweeps.named_window=full,modern,lost_decade,stagflation,dotcom,secular_bull",
             ],
             defined_in=normalize_module_path(__file__),
         )
@@ -89,7 +93,7 @@ def register_experiments(
 
     reg.register_experiment(
         ExperimentSpec(
-            name="fixed_return_models",
+            name="fixed_return_regimes",
             title="Fixed Return Models",
             description=(
                 "Compare retirement outcomes using deterministic long-term return models."
@@ -100,6 +104,26 @@ def register_experiments(
             fixed_overrides=[],
             variable_overrides=[
                 "rates_selection.method=conservative,optimistic,trailing_30",
+            ],
+            defined_in=normalize_module_path(__file__),
+        )
+    )
+
+    reg.register_experiment(
+        ExperimentSpec(
+            name="historical_regimes",
+            title="Historical Average Returns",
+            description=(
+                "Evaluate retirement outcomes usingreturns drawn from a historical market regime."
+            ),
+            required_levers=[
+                "workspace.levers.is_initialized",
+            ],
+            fixed_overrides=[
+                "rates_selection.method=historical",
+            ],
+            variable_overrides=[
+                "roost_sweeps.named_window=full,modern,lost_decade,stagflation,dotcom,secular_bull",
             ],
             defined_in=normalize_module_path(__file__),
         )

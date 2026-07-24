@@ -474,4 +474,3 @@ worksheet_real_dollars = false
 notes = "Custom notes or metadata"
 version = 1
 ```
-

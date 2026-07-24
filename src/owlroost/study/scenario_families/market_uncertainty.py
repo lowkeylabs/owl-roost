@@ -38,9 +38,10 @@ def register_scenario_families(
                 "longevity",
             ],
             experiment_names=[
+                "historical_regimes",
                 "bootstrap_regimes",
-                "historical_average_regimes",
-                "fixed_return_models",
+                "garch_dcc_regimes",
+                "fixed_return_regimes",
             ],
             profiles={
                 "table": DisplayProfile(
