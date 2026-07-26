@@ -121,10 +121,11 @@ def resolve_field_value(
     2. explicit display path
     3. _metrics
     4. _meta
-    5. semantic namespaces
-    6. semantic object registries
-    7. _inputs
-    8. top-level row
+    5. expanded history context
+    6. semantic namespaces
+    7. semantic object registries
+    8. _inputs
+    9. top-level row
     """
 
     # =====================================================
@@ -189,6 +190,43 @@ def resolve_field_value(
         )
 
     # =====================================================
+    # Expanded History Context
+    #
+    # history.<collection>.<field>
+    #
+    # resolves against:
+    #
+    #     row["_history_context"]["record"]
+    # =====================================================
+
+    if head == "history" and sep:
+        ctx = row.get(
+            "_history_context",
+        )
+
+        if ctx is not None:
+            collection = ctx.get(
+                "collection",
+            )
+
+            record = ctx.get(
+                "record",
+            )
+
+            parts = tail.split(
+                ".",
+            )
+
+            if len(parts) >= 2 and parts[0] == collection:
+                value = extract_object_path(
+                    record,
+                    ".".join(parts[1:]),
+                )
+
+                if value is not None:
+                    return value
+
+    # =====================================================
     # Semantic namespaces
     # =====================================================
 
@@ -204,14 +242,6 @@ def resolve_field_value(
 
     # =====================================================
     # Semantic object lookup
-    #
-    # Field syntax:
-    #
-    #     guide.workspace.initialize.command
-    #
-    # Object storage:
-    #
-    #     row["_guide"]["_objects"]
     # =====================================================
 
     if sep:

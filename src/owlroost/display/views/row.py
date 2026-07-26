@@ -158,3 +158,58 @@ def register_display_views(
             **SHARED_VIEW_ONTOLOGY,
         )
     )
+
+    reg.register_view(
+        DisplayView(
+            level="row",
+            name="planning_cycle",
+            entries=[
+                # -------------------------------------------------
+                # Summary
+                # -------------------------------------------------
+                ("case_name"),
+                ("section", "planning_cycle"),
+                "history.planning_cycle.as_of",
+                "history.planning_cycle.hsa_savings_balances",
+                "history.planning_cycle.prior_12_months_discretionary_spending",
+                "history.planning_cycle.prior_12_months_essential_spending",
+                "history.planning_cycle.tax_deferred_savings_balances",
+                "history.planning_cycle.tax_free_savings_balances",
+                "history.planning_cycle.taxable_savings_balances",
+            ],
+            description=(
+                "Summarizes household financial position "
+                "including retirement savings, fixed "
+                "assets, liabilities, total assets, "
+                "and net worth."
+            ),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    reg.register_view(
+        DisplayView(
+            level="row",
+            name="tax_payments",
+            entries=[
+                # -------------------------------------------------
+                # Summary
+                # -------------------------------------------------
+                ("case_name"),
+                ("section", "tax_payments"),
+                "history.tax_payment.date",
+                "history.tax_payment.tax_year",
+                "history.tax_payment.tax_type",
+                "history.tax_payment.agency",
+                "history.tax_payment.payment_type",
+                "history.tax_payment.amount",
+            ],
+            description=(
+                "Summarizes household financial position "
+                "including retirement savings, fixed "
+                "assets, liabilities, total assets, "
+                "and net worth."
+            ),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )

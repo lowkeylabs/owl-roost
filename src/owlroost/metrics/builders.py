@@ -20,6 +20,7 @@ from datetime import datetime
 from pathlib import Path
 
 import numpy as np
+import owlplanner.tax_federal as tx
 
 from owlroost.core.utils import mosek_available
 
@@ -328,86 +329,323 @@ def ensure_complete_metrics(metrics: dict, status: str) -> dict:
     return metrics
 
 
+def tax_capacity_from_plan(plan):
+    """
+    Return year-0 federal ordinary-income tax
+    bracket utilization.
+
+    Reports how much of each bracket has been
+    consumed by the optimized year-0 taxable
+    income and how much room remains.
+    """
+
+    income = float(plan.G_n[0])
+
+    #
+    # Filing status:
+    #   0 = single
+    #   1 = married filing jointly
+    #
+    filing_status = min(plan.N_i - 1, 1)
+
+    ceilings = tx.taxBrackets_OBBBA[filing_status]
+    rates = tx.rates_OBBBA
+
+    floor = 0.0
+    brackets = []
+
+    for name, rate, ceiling in zip(
+        tx.taxBracketNames,
+        rates,
+        ceilings,
+        strict=False,
+    ):
+        width = ceiling - floor
+
+        occupied = max(
+            0.0,
+            min(income, ceiling) - floor,
+        )
+
+        remaining = max(
+            0.0,
+            width - occupied,
+        )
+
+        brackets.append(
+            {
+                "name": name,
+                "rate": float(rate),
+                "floor": float(floor),
+                "ceiling": None if ceiling >= 9_999_999 else float(ceiling),
+                "occupied": float(occupied),
+                "remaining": None if ceiling >= 9_999_999 else float(remaining),
+            }
+        )
+
+        floor = ceiling
+
+    return {
+        "tax_year": 2026,
+        "filing_status": ("married_joint" if filing_status else "single"),
+        "ordinary_taxable_income": income,
+        "brackets": brackets,
+    }
+
+
 # =========================================================
 # METRICS
 # =========================================================
 
 
 def financial_core_from_plan(plan, N):
+    """
+    Construct the canonical financial outcomes
+    for a solved OWL plan.
+
+    Financial metrics intentionally expose
+    comparable checkpoints across all major
+    financial quantities.
+
+    Flows
+    -----
+    spending
+    taxes
+    roth
+
+        year0
+        year5
+        year10
+        terminal
+        total
+
+    Stocks
+    ------
+    balances
+
+        year0
+        year5
+        year10
+        terminal
+
+    bequest
+
+        terminal
+    """
+
     gamma = plan.gamma_n[:N]
 
     actual_future = plan.g_n[:N]
     actual_today = actual_future / gamma
+
+    taxes_future = plan.T_n[:N]
+    taxes_today = taxes_future / gamma
+
+    roth_future = np.sum(plan.x_in[:, :N], axis=0)
+    roth_today = roth_future / gamma
+
+    # --------------------------------------------------
+    # Comparison checkpoints
+    # --------------------------------------------------
+
+    idx = {
+        "year0": 0,
+        "year5": min(5, N - 1),
+        "year10": min(10, N - 1),
+        "terminal": N - 1,
+    }
+
+    def checkpoint(values_future, values_today):
+        """
+        Build a checkpointed scalar quantity.
+        """
+        return {
+            name: {
+                "future": float(values_future[i]),
+                "today": float(values_today[i]),
+            }
+            for name, i in idx.items()
+        }
+
+    def cumulative_checkpoint(values_future, values_today):
+        return {
+            name: {
+                "future": float(np.sum(values_future[: i + 1])),
+                "today": float(np.sum(values_today[: i + 1])),
+            }
+            for name, i in idx.items()
+        }
+
+    def balance_checkpoint(balance_names):
+        """
+        Build checkpointed account balances.
+
+        Parameters
+        ----------
+        balance_names : dict[str, int]
+            Mapping from semantic account name
+            to OWL account index.
+        """
+
+        result = {}
+
+        for checkpoint_name, year in idx.items():
+            account_future = np.sum(
+                plan.b_ijn[:, :, year],
+                axis=0,
+            )
+
+            account_today = account_future / plan.gamma_n[year]
+
+            balances = {}
+
+            total_future = 0.0
+            total_today = 0.0
+
+            for name, account_index in balance_names.items():
+                future = float(account_future[account_index])
+
+                today = float(account_today[account_index])
+
+                balances[name] = {
+                    "future": future,
+                    "today": today,
+                }
+
+                total_future += future
+                total_today += today
+
+            balances["total"] = {
+                "future": total_future,
+                "today": total_today,
+            }
+
+            result[checkpoint_name] = balances
+
+        return result
+
+    # --------------------------------------------------
+    # Spending profile
+    # --------------------------------------------------
 
     k = min(5, N // 2 if N >= 2 else 1)
 
     early_avg = float(np.mean(actual_today[:k]))
     late_avg = float(np.mean(actual_today[-k:]))
 
-    year0 = float(actual_today[0])
-    yearN = float(actual_today[-1])
-
     survivor_ratio = None
+
     if early_avg > 0:
-        survivor_ratio = late_avg / early_avg
-        survivor_ratio = float(min(max(survivor_ratio, 0.0), 2.0))
+        survivor_ratio = float(
+            min(
+                max(
+                    late_avg / early_avg,
+                    0.0,
+                ),
+                2.0,
+            )
+        )
 
     spending_profile = {
-        "year0": year0,
+        "year0": float(actual_today[0]),
         "early_avg": early_avg,
         "late_avg": late_avg,
-        "yearN": yearN,
+        "terminal": float(actual_today[-1]),
         "survivor_ratio": survivor_ratio,
     }
 
-    spending = {
-        "year0": {
-            "future": float(actual_future[0]),
-            "today": float(actual_today[0]),
-        },
-        "total": {
-            "future": float(np.sum(actual_future)),
-            "today": float(np.sum(actual_today)),
-        },
+    # --------------------------------------------------
+    # Spending
+    # --------------------------------------------------
+
+    spending = cumulative_checkpoint(
+        actual_future,
+        actual_today,
+    )
+
+    spending["total"] = {
+        "future": float(np.sum(actual_future)),
+        "today": float(np.sum(actual_today)),
     }
 
-    taxes = {
-        "total": {
-            "future": float(np.sum(plan.T_n[:N])),
-            "today": float(np.sum(plan.T_n[:N] / gamma)),
-        }
+    # --------------------------------------------------
+    # Taxes
+    # --------------------------------------------------
+
+    taxes = cumulative_checkpoint(
+        taxes_future,
+        taxes_today,
+    )
+
+    taxes["total"] = {
+        "future": float(np.sum(taxes_future)),
+        "today": float(np.sum(taxes_today)),
     }
+
+    # --------------------------------------------------
+    # Roth conversions
+    # --------------------------------------------------
 
     roth = {
-        "total": {
-            "future": float(np.sum(plan.x_in[:, :N])),
-            "today": float(np.sum(np.sum(plan.x_in[:, :N], axis=0) / gamma)),
-        }
+        "annual": checkpoint(
+            roth_future,
+            roth_today,
+        ),
+        "cumulative": cumulative_checkpoint(
+            roth_future,
+            roth_today,
+        ),
     }
 
-    # ---- bequest ----
-    estate = np.sum(plan.b_ijn[:, :, plan.N_n], axis=0).copy()
+    # --------------------------------------------------
+    # Account balances
+    # --------------------------------------------------
+
+    balances = balance_checkpoint(
+        {
+            "taxable": 0,
+            "tax_deferred": 1,
+            "tax_free": 2,
+            "hsa": 3,
+        }
+    )
+
+    # --------------------------------------------------
+    # Terminal bequest
+    # --------------------------------------------------
+
+    estate = np.sum(
+        plan.b_ijn[:, :, plan.N_n],
+        axis=0,
+    ).copy()
+
     estate[1] *= 1 - plan.nu
     estate[3] *= 1 - plan.nu
 
     savings_estate = np.sum(estate)
+
     debts = plan.remaining_debt_balance
 
     bequest_future = savings_estate - debts + plan.fixed_assets_bequest_value
+
     bequest_today = bequest_future / plan.gamma_n[-1]
 
     bequest = {
-        "total": {
+        "terminal": {
             "future": float(bequest_future),
             "today": float(bequest_today),
         }
     }
 
+    tax_capacity = tax_capacity_from_plan(plan)
+
     return {
         "spending": spending,
         "spending_profile": spending_profile,
         "taxes": taxes,
+        "tax_capacity": tax_capacity,
         "roth": roth,
+        "balances": balances,
         "bequest": bequest,
     }
 

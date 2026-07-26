@@ -22,11 +22,13 @@ from dataclasses import (
 )
 from typing import (
     Literal,
+    TypeVar,
 )
 
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
 )
 
 from owlroost.catalog.ontology import (
@@ -203,3 +205,70 @@ class FieldSpec(
 
 class BaseSectionConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+# =========================================================
+# History Collections
+# =========================================================
+
+T = TypeVar("T")
+
+
+class HistoryCollection[T](
+    BaseSectionConfig,
+):
+    """
+    Base class for repeated history collections.
+
+    Notes
+    -----
+    Represents a materialized collection of
+    homogeneous history records.
+
+    Concrete schema sections should derive
+    from this class, supplying the record type.
+
+    Examples
+    --------
+        class PlanningCycleHistory(
+            HistoryCollection[PlanningCycleRecord]
+        ):
+            records: list[PlanningCycleRecord] = Field(
+                default_factory=list,
+            )
+
+        class TaxPaymentHistory(
+            HistoryCollection[TaxPaymentRecord]
+        ):
+            records: list[TaxPaymentRecord] = Field(
+                default_factory=list,
+            )
+    """
+
+    records: list[T] = Field(
+        default_factory=list,
+    )
+
+    def __iter__(self):
+        return iter(
+            self.records,
+        )
+
+    def __len__(self):
+        return len(
+            self.records,
+        )
+
+    def __getitem__(
+        self,
+        index,
+    ):
+        return self.records[index]
+
+    def append(
+        self,
+        record: T,
+    ) -> None:
+        self.records.append(
+            record,
+        )

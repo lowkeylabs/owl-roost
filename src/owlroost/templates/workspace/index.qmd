@@ -57,7 +57,11 @@ list goes here
 
 # this gets replaced with study.list_cases( view )  # what engine?
 
-rows = load_case_rows(CASE_FOLDER, metrics_registry=catalog.metrics_registry)
+rows = load_case_rows(
+        CASE_FOLDER,
+        schema_registry=catalog.schema_registry,
+        metrics_registry=catalog.metrics_registry
+    )
 
 if rows:
 

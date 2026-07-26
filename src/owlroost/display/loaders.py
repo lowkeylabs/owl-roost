@@ -268,6 +268,7 @@ def flatten_dict(
 
 def _load_case_file(
     path: Path,
+    schema_registry,
     metrics_registry,
     *,
     load_hfp=True,
@@ -348,6 +349,11 @@ def _load_case_file(
         },
         "_case_name": case_name,
         "_inputs": toml_dict,
+        "_history": load_history(
+            toml_dict,
+            schema_registry,
+            metrics_registry,
+        ),
         "_plan": plan,
         "_metrics": {},
         "_hfp": hfp,
@@ -441,6 +447,44 @@ def _load_run_timing(
         return {}
 
     return flatten_dict(timing)
+
+
+# =========================================================
+# History Loader (from TOML file)
+# =========================================================
+
+
+def load_history(
+    inputs,
+    schema_registry,
+    metrics_registry,
+):
+    """
+    Materialize history collections from
+    TOML inputs.
+    """
+
+    history = {}
+
+    history_inputs = inputs.get(
+        "history",
+        {},
+    )
+
+    for (
+        name,
+        collection_type,
+    ) in schema_registry.history_registry.items():
+        records = history_inputs.get(
+            name,
+            [],
+        )
+
+        history[name] = collection_type(
+            records=records,
+        )
+
+    return history
 
 
 # =========================================================
@@ -622,6 +666,7 @@ def load_hydra_overrides(
 def load_case_rows(
     source: Path | str = ".",
     *,
+    schema_registry,
     metrics_registry,
     load_hfp=True,
 ):
@@ -654,6 +699,7 @@ def load_case_rows(
         for path in find_case_files(source):
             row = _load_case_file(
                 path,
+                schema_registry,
                 metrics_registry,
                 load_hfp=load_hfp,
             )
@@ -682,6 +728,7 @@ def load_case_rows(
         for p in data:
             row = _load_case_file(
                 Path(p),
+                schema_registry,
                 metrics_registry,
                 load_hfp=load_hfp,
             )

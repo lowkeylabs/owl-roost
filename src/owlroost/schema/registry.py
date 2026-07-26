@@ -58,6 +58,8 @@ class SchemaRegistry:
             FieldSpec,
         ] = {}
 
+        self.history_registry = HistoryRegistry()
+
     # =====================================================
     # Registration
     # =====================================================
@@ -153,3 +155,42 @@ class SchemaRegistry:
         self,
     ):
         return iter(self._fields.values())
+
+
+# =========================================================
+# History Collections
+# =========================================================
+
+
+class HistoryRegistry:
+    """
+    Registry of repeatable schema sections.
+
+    Maps a TOML collection name to the
+    runtime HistoryCollection type.
+    """
+
+    def __init__(self):
+        self._collections = {}
+
+    def register(
+        self,
+        name: str,
+        collection_type: type,
+    ):
+        self._collections[name] = collection_type
+
+    def __contains__(self, name):
+        return name in self._collections
+
+    def __getitem__(self, name):
+        return self._collections[name]
+
+    def items(self):
+        return self._collections.items()
+
+    def values(self):
+        return self._collections.values()
+
+    def keys(self):
+        return self._collections.keys()

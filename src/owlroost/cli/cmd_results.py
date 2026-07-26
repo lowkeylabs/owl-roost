@@ -545,7 +545,7 @@ def cmd_results(
 
         purge_table = inject_id_column(
             purge_table,
-            superseded_rows,
+            #            superseded_rows,
         )
 
         click.echo()
@@ -629,7 +629,7 @@ def cmd_results(
 
         delete_table = inject_id_column(
             delete_table,
-            rows_to_delete,
+            # rows_to_delete,
         )
 
         click.echo()
@@ -703,7 +703,7 @@ def cmd_results(
 
         promote_table = inject_id_column(
             promote_table,
-            rows_to_promote,
+            # rows_to_promote,
         )
 
         preview = render_table(
@@ -819,7 +819,7 @@ def cmd_results(
     if not pivot:
         table = inject_id_column(
             table,
-            rows,
+            # rows,
         )
 
     # =====================================================

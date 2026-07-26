@@ -51,7 +51,16 @@ def register_sections(
             None,
         )
 
-        if register_fn is None:
-            continue
+        if register_fn is not None:
+            register_fn(reg)
 
-        register_fn(reg)
+        history_fn = getattr(
+            module,
+            "register_history_collection",
+            None,
+        )
+
+        if history_fn is not None:
+            history_fn(
+                reg.history_registry,
+            )

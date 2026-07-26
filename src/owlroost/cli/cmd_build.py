@@ -476,11 +476,19 @@ def cmd_build(
     # Context-sensitive CLI help
     # =====================================================
 
-    rows = load_case_rows(case_folder, metrics_registry=catalog.metrics_registry)
+    rows = load_case_rows(
+        case_folder,
+        schema_registry=catalog.schema_registry,
+        metrics_registry=catalog.metrics_registry,
+    )
     # if no cases and we're in ".", look in ./cases
     if not rows:
         case_folder = "./cases"
-        rows = load_case_rows(case_folder, metrics_registry=catalog.metrics_registry)
+        rows = load_case_rows(
+            case_folder,
+            schema_registry=catalog.schema_registry,
+            metrics_registry=catalog.metrics_registry,
+        )
     rows = attach_row_ids(rows)
 
     if process_help_requests(
@@ -633,7 +641,6 @@ def cmd_build(
         if not pivot:
             table = inject_id_column(
                 table,
-                rows,
             )
 
         output = render_table(

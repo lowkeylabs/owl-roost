@@ -808,7 +808,6 @@ def pivot_table(
         )
 
     #    print("row_meta -----")
-    #    from pprint import pprint
     #    pprint(new_row_meta)
 
     return RoostTable(
@@ -818,6 +817,147 @@ def pivot_table(
         show_header=show_header,
         title=title,
     )
+
+
+# =========================================================
+# History Expansion
+# =========================================================
+
+
+def expand_history_rows(
+    *,
+    rows,
+    entries,
+):
+    """
+    Expand rows over a referenced history collection.
+
+    If a view references a history collection,
+    one logical row is produced for each record
+    in that collection.
+
+    The active history record is attached to
+    each expanded row as::
+
+        _history_context = {
+            "collection": <collection name>,
+            "record": <record>,
+        }
+
+    allowing downstream field resolution to
+    evaluate history.* fields against the
+    current record.
+
+    Current implementation supports at most
+    one history collection per view.
+    """
+
+    # =====================================================
+    # Discover referenced history collections
+    # =====================================================
+
+    collections = set()
+
+    for entry in entries:
+        if entry.get("kind") == "section":
+            continue
+
+        field_name = entry.get(
+            "field",
+            "",
+        )
+
+        if not field_name.startswith(
+            "history.",
+        ):
+            continue
+
+        parts = field_name.split(".")
+
+        #
+        # history.<collection>.<field>
+        #
+        if len(parts) < 3:
+            continue
+
+        collections.add(
+            parts[1],
+        )
+
+    # =====================================================
+    # No history referenced
+    # =====================================================
+
+    if not collections:
+        return rows
+
+    # =====================================================
+    # Current implementation:
+    # one collection per view.
+    # =====================================================
+
+    if len(collections) > 1:
+        raise ValueError("Views may reference only one history collection.")
+
+    collection_name = next(
+        iter(collections),
+    )
+
+    # =====================================================
+    # Expand rows
+    # =====================================================
+
+    expanded_rows = []
+
+    for source_row in rows:
+        history = source_row.get(
+            "_history",
+            {},
+        )
+
+        collection = history.get(
+            collection_name,
+        )
+
+        #
+        # Preserve rows having no history.
+        #
+
+        if collection is None or len(collection) == 0:
+            row = dict(
+                source_row,
+            )
+
+            row["_history_context"] = {
+                "collection": collection_name,
+                "record": None,
+            }
+
+            expanded_rows.append(
+                row,
+            )
+
+            continue
+
+        #
+        # Duplicate once per record.
+        #
+
+        for record in collection:
+            row = dict(
+                source_row,
+            )
+
+            row["_history_context"] = {
+                "collection": collection_name,
+                "record": record,
+            }
+
+            expanded_rows.append(
+                row,
+            )
+
+    return expanded_rows
 
 
 # =========================================================
@@ -911,6 +1051,15 @@ def materialize_view(
         visible_entries.append(
             entry,
         )
+
+    # =====================================================
+    # Expand History Collections
+    # =====================================================
+
+    rows = expand_history_rows(
+        rows=rows,
+        entries=visible_entries,
+    )
 
     # =====================================================
     # Columns

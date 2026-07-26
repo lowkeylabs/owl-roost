@@ -56,7 +56,7 @@ def register_display_views(
                 "display.completion_fraction",
                 "financial.spending.year0.today",
                 "financial.spending.total.today",
-                "financial.bequest.total.today",
+                "financial.bequest.terminal.today",
             ],
             description=(""),
             **SHARED_VIEW_ONTOLOGY,

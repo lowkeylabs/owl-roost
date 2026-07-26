@@ -26,16 +26,12 @@ from owlroost.display.renderers.specs import (
 
 def inject_id_column(
     table,
-    rows,
 ):
     """
     Inject row IDs into a materialized table.
 
-    Assumes rows already contain:
-
-        _row_id
-
-    as attached by attach_row_ids().
+    Uses the source row associated with each
+    materialized row.
     """
 
     table.columns = [
@@ -45,16 +41,17 @@ def inject_id_column(
             label_align="right",
             content_align="right",
         )
-    ] + list(
-        table.columns,
-    )
+    ] + list(table.columns)
 
     table.rows = [
-        [str(row["_row_id"])] + list(table_row)
-        for table_row, row in zip(
+        [
+            str(meta["row"]["_row_id"]),
+            *table_row,
+        ]
+        for table_row, meta in zip(
             table.rows,
-            rows,
-            strict=False,
+            table.row_meta,
+            strict=True,
         )
     ]
 

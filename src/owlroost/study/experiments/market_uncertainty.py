@@ -43,6 +43,30 @@ def register_experiments(
 
     reg.register_experiment(
         ExperimentSpec(
+            name="bootstrap_quick",
+            title="Bootstrap Sequence of Returns",
+            description=(
+                "Evaluate retirement outcomes using "
+                "bootstrap sampling "
+                "across a historical market"
+                "regimes."
+            ),
+            required_levers=[
+                "workspace.levers.is_initialized",
+            ],
+            fixed_overrides=[
+                "rates_selection.method=historical_bootstrap",
+                "roost_settings.trials_per_run=100",
+            ],
+            variable_overrides=[
+                "roost_sweeps.named_window=modern,lost_decade,stagflation",
+            ],
+            defined_in=normalize_module_path(__file__),
+        )
+    )
+
+    reg.register_experiment(
+        ExperimentSpec(
             name="bootstrap_regimes",
             title="Bootstrap Sequence of Returns",
             description=(

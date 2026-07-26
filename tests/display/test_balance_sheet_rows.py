@@ -24,6 +24,9 @@ from owlroost.display.loaders import (
 from owlroost.metrics.bootstrap import (
     build_metrics_registry,
 )
+from owlroost.schema.bootstrap import (
+    build_schema_registry,
+)
 
 CASES_DIR = Path(__file__).parents[1] / "end_to_end" / "cases"
 
@@ -64,9 +67,11 @@ def test_case_rows_contain_balance_sheet_metrics():
     """
 
     metrics_registry = build_metrics_registry()
+    schema_registry = build_schema_registry()
 
     rows = load_case_rows(
         CASES_DIR,
+        schema_registry=schema_registry,
         metrics_registry=metrics_registry,
     )
 
