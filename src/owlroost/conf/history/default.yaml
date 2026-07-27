@@ -1,0 +1,15 @@
+planning_cycle:
+  as_of: null
+  taxable_savings_balances: []
+  tax_deferred_savings_balances: []
+  tax_free_savings_balances: []
+  hsa_savings_balances: []
+  prior_12_months_essential_spending: 0.0
+  prior_12_months_discretionary_spending: 0.0
+tax_payment:
+  date: null
+  tax_year: null
+  tax_type: null
+  agency: null
+  payment_type: null
+  amount: null

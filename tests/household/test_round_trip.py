@@ -117,6 +117,13 @@ def test_import_export_round_trip(
         exported_case,
     )
 
+    # Import and export case are not symmetrical - the
+    # HFP file name is changed as necessary.
+
+    original_plan.hfpFileName = imported.hfp_file.name
+    #    exported_plan.hfpFileName = exported_hfp.name
+    exported_plan.hfpFileName = imported.hfp_file.name
+
     assert plan_to_config(
         original_plan,
     ) == plan_to_config(

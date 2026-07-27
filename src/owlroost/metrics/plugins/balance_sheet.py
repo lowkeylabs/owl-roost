@@ -245,7 +245,7 @@ class BalanceSheetMetricsPlugin:
                 dtype=float,
                 compute_fn=compute_total_savings,
                 aggregatable=False,
-                description="Total savings - taxable, tax deferred, tax-free",
+                description="Total savings: combined taxable, tax deferred, tax-free",
                 derived_from=[
                     "balance_sheet.total_taxable_savings",
                     "balance_sheet.total_tax_deferred_savings",
@@ -286,7 +286,7 @@ class BalanceSheetMetricsPlugin:
                 dtype=float,
                 compute_fn=compute_total_assets,
                 aggregatable=False,
-                description="Total assets - savings + HFP",
+                description="Total assets: savings plus HFP",
                 derived_from=[
                     "balance_sheet.total_savings",
                     "balance_sheet.fixed_assets_current_value",
@@ -298,7 +298,7 @@ class BalanceSheetMetricsPlugin:
                 dtype=float,
                 compute_fn=compute_total_liabilities,
                 aggregatable=False,
-                description="Total liabilities - debt remaining from HFP",
+                description="Total liabilities: debt remaining from HFP",
                 derived_from=[
                     "balance_sheet.fixed_assets_debt_remaining_value",
                 ],
@@ -309,7 +309,7 @@ class BalanceSheetMetricsPlugin:
                 dtype=float,
                 compute_fn=compute_net_worth,
                 aggregatable=False,
-                description="Household net worth - assets less libilities",
+                description="Household net worth: assets less libilities",
                 derived_from=[
                     "balance_sheet.total_assets",
                     "balance_sheet.total_liabilities",

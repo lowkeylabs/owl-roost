@@ -325,7 +325,7 @@ def cmd_household(
     if not pivot:
         table = inject_id_column(
             table,
-            rows,
+            # rows,
         )
 
     output = render_table(
