@@ -87,5 +87,6 @@ cli.add_command(cmd_workspace, name="workspace")
 cli.add_command(cmd_workspace, name=".")
 
 cli.add_command(cmd_context, name="context")
+cli.add_command(cmd_context, name="publish")
 
 cli.add_command(cmd_household, name="library")

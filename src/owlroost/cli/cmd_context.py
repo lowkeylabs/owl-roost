@@ -33,6 +33,8 @@ Workspace subsystem owns:
 
 from __future__ import annotations
 
+from pprint import pprint
+
 import click
 
 from owlroost.catalog.context import (
@@ -50,16 +52,7 @@ from owlroost.display.explain import (
 from owlroost.display.materializers.materialize import (
     materialize_view,
 )
-from owlroost.display.operations.filtering import (
-    apply_filters,
-)
-from owlroost.display.operations.row_ops import (
-    apply_top,
-)
-from owlroost.display.operations.sorting import (
-    apply_canonical_sort,
-    apply_sort,
-)
+from owlroost.operations.resolve import build_resolver
 from owlroost.workspace.loaders import (
     load_context_row,
 )
@@ -75,32 +68,10 @@ from owlroost.workspace.materializers import (
     default=None,
 )
 @click.option(
-    "--filter",
-    "filters",
-    multiple=True,
-    help="Filter rows.",
-)
-@click.option(
-    "--sort",
-    type=str,
-    help="Sort by field.",
-)
-@click.option(
-    "--top",
-    type=str,
-    help="Limit rows.",
-)
-@click.option(
     "--root",
     default=".",
     show_default=True,
     help="Workspace root folder.",
-)
-@click.option(
-    "--pivot",
-    is_flag=True,
-    default=True,
-    help="Display selected rows as a pivot table.",
 )
 @click.option(
     "--explain",
@@ -123,11 +94,7 @@ from owlroost.workspace.materializers import (
 def cmd_context(
     ctx,
     view,
-    filters,
-    sort,
-    top,
     root,
-    pivot,
     explain,
     assist,
 ):
@@ -139,8 +106,15 @@ def cmd_context(
     # Invocation
     # =====================================================
 
-    level = "context"
+    _invoked_as = ctx.info_name
+    is_publish_command = _invoked_as == "publish"
 
+    DEFAULT_VIEW = "cases"
+    if view is None:
+        view = ctx.info_name or DEFAULT_VIEW
+
+    view = "context"
+    level = "context"
     view = view or level
 
     explain_facets, explain_errors = parse_explain_request(
@@ -157,96 +131,36 @@ def cmd_context(
     # Planning context
     # =====================================================
 
-    row = materialize_planning_context(
+    planning_context = materialize_planning_context(
         load_context_row(root),
         catalog,
     )
+    resolve = build_resolver(
+        catalog,
+        planning_context,
+    )
 
-    rows = [row]
+    if is_publish_command:
+        click.echo("publish command selected")
+        if not resolve("context.workspace.initialized"):
+            click.echo("publish requires an initialized workspace.  Use: roost workspace --init")
+            return
 
-    # =====================================================
-    # Available activity views
-    # =====================================================
+        pprint(planning_context["_context"])
+        if 0:
+            pprint(planning_context)
+        if 0:
+            for key in planning_context.keys():
+                print(key)
 
-    if "." in assist:
-        render_available_views(
-            catalog.display_registry,
-            level="activity",
-        )
-
+        pprint(planning_context["_activity"]["summary"])
         return
-    # =====================================================
-    # View validation
-    # =====================================================
-
-    if not catalog.display_registry.has_view_for_level(
-        level,
-        view,
-    ):
-        click.echo(f"Display view not found: {level}/{view}")
-
-        render_available_views(
-            catalog.display_registry,
-            level=level,
-        )
-
-        return
-
-    # =====================================================
-    # Row operations
-    # =====================================================
-
-    rows = apply_canonical_sort(
-        rows,
-    )
-
-    rows = apply_filters(
-        rows,
-        filters,
-    )
-
-    rows = apply_sort(
-        rows,
-        sort,
-    )
-
-    rows = apply_top(
-        rows,
-        top,
-    )
-
-    if not rows:
-        click.echo("No matching rows.")
-        return
-
-    # =====================================================
-    # Display context
-    # =====================================================
-
-    if 0:
-        table = materialize_view(
-            rows=rows,
-            registry=catalog.display_registry,
-            catalog_index=catalog.catalog_index,
-            level=level,
-            mode="pivot" if pivot else "table",
-            view_name=view,
-            explain_facets=explain_facets,
-            show_header=True,
-            title="Here are details about your current directory.\n",
-        )
-
-        _output = render_table(
-            table,
-            resolve_renderer(
-                False,
-                False,
-            ),
-        )
 
     # =====================================================
     # Planning activities
     # =====================================================
+
+    # assist is a list of command line keyword views found activity.py
 
     for activity_view in assist:
         if not catalog.display_registry.has_view_for_level(
@@ -263,9 +177,8 @@ def cmd_context(
 
             continue
 
-        print("")
         activity_table = materialize_view(
-            rows=rows,
+            rows=[planning_context],
             registry=catalog.display_registry,
             catalog_index=catalog.catalog_index,
             level="activity",
@@ -274,6 +187,7 @@ def cmd_context(
             explain_facets=explain_facets,
             show_header=False,
         )
+
         activity_output = render_table(
             activity_table,
             resolve_renderer(
@@ -287,5 +201,3 @@ def cmd_context(
             click.echo(
                 activity_output,
             )
-
-    # print(rows)

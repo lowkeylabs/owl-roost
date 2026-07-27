@@ -348,7 +348,7 @@ def cmd_vars(
     if not pivot:
         table = inject_id_column(
             table,
-            rows,
+            # rows,
         )
 
     # =====================================================

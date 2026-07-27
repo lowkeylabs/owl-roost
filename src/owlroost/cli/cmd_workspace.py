@@ -396,7 +396,7 @@ def cmd_workspace(
     if not pivot:
         table = inject_id_column(
             table,
-            selected_rows,
+            # selected_rows,
         )
 
     output = render_table(
