@@ -295,6 +295,9 @@ def _load_case_file(
     # Load TOML
     # =====================================================
 
+    # this code loads every TOML in a folder.  If the file doesn't
+    # load - no problem, return a empty row and move on.
+
     try:
         toml_dict, plan = load_household(
             path,
@@ -302,10 +305,11 @@ def _load_case_file(
         )
     #    except Exception:
     #        return None
-    except Exception as exc:
-        print(path)
-        print(exc)
-        raise
+
+    except Exception:
+        # print(f"exception on load_household: {path}")
+        # print(f"exception: {exc}")
+        return None
 
     # =====================================================
     # Case name

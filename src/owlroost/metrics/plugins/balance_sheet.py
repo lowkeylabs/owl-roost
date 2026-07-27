@@ -309,7 +309,7 @@ class BalanceSheetMetricsPlugin:
                 dtype=float,
                 compute_fn=compute_net_worth,
                 aggregatable=False,
-                description="Household net worth: assets less libilities",
+                description="Household net worth: assets less liabilities",
                 derived_from=[
                     "balance_sheet.total_assets",
                     "balance_sheet.total_liabilities",
