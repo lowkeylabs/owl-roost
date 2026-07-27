@@ -408,7 +408,7 @@ class OutputMetricsPlugin:
                         # ---------------------------------
                         name=aggregate_metric_name,
                         category="aggregate",
-                        description=(f"{aggregate_name} aggregate of {metric.name}"),
+                        description=(f"{aggregate_name} aggregate: {metric.description}"),
                         # ---------------------------------
                         # Ontology
                         # ---------------------------------

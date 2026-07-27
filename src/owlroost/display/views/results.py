@@ -64,7 +64,7 @@ def register_display_views(
                 "financial.spending.total.today__median",
                 "financial.taxes.total.today__median",
                 "financial.bequest.terminal.today__median",
-                ("description", {"modes": ["pivot"]}),
+                # ("description", {"modes": ["pivot"]}),
             ],
             description=(""),
             **SHARED_VIEW_ONTOLOGY,
