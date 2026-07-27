@@ -101,11 +101,21 @@ verify-mode:
 rebuild-roost:
 	uv sync --extra dev
 
+	@echo "-----------------------------------------------"
+	@echo "Regenerating Hydra config..."
+	@echo "-----------------------------------------------"
 	uv run src/owlroost/tools/generate_hydra_conf.py
 
-	uv run scripts/sync_owl_examples.py
+	@echo "-----------------------------------------------"
+	@echo "Syncing OWL examples and parameters..."
+	@echo "-----------------------------------------------"
 
+	uv run scripts/sync_owl_examples.py
 	uv run scripts/sync_owl_parameters_md.py
+
+	@echo "-----------------------------------------------"
+	@echo "Generating explain metadata..."
+	@echo "-----------------------------------------------"
 	uv run src/owlroost/tools/generate_explain_metadata.py
 
 	uv run pytest
@@ -152,6 +162,7 @@ owl-upgrade-dev:
 
 	uv run scripts/update_owl_pin.py --branch=dev
 	make rebuild-roost
+
 
 
 # ==========================================================

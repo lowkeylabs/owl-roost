@@ -10,7 +10,7 @@ Household project operations.
 Notes
 -----
 Owns filesystem mutations involving
-Household Projects.
+Household Projects
 
 Architectural Invariants
 ------------------------

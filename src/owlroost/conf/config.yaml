@@ -6,6 +6,7 @@ defaults:
 - case_name: default
 - description: default
 - fixed_income: default
+- history: default
 - household_financial_profile: default
 - optimization_parameters: default
 - rates_selection: default

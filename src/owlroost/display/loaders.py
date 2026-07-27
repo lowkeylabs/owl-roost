@@ -16,13 +16,15 @@ and architectural role.
 from __future__ import annotations
 
 import json
-import os
+
+# import os
 import tomllib
-from io import StringIO
+
+# from io import StringIO
 from pathlib import Path
 
-import owlplanner as owl
-import toml
+# import owlplanner as owl
+# import toml
 import yaml
 
 # from owlroost.core.hfp import summarize_hfp
@@ -31,6 +33,9 @@ from owlroost.metrics.aggregation.service import (
 )
 from owlroost.metrics.materializers import (
     materialize_row_metrics,
+)
+from owlroost.workspace.owl_utils import (
+    load_household,
 )
 
 from .discovery.cases import (
@@ -290,35 +295,20 @@ def _load_case_file(
     # Load TOML
     # =====================================================
 
+    # this code loads every TOML in a folder.  If the file doesn't
+    # load - no problem, return a empty row and move on.
+
     try:
-        toml_dict = toml.loads(path.read_text())
+        toml_dict, plan = load_household(
+            path,
+            load_hfp=load_hfp,
+        )
+    #    except Exception:
+    #        return None
 
     except Exception:
-        return None
-
-    plan = None
-    try:
-        toml_str = toml.dumps(toml_dict)
-        buf = StringIO(toml_str)
-
-        old_dir = Path.cwd()
-
-        try:
-            os.chdir(path.parent)
-
-            plan = owl.readConfig(
-                buf,
-                logstreams=[
-                    StringIO(),
-                    StringIO(),
-                ],
-                loadHFP=load_hfp,
-            )
-
-        finally:
-            os.chdir(old_dir)
-
-    except Exception:
+        # print(f"exception on load_household: {path}")
+        # print(f"exception: {exc}")
         return None
 
     # =====================================================
@@ -521,8 +511,12 @@ def _load_run_dir(
     # Load TOML
     # =====================================================
 
+    plan = None
     try:
-        content = tomllib.loads(run_toml.read_text())
+        content, plan = load_household(
+            run_toml,
+            load_hfp=True,
+        )
         task_overrides = load_hydra_overrides(path)
 
     except Exception:
@@ -599,7 +593,7 @@ def _load_run_dir(
         "_path": resolved_run_dir,
         "_paths": result_paths,
         "_inputs": content,
-        "_plan": None,
+        "_plan": plan,
         "_metrics": {
             # -------------------------------------------------
             # Run completion

@@ -13,7 +13,7 @@ PYPROJECT = ROOT / "pyproject.toml"
 TMP = ROOT / ".tmp_owl"
 
 SRC = TMP / "examples"
-DST = ROOT / "site-src" / "examples"
+DST = ROOT / "site-src" / "owl-examples"
 
 
 def run(cmd: list[str], cwd: Path | None = None) -> None:

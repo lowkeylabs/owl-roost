@@ -1,0 +1,78 @@
+case_name = "jack+jill"
+description = "Jack and Jill are a married couple in their early sixties, a few years from retirement.  Jill has a modest pension from her teaching career, and they've elected a 50% joint-and-survivor option so the survivor receives half of her benefit. Both have built solid nest eggs across taxable, tax-deferred, and Roth accounts—plus they've been maxing out their HSAs while still on an HDHP (high-deductible health plan). They're carrying a small mortgage on their home and plan to sell a vacation property in 2035 to simplify their life.\n\nThis case exercises Owl's full feature set: pension survivor benefits, HSA accounts, fixed assets (the vacation condo sells in 2035), and debt (the mortgage runs through the mid-2030s). It uses the historical rate sequence of 1969—a near worst-case scenario—to stress-test the plan, and turns on Benders decomposition to certify a globally optimal assignment of the Medicare-IRMAA and Social-Security-taxability brackets. Several results are concrete and instructive: the HSAs cover about $88k of lifetime Medicare premiums, Owl runs roughly $212k of Roth conversions, and the plan holds a $102,880/yr spending basis (front-loaded by the smile profile to $112,558 in 2026). You'll also see that optimal Roth conversion timing doesn't always mean surfing a tax bracket; sometimes converting more in down years pays off. Try duplicating this case and comparing with and without Roth conversions, or swap in a different historical sequence like 1966.\n"
+
+[basic_info]
+status = "married"
+names = [ "Jack", "Jill",]
+date_of_birth = [ "1963-01-15", "1966-01-15",]
+life_expectancy = [ 89, 92,]
+sexes = [ "M", "F",]
+start_date = "2026-01-01"
+state = "TN"
+
+[savings_assets]
+taxable_savings_balances = [ 90.5, 60.2,]
+tax_deferred_savings_balances = [ 600.5, 150.0,]
+tax_free_savings_balances = [ 70.6, 40.8,]
+hsa_savings_balances = [ 25.0, 18.0,]
+taxable_cost_basis = [ 45.0, 30.0,]
+beneficiary_fractions = [ 1.0, 1.0, 1.0, 1.0,]
+spousal_surplus_deposit_fraction = 0.5
+
+[household_financial_profile]
+HFP_file_name = "HFP_jack-jill.xlsx"
+
+[fixed_income]
+pension_monthly_amounts = [ 0, 2000,]
+pension_ages = [ 65.0, 65.0,]
+pension_indexed = [ false, false,]
+pension_survivor_fraction = [ 0.0, 0.5,]
+social_security_pia_amounts = [ 2360, 1642,]
+social_security_ages = [ 70.0, 62.08333,]
+
+[rates_selection]
+heirs_rate_on_tax_deferred_estate = 30.0
+liquidation_tax_rate = 24.0
+liquidation_capgains_rate = 15.0
+dividend_rate = 1.7
+obbba_expiration_year = 2032
+method = "historical"
+to = 2001
+from = 1969
+reverse_sequence = false
+roll_sequence = 0
+
+[asset_allocation]
+interpolation_method = "s-curve"
+type = "individual"
+interpolation_center = 15.0
+interpolation_width = 5.0
+generic = [ [ [ 60.0, 40.0, 0.0, 0.0,], [ 70.0, 30.0, 0.0, 0.0,],], [ [ 50.0, 50.0, 0.0, 0.0,], [ 70.0, 30.0, 0.0, 0.0,],],]
+
+[optimization_parameters]
+spending_profile = "smile"
+surviving_spouse_spending_percent = 60
+objective = "maxSpending"
+smile_dip = 15
+smile_increase = 12
+smile_delay = 0
+
+[solver_options]
+solver = "default"
+maxRothConversion = 100.0
+noRothConversions = "Jill"
+startRothConversions = 2026
+bequest = 400.0
+spendingSlack = 0
+withMedicare = "optimize"
+withLTCG = "loop"
+withNIIT = "loop"
+withSSTaxability = "loop"
+withDecomposition = "benders"
+withSCLoop = true
+
+[results]
+default_plots = "today"
+worksheet_show_ages = false
+worksheet_hide_zero_columns = false
+worksheet_real_dollars = false

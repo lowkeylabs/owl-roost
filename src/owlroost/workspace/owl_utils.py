@@ -51,9 +51,7 @@ from owlplanner.config.toml_io import (
 )
 
 
-def load_household(
-    toml_file,
-):
+def load_household(toml_file, load_hfp: bool = True):
     """
     Construct an OWL Plan from a
     household TOML.
@@ -108,10 +106,10 @@ def load_household(
         diconf,
         dirname=dirname,
         logstreams=logstreams,
-        loadHFP=True,
+        loadHFP=load_hfp,
     )
 
-    return plan
+    return diconf, plan
 
 
 def validate_household(
@@ -151,7 +149,7 @@ def try_load_household(
     """
 
     try:
-        plan = load_household(
+        _diconf, plan = load_household(
             toml_file,
         )
 
@@ -179,7 +177,7 @@ def resolve_household(
     owlplanner.Plan
     """
 
-    plan = load_household(
+    _diconf, plan = load_household(
         toml_file,
     )
 
@@ -221,6 +219,12 @@ def save_household(
         parents=True,
         exist_ok=True,
     )
+
+    #
+    # Ensure plan references resolved hfp file
+    #
+
+    plan.hfpFileName = str(hfp_file)
 
     #
     # Save household TOML.

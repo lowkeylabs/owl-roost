@@ -1,0 +1,2 @@
+-include $(shell roost settings makefile)  # load roost default makefile targets
+-include ./makefile.mk                     # load folder-local defaults

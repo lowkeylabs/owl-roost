@@ -1,0 +1,4 @@
+
+level : "unknown level.  should be overwritten by _metadata.yml"
+var_report_title : "generic title from _variables"
+var_workspace_title : "Retirement Planning Workspace"
