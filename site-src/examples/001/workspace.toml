@@ -24,7 +24,7 @@ Edit this file to customize the workspace.
 [context.paths]
 
 cases = "./cases"
-results = "./results"
+results = "./results-xxx"
 
 # -----------------------------------------------------
 # Household Libraries
@@ -48,3 +48,13 @@ location = "~/.roost/households"
 [[context.households]]
 name = "builtin"
 location = "<builtin>"
+
+# -----------------------------------------------------
+# Workspace adjustments to CLI hydra arguments
+# early - applied before the experiment arguments
+# late - applied after the experiment overrides
+# -----------------------------------------------------
+
+[context.experiment_overrides]
+early = "solver_options.solver=MOSEK"
+late  = "roost_settings.trials_per_run=100"
