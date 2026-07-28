@@ -23,8 +23,10 @@ Edit this file to customize the workspace.
 #
 [context.paths]
 
-cases = "./cases"
-results = "./results-xxx"
+#cases = "./cases"
+#results = "./results"
+#reports = "./reports"
+#publish = "./publish"
 
 # -----------------------------------------------------
 # Household Libraries
@@ -39,7 +41,7 @@ results = "./results-xxx"
 
 [[context.households]]
 name = "workspace"
-location = "./library/households"
+location = "./library/households-override"
 
 [[context.households]]
 name = "user"

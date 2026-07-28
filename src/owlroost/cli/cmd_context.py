@@ -54,7 +54,7 @@ from owlroost.display.materializers.materialize import (
 )
 from owlroost.operations.resolve import build_resolver
 from owlroost.workspace.loaders import (
-    load_context_row,
+    load_workspace_row,
 )
 from owlroost.workspace.materializers import (
     materialize_planning_context,
@@ -132,7 +132,7 @@ def cmd_context(
     # =====================================================
 
     planning_context = materialize_planning_context(
-        load_context_row(root),
+        load_workspace_row(root),
         catalog,
     )
     resolve = build_resolver(
@@ -140,20 +140,27 @@ def cmd_context(
         planning_context,
     )
 
+    if 1:
+        # pprint(planning_context)
+        return
+
     if is_publish_command:
         click.echo("publish command selected")
+
         if not resolve("context.workspace.initialized"):
             click.echo("publish requires an initialized workspace.  Use: roost workspace --init")
             return
 
-        pprint(planning_context["_context"])
+        if 0:
+            pprint(planning_context["_context"])
         if 0:
             pprint(planning_context)
         if 0:
             for key in planning_context.keys():
                 print(key)
+        if 0:
+            pprint(planning_context["_activity"]["summary"])
 
-        pprint(planning_context["_activity"]["summary"])
         return
 
     # =====================================================

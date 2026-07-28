@@ -28,7 +28,7 @@ import click
 
 from owlroost.catalog.context import build_catalog_context
 from owlroost.operations.resolve import build_resolver
-from owlroost.workspace.loaders import load_context_row
+from owlroost.workspace.loaders import load_workspace_row
 from owlroost.workspace.materializers import materialize_planning_context
 
 from ..core.settings import get_settings
@@ -70,7 +70,7 @@ def cmd_vals(
 
     catalog = build_catalog_context()
     planning_context = materialize_planning_context(
-        load_context_row("."),
+        load_workspace_row("."),
         catalog,
     )
     resolve = build_resolver(

@@ -40,8 +40,6 @@ from __future__ import annotations
 import tomllib
 from pathlib import Path
 
-from owlroost.exceptions import RoostError
-
 # =========================================================
 # Helpers
 # =========================================================
@@ -148,12 +146,13 @@ def _materialize_workspace(
             ),
         },
         # ---------------------------------------------
-        # Definition
+        # Original context
         # ---------------------------------------------
-        "definition": workspace,
-        "definition_file": str(
+        "raw": workspace,
+        "raw_file": str(
             workspace_file.resolve(),
         ),
+        "raw_note": "raw key contains original file, other workspace keys are processed in ./workspace/loaders.py",
         # ---------------------------------------------
         # Workspace Layout
         # ---------------------------------------------
@@ -163,29 +162,25 @@ def _materialize_workspace(
             ),
             "cases": str(
                 (
-                    workspace_dir
-                    / workspace.get(
-                        "cases_dir",
-                        ("cases" if (workspace_dir / "cases").exists() else "."),
-                    )
+                    workspace_dir / workspace.get("context", {}).get("paths", {}).get("cases", ".")
                 ).resolve()
             ),
             "results": str(
                 (
                     workspace_dir
-                    / workspace.get(
-                        "results_dir",
-                        "results",
-                    )
+                    / workspace.get("context", {}).get("paths", {}).get("results", "results")
                 ).resolve()
             ),
             "reports": str(
                 (
                     workspace_dir
-                    / workspace.get(
-                        "reports_dir",
-                        "reports",
-                    )
+                    / workspace.get("context", {}).get("paths", {}).get("reports", "reports")
+                ).resolve()
+            ),
+            "publish": str(
+                (
+                    workspace_dir
+                    / workspace.get("context", {}).get("paths", {}).get("publish", "publish")
                 ).resolve()
             ),
         },
@@ -236,36 +231,6 @@ def find_workspaces(
 # =========================================================
 
 
-def load_context_row(
-    root=".",
-):
-    """
-    Load a planning context.
-
-    A planning context always exists.
-
-    If the directory contains an
-    initialized workspace, workspace
-    information is attached.
-    """
-
-    root = Path(
-        root,
-    ).resolve()
-
-    row = _build_context_row(
-        root,
-    )
-
-    if (root / "workspace.toml").exists():
-        _materialize_workspace(
-            row,
-            root,
-        )
-
-    return row
-
-
 def load_workspace_row(
     workspace_dir=".",
 ):
@@ -278,19 +243,17 @@ def load_workspace_row(
         workspace_dir,
     ).resolve()
 
-    workspace_file = workspace_dir / "workspace.toml"
-
-    if not workspace_file.exists():
-        raise RoostError(f"Missing workspace.toml: {workspace_file}")
-
     row = _build_context_row(
         workspace_dir,
     )
 
-    _materialize_workspace(
-        row,
-        workspace_dir,
-    )
+    workspace_file = workspace_dir / "workspace.toml"
+
+    if workspace_file.exists():
+        row = _materialize_workspace(
+            row,
+            workspace_dir,
+        )
 
     return row
 

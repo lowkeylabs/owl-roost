@@ -34,7 +34,7 @@ Typical usage
 
     catalog = build_catalog_context()
 
-    row = load_context_row()
+    row = load_workspace_row()
 
     ...
 

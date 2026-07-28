@@ -77,7 +77,7 @@ from owlroost.workspace.builders import (
     build_workspace_planning_context,
 )
 from owlroost.workspace.loaders import (
-    load_context_row,
+    load_workspace_row,
     load_workspace_rows,
 )
 from owlroost.workspace.materializers import (
@@ -210,7 +210,7 @@ def cmd_workspace(
     # =====================================================
 
     planning_row = materialize_planning_context(
-        load_context_row(root),
+        load_workspace_row(root),
         catalog,
     )
 
@@ -301,7 +301,7 @@ def cmd_workspace(
 
         if not rows:
             rows = [
-                load_context_row(
+                load_workspace_row(
                     root,
                 )
             ]

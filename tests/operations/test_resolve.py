@@ -15,7 +15,7 @@ from owlroost.display.operations.resolution import (
     resolve_field_value,
 )
 from owlroost.workspace.loaders import (
-    load_context_row,
+    load_workspace_row,
 )
 from owlroost.workspace.materializers import (
     materialize_context,
@@ -81,7 +81,7 @@ def make_context():
 
     catalog = build_catalog_context()
 
-    row = load_context_row(".")
+    row = load_workspace_row(".")
 
     row = materialize_context(
         row,

@@ -70,7 +70,7 @@ from owlroost.operations.resolve import (
     build_resolver,
 )
 from owlroost.workspace.loaders import (
-    load_context_row,
+    load_workspace_row,
 )
 from owlroost.workspace.materializers import (
     materialize_planning_context,
@@ -102,7 +102,7 @@ def household_libraries(
     catalog = build_catalog_context()
 
     planning_context = materialize_planning_context(
-        load_context_row(
+        load_workspace_row(
             root,
         ),
         catalog,
