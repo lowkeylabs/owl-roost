@@ -48,7 +48,7 @@ def register_display_views(
     reg.register_view(
         DisplayView(
             level="run",
-            name="results",
+            name="results2",
             entries=[
                 # =====================================
                 # Identity
@@ -74,7 +74,7 @@ def register_display_views(
     reg.register_view(
         DisplayView(
             level="run",
-            name="results2",
+            name="results",
             entries=[
                 # =====================================
                 # Identity
@@ -86,29 +86,29 @@ def register_display_views(
                 "display.compact_rates",
                 "display.completion_fraction",
                 ("section", "First year spending (todays dollars)"),
-                "financial.spending.year0.today__p10",
+                ("financial.spending.year0.today__p10", {"modes": ["pivot"]}),
                 "financial.spending.year0.today__median",
-                "financial.spending.year0.today__p90",
+                ("financial.spending.year0.today__p90", {"modes": ["pivot"]}),
                 ("section", "Spending through year 5 (todays dollars)"),
-                "financial.spending.year5.today__p10",
+                ("financial.spending.year5.today__p10", {"modes": ["pivot"]}),
                 "financial.spending.year5.today__median",
-                "financial.spending.year5.today__p90",
+                ("financial.spending.year5.today__p90", {"modes": ["pivot"]}),
                 ("section", "Spending through year 10 (todays dollars)"),
-                "financial.spending.year10.today__p10",
+                ("financial.spending.year10.today__p10", {"modes": ["pivot"]}),
                 "financial.spending.year10.today__median",
-                "financial.spending.year10.today__p90",
+                ("financial.spending.year10.today__p90", {"modes": ["pivot"]}),
                 ("section", "Lifetime spending (todays dollars)"),
-                "financial.spending.total.today__p10",
+                ("financial.spending.total.today__p10", {"modes": ["pivot"]}),
                 "financial.spending.total.today__median",
-                "financial.spending.total.today__p90",
+                ("financial.spending.total.today__p90", {"modes": ["pivot"]}),
                 ("section", "Lifetime taxes (todays dollars)"),
-                "financial.taxes.total.today__p10",
+                ("financial.taxes.total.today__p10", {"modes": ["pivot"]}),
                 "financial.taxes.total.today__median",
-                "financial.taxes.total.today__p90",
+                ("financial.taxes.total.today__p90", {"modes": ["pivot"]}),
                 ("section", "Bequest (todays dollars, tax adjusted)"),
-                "financial.bequest.terminal.today__p10",
+                ("financial.bequest.terminal.today__p10", {"modes": ["pivot"]}),
                 "financial.bequest.terminal.today__median",
-                "financial.bequest.terminal.today__p90",
+                ("financial.bequest.terminal.today__p90", {"modes": ["pivot"]}),
             ],
             description=(""),
             **SHARED_VIEW_ONTOLOGY,

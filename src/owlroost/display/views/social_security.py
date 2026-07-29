@@ -97,7 +97,7 @@ def register_display_views(
                         }
                     },
                 ),
-                ("description", {"modes": ["pivot"]}),
+                # ("description", {"modes": ["pivot"]}),
             ],
             description=(""),
             **SHARED_VIEW_ONTOLOGY,
@@ -156,7 +156,7 @@ def register_display_views(
                         }
                     },
                 ),
-                ("description", {"modes": ["pivot"]}),
+                # ("description", {"modes": ["pivot"]}),
             ],
             description=(""),
             **SHARED_VIEW_ONTOLOGY,
@@ -214,7 +214,7 @@ def register_display_views(
                         }
                     },
                 ),
-                ("description", {"modes": ["pivot"]}),
+                # ("description", {"modes": ["pivot"]}),
             ],
             description=(""),
             **SHARED_VIEW_ONTOLOGY,

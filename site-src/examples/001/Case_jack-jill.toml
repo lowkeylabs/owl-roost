@@ -69,7 +69,7 @@ withLTCG = "loop"
 withNIIT = "loop"
 withSSTaxability = "loop"
 withDecomposition = "benders"
-withSCLoop = true
+withSCLoop = false
 
 [results]
 default_plots = "today"

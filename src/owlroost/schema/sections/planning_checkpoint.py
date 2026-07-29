@@ -1,18 +1,18 @@
-# src/owlroost/schema/sections/planning_cycle.py
+# src/owlroost/schema/sections/planning_checkpoint.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See LICENSE file in repository root.
 
 """
-Planning cycle history schema section.
+planning checkpoint history schema section.
 
 Notes
 -----
-Defines historical planning cycle observations.
+Defines historical planning checkpoint observations.
 
 Each ``[[history.planning_cycle]]`` TOML table
-represents one completed planning cycle and
+represents one completed planning checkpoint and
 captures the household financial state at the
 beginning of that cycle.
 
@@ -60,15 +60,15 @@ from ..specs import (
 # =========================================================
 
 
-class PlanningCycleRecord(
+class PlanningCheckpointRecord(
     BaseSectionConfig,
 ):
     """
-    One historical planning cycle.
+    One historical planning checkpoint.
     """
 
     as_of: date = Field(
-        description="Planning cycle effective date.",
+        description="Planning checkpoint effective date.",
     )
 
     taxable_savings_balances: list[float] = Field(
@@ -107,16 +107,16 @@ class PlanningCycleRecord(
 # =========================================================
 
 
-class PlanningCycleHistoryConfig(
+class PlanningCheckpointHistoryConfig(
     BaseSectionConfig,
 ):
     """
-    Historical planning cycle collection.
+    Historical planning checkpoint collection.
     """
 
-    planning_cycle: list[PlanningCycleRecord] = Field(
+    planning_cycle: list[PlanningCheckpointRecord] = Field(
         default_factory=list,
-        description="Historical planning cycle observations.",
+        description="Historical planning checkpoint observations.",
     )
 
 
@@ -129,20 +129,20 @@ def register_schema_fields(
     reg,
 ):
     """
-    Register planning cycle history fields.
+    Register planning checkpoint history fields.
 
     Only the record fields are cataloged.
 
-    Individual planning cycle instances are
+    Individual planning checkpoint instances are
     runtime observations rather than schema
     variables.
     """
 
-    prefix = "history.planning_cycle"
+    prefix = "history.planning_checkpoint"
 
     for name, field in walk_model(
         "",
-        PlanningCycleRecord,
+        PlanningCheckpointRecord,
     ):
         full_name = f"{prefix}.{name}"
 
@@ -163,7 +163,7 @@ def register_schema_fields(
                 # =========================================
                 path=(
                     "history",
-                    "planning_cycle",
+                    "planning_checkpoint",
                 )
                 + tuple(name.split(".")),
                 source="input",
@@ -194,18 +194,18 @@ def register_schema_fields(
         )
 
 
-class PlanningCycleHistory(
-    HistoryCollection[PlanningCycleRecord],
+class PlanningCheckpointHistory(
+    HistoryCollection[PlanningCheckpointRecord],
 ):
     """
-    Materialized planning cycle history.
+    Materialized planning checkpoint history.
 
     Represents the collection of historical
-    planning cycle observations associated
+    planning checkpoint observations associated
     with a household.
 
     Each record corresponds to one completed
-    planning cycle.
+    planning checkpoint.
     """
 
     pass
@@ -215,6 +215,6 @@ def register_history_collection(
     reg,
 ):
     reg.register(
-        name="planning_cycle",
-        collection_type=PlanningCycleHistory,
+        name="planning_checkpoint",
+        collection_type=PlanningCheckpointHistory,
     )

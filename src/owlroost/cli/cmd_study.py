@@ -14,3 +14,15 @@ and architectural role.
 """
 
 from __future__ import annotations
+
+import click
+
+
+@click.command("study")
+@click.pass_context
+@click.option(
+    "--view",
+    default=None,
+)
+def cmd_study(ctx, view):
+    click.echo("study")

@@ -162,20 +162,20 @@ def register_display_views(
     reg.register_view(
         DisplayView(
             level="row",
-            name="planning_cycle",
+            name="planning_checkpoints",
             entries=[
                 # -------------------------------------------------
                 # Summary
                 # -------------------------------------------------
                 ("case_name"),
-                ("section", "planning_cycle"),
-                "history.planning_cycle.as_of",
-                "history.planning_cycle.hsa_savings_balances",
-                "history.planning_cycle.prior_12_months_discretionary_spending",
-                "history.planning_cycle.prior_12_months_essential_spending",
-                "history.planning_cycle.tax_deferred_savings_balances",
-                "history.planning_cycle.tax_free_savings_balances",
-                "history.planning_cycle.taxable_savings_balances",
+                ("section", "Planning Checkpoints"),
+                "history.planning_checkpoint.as_of",
+                "history.planning_checkpoint.hsa_savings_balances",
+                "history.planning_checkpoint.prior_12_months_discretionary_spending",
+                "history.planning_checkpoint.prior_12_months_essential_spending",
+                "history.planning_checkpoint.tax_deferred_savings_balances",
+                "history.planning_checkpoint.tax_free_savings_balances",
+                "history.planning_checkpoint.taxable_savings_balances",
             ],
             description=(
                 "Summarizes household financial position "

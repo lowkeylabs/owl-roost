@@ -140,10 +140,6 @@ def cmd_context(
         planning_context,
     )
 
-    if 1:
-        # pprint(planning_context)
-        return
-
     if is_publish_command:
         click.echo("publish command selected")
 
@@ -151,15 +147,14 @@ def cmd_context(
             click.echo("publish requires an initialized workspace.  Use: roost workspace --init")
             return
 
+        if 1:
+            pprint(planning_context.keys())
         if 0:
             pprint(planning_context["_context"])
         if 0:
-            pprint(planning_context)
-        if 0:
-            for key in planning_context.keys():
-                print(key)
-        if 0:
-            pprint(planning_context["_activity"]["summary"])
+            pprint(planning_context["_activity"].keys())
+        if 1:
+            pprint(planning_context["_activity"])
 
         return
 

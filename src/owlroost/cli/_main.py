@@ -24,6 +24,7 @@ from .cmd_household import cmd_household
 from .cmd_reports import cmd_reports
 from .cmd_results import cmd_results
 from .cmd_run import cmd_run
+from .cmd_study import cmd_study
 from .cmd_vals import cmd_vals
 from .cmd_vars import cmd_vars
 from .cmd_workspace import cmd_workspace
@@ -84,9 +85,10 @@ cli.add_command(cmd_vals, name="vals")
 cli.add_command(cmd_vals, name="settings")
 
 cli.add_command(cmd_workspace, name="workspace")
-cli.add_command(cmd_workspace, name=".")
 
 cli.add_command(cmd_context, name="context")
 cli.add_command(cmd_context, name="publish")
+cli.add_command(cmd_context, name=".")
 
 cli.add_command(cmd_household, name="library")
+cli.add_command(cmd_study, name="studies")

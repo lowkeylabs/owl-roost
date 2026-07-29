@@ -37,11 +37,11 @@ def test_section_fields_have_paths(
 
 
 # =========================================================
-# Planning Cycle History
+# Planning Checkpoint History
 # =========================================================
 
 
-def test_planning_cycle_fields_registered(
+def test_planning_checkpoint_fields_registered(
     schema_registry,
 ):
     """
@@ -52,19 +52,19 @@ def test_planning_cycle_fields_registered(
     names = {field.name for field in schema_registry}
 
     expected = {
-        "history.planning_cycle.as_of",
-        "history.planning_cycle.taxable_savings_balances",
-        "history.planning_cycle.tax_deferred_savings_balances",
-        "history.planning_cycle.tax_free_savings_balances",
-        "history.planning_cycle.hsa_savings_balances",
-        "history.planning_cycle.prior_12_months_essential_spending",
-        "history.planning_cycle.prior_12_months_discretionary_spending",
+        "history.planning_checkpoint.as_of",
+        "history.planning_checkpoint.taxable_savings_balances",
+        "history.planning_checkpoint.tax_deferred_savings_balances",
+        "history.planning_checkpoint.tax_free_savings_balances",
+        "history.planning_checkpoint.hsa_savings_balances",
+        "history.planning_checkpoint.prior_12_months_essential_spending",
+        "history.planning_checkpoint.prior_12_months_discretionary_spending",
     }
 
     assert expected <= names
 
 
-def test_planning_cycle_paths(
+def test_planning_checkpoint_paths(
     schema_registry,
 ):
     """
@@ -74,15 +74,15 @@ def test_planning_cycle_paths(
 
     lookup = {field.name: field for field in schema_registry}
 
-    assert lookup["history.planning_cycle.as_of"].path == (
+    assert lookup["history.planning_checkpoint.as_of"].path == (
         "history",
-        "planning_cycle",
+        "planning_checkpoint",
         "as_of",
     )
 
-    assert lookup["history.planning_cycle.taxable_savings_balances"].path == (
+    assert lookup["history.planning_checkpoint.taxable_savings_balances"].path == (
         "history",
-        "planning_cycle",
+        "planning_checkpoint",
         "taxable_savings_balances",
     )
 
