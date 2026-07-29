@@ -158,10 +158,6 @@ def resolve_tree_root(
     Examples
     --------
 
-    study.scenario_families
-
-        -> row["_study"]["scenario_families"]
-
     workspace.inventory
 
         -> row["_workspace"]["inventory"]

@@ -12,10 +12,8 @@ Notes
 Owns registration and relationship
 resolution for:
 
-* Studies
-* Questions
-* Scenario Families
-* Experiments
+    * Studies
+    * Experiments
 
 Architectural Invariant
 -----------------------
@@ -24,25 +22,13 @@ Relationships flow downward only:
 
     Study
         ↓
-    Question
-        ↓
-    Scenario Family
-        ↓
     Experiment
 
 Relationships are stored only once.
 
 StudySpec owns:
 
-    question_names
-
-QuestionSpec owns:
-
-    scenario_family_names
-
-ScenarioFamilySpec owns:
-
-    experiment_names
+    experiments
 
 Experiments are reusable
 experimental designs.
@@ -60,14 +46,22 @@ from owlroost.exceptions import (
 
 
 class StudyRegistry:
+    """
+    Registry of analytical study
+    definitions.
+
+    The registry owns definition-layer
+    entities only.
+
+    Execution artifacts (Sessions,
+    Runs, Trials) are materialized
+    elsewhere.
+    """
+
     def __init__(
         self,
     ):
         self._studies = {}
-
-        self._questions = {}
-
-        self._scenario_families = {}
 
         self._experiments = {}
 
@@ -96,67 +90,11 @@ class StudyRegistry:
     ):
         return sorted(
             self._studies.values(),
-            key=lambda x: x.name,
+            key=lambda study: study.name,
         )
 
     # =====================================================
-    # Questions
-    # =====================================================
-
-    def register_question(
-        self,
-        spec,
-    ):
-        self._questions[spec.name] = spec
-
-    def get_question(
-        self,
-        name,
-    ):
-        try:
-            return self._questions[name]
-
-        except KeyError as exc:
-            raise RoostError(f"Question not found: {name}") from exc
-
-    def all_questions(
-        self,
-    ):
-        return sorted(
-            self._questions.values(),
-            key=lambda x: x.name,
-        )
-
-    # =====================================================
-    # Scenario Families
-    # =====================================================
-
-    def register_scenario_family(
-        self,
-        spec,
-    ):
-        self._scenario_families[spec.name] = spec
-
-    def get_scenario_family(
-        self,
-        name,
-    ):
-        try:
-            return self._scenario_families[name]
-
-        except KeyError as exc:
-            raise RoostError(f"Scenario family not found: {name}") from exc
-
-    def all_scenario_families(
-        self,
-    ):
-        return sorted(
-            self._scenario_families.values(),
-            key=lambda x: x.name,
-        )
-
-    # =====================================================
-    # Experiment Templates
+    # Experiments
     # =====================================================
 
     def register_experiment(
@@ -180,54 +118,29 @@ class StudyRegistry:
     ):
         return sorted(
             self._experiments.values(),
-            key=lambda x: x.name,
+            key=lambda experiment: experiment.name,
         )
 
     # =====================================================
     # Relationships
     # =====================================================
 
-    def questions_for_study(
+    def experiments_for_study(
         self,
         study_name,
     ):
+        """
+        Return the experiments belonging
+        to a study.
+        """
+
         study = self.get_study(
             study_name,
         )
 
         return [
-            self.get_question(
-                question_name,
-            )
-            for question_name in study.question_names
-        ]
-
-    def scenario_families_for_question(
-        self,
-        question_name,
-    ):
-        question = self.get_question(
-            question_name,
-        )
-
-        return [
-            self.get_scenario_family(
-                scenario_family_name,
-            )
-            for scenario_family_name in question.scenario_family_names
-        ]
-
-    def experiments_for_scenario_family(
-        self,
-        scenario_family_name,
-    ):
-        scenario_family = self.get_scenario_family(
-            scenario_family_name,
-        )
-
-        return [
             self.get_experiment(
-                template_name,
+                experiment_name,
             )
-            for template_name in scenario_family.experiment_names
+            for experiment_name in study.experiment_names
         ]

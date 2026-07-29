@@ -34,9 +34,10 @@ def register_studies(
                 "periods, and stochastic return "
                 "sequences."
             ),
-            question_names=[
-                "can_i_retire",
-                "how_much_can_i_spend",
+            experiment_names=[
+                "bootstrap_quick",
+                "fixed_return_models",
+                "historical_models",
             ],
         )
     )

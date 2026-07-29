@@ -2,15 +2,13 @@
 
 The `study/` subsystem owns reusable analytical methodology within ROOST.
 
-A study defines **what should be investigated** and **how evidence should be generated**.
+It defines **what analytical investigations are available** and **how evidence should be generated**.
 
-Studies organize related transition families, experiments, analytical methodology, and evidence-generation strategies.
+The study subsystem contains reusable analytical definitions.
 
-The study subsystem does **not** characterize the current planning situation.
+It does **not** characterize a household, execute investigations, or interpret evidence.
 
-The workspace determines applicability.
-
-The study subsystem defines the analytical investigations that may be performed.
+Those responsibilities belong elsewhere.
 
 This document complements the project `README.md` and `ARCHITECTURE.md` by describing the architectural responsibilities owned by the study subsystem.
 
@@ -18,76 +16,176 @@ This document complements the project `README.md` and `ARCHITECTURE.md` by descr
 
 # Architectural Role
 
-Within the ROOST architecture, the study subsystem occupies the methodological stage of the evidence-generation workflow.
+Within the ROOST architecture, the study subsystem occupies the methodology layer.
 
 Conceptually:
 
 ```text
-Characterization
-        ↓
-Applicable Transition Families
-        ↓
+Workspace Characterization
+            ↓
+Applicable Studies
+            ↓
 Study
-        ↓
-Transitions
-        ↓
-Experiments
-        ↓
+            ↓
+Experiment
+            ↓
+Session
+            ↓
+Runs
+            ↓
 Evidence
 ```
 
-The workspace determines which transition families are applicable.
+The workspace determines which studies are applicable.
 
-The study subsystem defines those transition families and the experiments used to evaluate them.
+The study subsystem defines those studies and the experiments that generate evidence.
+
+Execution begins with Sessions and belongs outside the study subsystem.
 
 ---
 
 # Responsibilities
 
-The study subsystem owns four primary responsibilities.
+The study subsystem owns two primary concepts.
 
 ## Studies
 
 A study organizes a coherent analytical investigation.
 
-A study groups related planning concepts into a reusable analytical framework.
-
 Examples include:
 
-* Spending analysis
-* Retirement timing
-* Social Security
-* Roth conversion
-* Asset allocation
-* Withdrawal strategies
-
-A study defines analytical intent.
-
-It does not generate evidence.
-
----
-
-## Transition Families
-
-Transition families organize related planning transitions.
-
-Examples include:
-
-* Retirement Timing
-* Spending Level
+* Market Uncertainty
+* Beginning-of-Year Spending
 * Social Security Claiming
 * Roth Conversion
-* Housing Decisions
+* Retirement Timing
 
-A transition family defines a decision space.
+A study answers:
 
-The workspace determines whether that decision space is currently applicable.
+> What analytical topic should be investigated?
+
+Studies organize related experimental methodologies.
+
+Studies do not execute analyses.
 
 ---
 
-## Transitions
+## Experiments
 
-A transition represents a meaningful change from the current planning situation.
+Experiments define reusable evidence-generation methodologies.
+
+An experiment specifies:
+
+* applicability requirements
+* fixed model overrides
+* variable model overrides
+
+Experiments define *how* evidence should be generated.
+
+Examples include:
+
+* Bootstrap Sequence of Returns
+* Historical Average Returns
+* Fixed Return Models
+* Historical Replay
+* Social Security Age Sweep
+* Retirement Date Sweep
+
+Experiments are reusable analytical definitions.
+
+When materialized for a household, an experiment becomes a Session.
+
+The Session expands variable overrides into one or more Runs.
+
+Runs are the primary analytical objects compared by ROOST.
+
+---
+
+# Studies
+
+Studies organize related analytical methodologies.
+
+Conceptually:
+
+```text
+Study
+
+    ├── Experiment
+
+    ├── Experiment
+
+    └── Experiment
+```
+
+Examples:
+
+```text
+Market Uncertainty
+
+    Bootstrap Regimes
+
+    Historical Returns
+
+    Fixed Returns
+
+    DCC-GARCH
+```
+
+or
+
+```text
+Beginning-of-Year Spending
+
+    Spending Sweep
+
+    Spending Robustness
+
+    Spending Sensitivity
+```
+
+Studies provide organization.
+
+They do not generate evidence.
+
+---
+
+# Experiments
+
+Experiments define reproducible analytical methodology.
+
+Conceptually:
+
+```text
+Experiment
+
+    Fixed Overrides
+
+    Variable Overrides
+
+            ↓
+
+        Session
+
+            ↓
+
+         Runs
+
+            ↓
+
+        Evidence
+```
+
+Experiments define methodology rather than execution.
+
+Execution belongs to Sessions.
+
+---
+
+# Transitions
+
+Although transitions are not currently represented as first-class objects within ROOST, they remain an important analytical concept.
+
+A transition represents a candidate change from the current planning situation.
 
 Examples include:
 
@@ -97,178 +195,61 @@ Examples include:
 * Convert additional retirement assets
 * Reduce portfolio risk
 
-Transitions represent candidate changes.
+Experiments frequently evaluate one or more implicit transitions.
 
-ROOST evaluates transitions.
-
-ROOST does not recommend them.
-
-Transition generation should be deterministic and reproducible.
-
----
-
-## Experiments
-
-Experiments define methodologies for generating evidence.
-
-Experiments specify how one or more transitions should be evaluated.
-
-Examples include:
-
-* Parameter sweeps
-* Comparative analysis
-* Sensitivity studies
-* Robustness evaluation
-* Uncertainty analysis
-
-Experiments describe methodology.
-
-They do not interpret evidence.
-
----
-
-# Studies
-
-Studies provide reusable analytical organization.
-
-Studies answer questions such as:
-
-* Which transition families belong together?
-* Which experiments should be available?
-* How should investigations be organized?
-* Which evidence packages should be produced?
-
-Studies organize methodology rather than execution.
-
----
-
-# Transition Families
-
-Transition families organize related planning decisions.
-
-Conceptually:
+For example:
 
 ```text
-Transition Family
+Social Security Age Sweep
 
-        ↓
+    Claim at 62
 
-Transitions
-```
+    Claim at 63
 
-Examples include:
+    ...
 
-```text
-Spending
-
-    Maintain
-
-    Increase
-
-    Reduce
+    Claim at 70
 ```
 
 or
 
 ```text
-Retirement Timing
+Retirement Date Sweep
 
-    Retire Now
+    Retire Today
 
     Delay One Year
 
     Delay Two Years
 ```
 
-Transition families define analytical possibility.
+Today these transitions are incorporated directly into experimental methodology.
 
-They do not determine applicability.
-
----
-
-# Transitions
-
-Transitions describe candidate changes from the current planning situation.
-
-Conceptually:
-
-```text
-Current State
-
-        ↓
-
-Transition
-
-        ↓
-
-Candidate Future State
-```
-
-Transitions should remain:
-
-* Deterministic
-* Explainable
-* Reproducible
-
-Transitions are analytical definitions rather than execution artifacts.
+Should future analytical needs require reusable transition definitions, transitions may become first-class architectural objects.
 
 ---
 
 # Evaluation Environments
 
-Experiments evaluate transitions under one or more evaluation environments.
-
-Evaluation environments describe assumptions about the future rather than decisions made by the retiree.
+Experiments often evaluate decisions under multiple external environments.
 
 Examples include:
 
-* Historical market returns
-* Bootstrap market models
-* Inflation assumptions
-* Longevity assumptions
-* Future tax assumptions
+* Historical market regimes
+* Bootstrap sampling
+* DCC-GARCH simulations
+* Fixed return assumptions
+* Inflation models
 
-Evaluation environments remain independent from transition families.
+Evaluation environments represent assumptions about the future rather than decisions made by the retiree.
 
-A single transition may be evaluated under many environments.
-
----
-
-# Experiments
-
-Experiments define reproducible evidence-generation methodologies.
-
-Conceptually:
-
-```text
-Transitions
-
-        +
-
-Evaluation Environments
-
-        ↓
-
-Evidence
-```
-
-Experiments may define:
-
-* Parameter selection
-* Sweep generation
-* Sampling methodology
-* Aggregation strategy
-* Comparison methodology
-
-Experiments define analytical methodology rather than execution.
-
-Execution is materialized by the workspace.
+Experiments combine analytical transitions with evaluation environments to generate evidence.
 
 ---
 
-# Execution Planning
+# Relationship to Execution
 
-Execution planning transforms analytical definitions into executable investigations.
+The study subsystem ends where execution begins.
 
 Conceptually:
 
@@ -277,54 +258,59 @@ Study
         ↓
 Experiment
         ↓
-Execution Plan
+Session
+        ↓
+Run
+        ↓
+Trial
 ```
 
-Execution plans describe:
+The study subsystem owns:
 
-* Which transitions will be evaluated
-* Which environments will be used
-* Which evidence will be generated
+* Studies
+* Experiments
 
-Execution plans remain reusable analytical definitions.
+The execution subsystem owns:
 
-Sessions, runs, and trials belong to execution materialization within the workspace subsystem.
+* Sessions
+* Runs
+* Trials
+
+A Session represents the realization of one Experiment for one household during one planning cycle.
 
 ---
 
 # Relationship to Other Subsystems
 
-The study subsystem cooperates closely with other architectural subsystems.
-
-### Workspace
+## Workspace
 
 The workspace characterizes the current planning situation.
 
-It determines which transition families are applicable.
+It determines which studies and experiments are applicable.
 
-The study subsystem defines those transition families.
+The study subsystem defines analytical methodology.
 
 ---
 
-### Catalog
+## Catalog
 
-The catalog defines the semantic identity of observations referenced by studies and experiments.
+The catalog provides the semantic identity of observations referenced by experiments.
 
 The study subsystem consumes semantic definitions.
 
 ---
 
-### Metrics
+## Metrics
 
 Experiments generate evidence.
 
-Metrics define that evidence.
+Metrics define the observations comprising that evidence.
 
 The study subsystem does not own analytical results.
 
 ---
 
-### Display
+## Display
 
 Display communicates generated evidence.
 
@@ -336,8 +322,6 @@ The study subsystem defines methodology rather than presentation.
 
 The study subsystem follows the registration-based architecture used throughout ROOST.
 
-Typical organization includes:
-
 ```text
 bootstrap.py
 
@@ -345,20 +329,16 @@ registry.py
 
 specs.py
 
-transition_families/
+studies/
 
 experiments/
-
-studies/
 ```
 
-Studies organize methodology.
+Studies organize analytical investigations.
 
-Transition families organize related transitions.
+Experiments contribute reusable analytical methodologies.
 
-Experiments contribute evidence-generation strategies.
-
-Registration allows new analytical methodologies to be introduced without modifying existing subsystem behavior.
+Registration allows new studies and experiments to be introduced without modifying existing subsystem behavior.
 
 ---
 
@@ -366,77 +346,53 @@ Registration allows new analytical methodologies to be introduced without modify
 
 The following concepts should remain stable.
 
-## Studies own analytical methodology.
+## Studies organize methodology.
 
-Studies define reusable analytical organization.
+Studies define coherent analytical investigations.
 
-They do not generate evidence.
-
----
-
-## Transition families organize decision spaces.
-
-Transition families define related planning transitions.
-
-Applicability belongs to the workspace.
+They do not execute analyses.
 
 ---
 
-## Transitions represent candidate change.
+## Experiments define methodology.
 
-Transitions describe meaningful changes from the current planning situation.
+Experiments describe reusable evidence-generation strategies.
 
-ROOST evaluates transitions.
-
-ROOST does not recommend them.
+They do not interpret evidence.
 
 ---
 
-## Evaluation environments remain independent.
+## Execution remains separate.
 
-Future assumptions remain orthogonal to retiree decisions.
+Studies and Experiments describe analytical intent.
 
-Experiments combine transitions with environments.
-
----
-
-## Experiments generate evidence.
-
-Experiments define deterministic methodologies for producing evidence.
-
-Interpretation belongs elsewhere.
+Sessions, Runs, and Trials describe realized execution.
 
 ---
 
-## Execution remains separate from methodology.
+## Applicability belongs to the workspace.
 
-Studies, transition families, transitions, experiments, and execution plans describe analytical intent.
+The workspace determines which studies are currently relevant.
 
-Sessions, runs, and trials describe realized execution.
+The study subsystem defines what those studies mean.
 
 ---
 
 # Long-Term Direction
 
-The study subsystem is evolving toward a reusable library of retirement planning methodology.
+The study subsystem is evolving toward a reusable library of retirement-planning methodology.
 
-Future capabilities are expected to include:
+Future capabilities may include:
 
-* Richer transition families
-* Automatic transition generation
-* Adaptive experiment selection
-* Multi-stage investigations
-* Comparative study composition
-* Environment-aware experimentation
-* Research-oriented methodologies
-* Educational analytical workflows
+* richer experiment libraries
+* automatic study selection
+* adaptive experiment selection
+* comparative investigations
+* research-oriented methodologies
+* educational analytical workflows
 
 Regardless of future implementation, the architectural responsibility remains unchanged.
 
-The study subsystem should answer one question:
+The study subsystem answers one question:
 
-> **What analytical transitions should be evaluated, and how should evidence for those transitions be generated?**
-
-The workspace determines when a study is applicable.
-
-The study subsystem defines what that study means.
+> **What analytical investigations are available, and how should evidence for those investigations be generated?**

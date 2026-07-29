@@ -1,151 +1,258 @@
+# tests/study/test_registry.py
+#
+# Copyright (c) 2026 John Leonard
+# SPDX-License-Identifier: GPL-3.0-or-later
+# See LICENSE file in repository root.
+
+"""
+Tests for the study registry.
+"""
+
 from __future__ import annotations
 
-from owlroost.study.registry import (
-    StudyRegistry,
-)
+import pytest
+
+from owlroost.exceptions import RoostError
+from owlroost.study.registry import StudyRegistry
 from owlroost.study.specs import (
-    QuestionSpec,
-    ScenarioFamilySpec,
+    ExperimentSpec,
     StudySpec,
 )
 
+# =========================================================
+# Helpers
+# =========================================================
 
-def test_register_study():
-    reg = StudyRegistry()
 
-    reg.register_study(
-        StudySpec(
-            name="retirement_readiness",
-            title="Retirement Readiness",
-            description="Test",
+def make_study(
+    name: str = "market_uncertainty",
+    experiments: list[str] | None = None,
+) -> StudySpec:
+    return StudySpec(
+        name=name,
+        title=name.replace("_", " ").title(),
+        description="",
+        experiment_names=experiments or [],
+    )
+
+
+def make_experiment(
+    name: str,
+) -> ExperimentSpec:
+    return ExperimentSpec(
+        name=name,
+        title=name.replace("_", " ").title(),
+        description="",
+    )
+
+
+# =========================================================
+# Construction
+# =========================================================
+
+
+def test_empty_registry():
+    registry = StudyRegistry()
+
+    assert registry.all_studies() == []
+    assert registry.all_experiments() == []
+
+
+# =========================================================
+# Studies
+# =========================================================
+
+
+def test_register_and_get_study():
+    registry = StudyRegistry()
+
+    study = make_study()
+
+    registry.register_study(
+        study,
+    )
+
+    assert (
+        registry.get_study(
+            "market_uncertainty",
         )
+        is study
     )
 
-    study = reg.get_study(
-        "retirement_readiness",
+
+def test_all_studies_sorted():
+    registry = StudyRegistry()
+
+    registry.register_study(
+        make_study("zeta"),
     )
 
-    assert study.name == ("retirement_readiness")
-
-
-def test_all_studies():
-    reg = StudyRegistry()
-
-    reg.register_study(
-        StudySpec(
-            name="b",
-            title="B",
-            description="B",
-        )
+    registry.register_study(
+        make_study("alpha"),
     )
 
-    reg.register_study(
-        StudySpec(
-            name="a",
-            title="A",
-            description="A",
-        )
+    registry.register_study(
+        make_study("beta"),
     )
 
-    names = [study.name for study in reg.all_studies()]
-
-    assert names == [
-        "a",
-        "b",
+    assert [study.name for study in registry.all_studies()] == [
+        "alpha",
+        "beta",
+        "zeta",
     ]
 
 
-def test_register_question():
-    reg = StudyRegistry()
+def test_get_missing_study():
+    registry = StudyRegistry()
 
-    reg.register_question(
-        QuestionSpec(
-            name="can_i_retire",
-            title="Can I Retire?",
-            category="retirement",
-            description="Test",
+    with pytest.raises(
+        RoostError,
+        match="Study not found",
+    ):
+        registry.get_study(
+            "missing",
         )
+
+
+# =========================================================
+# Experiments
+# =========================================================
+
+
+def test_register_and_get_experiment():
+    registry = StudyRegistry()
+
+    experiment = make_experiment(
+        "bootstrap",
     )
 
-    question = reg.get_question(
-        "can_i_retire",
+    registry.register_experiment(
+        experiment,
     )
 
-    assert question.name == ("can_i_retire")
-
-
-def test_all_questions():
-    reg = StudyRegistry()
-
-    reg.register_question(
-        QuestionSpec(
-            name="b",
-            title="B",
-            category="test",
-            description="B",
+    assert (
+        registry.get_experiment(
+            "bootstrap",
         )
+        is experiment
     )
 
-    reg.register_question(
-        QuestionSpec(
-            name="a",
-            title="A",
-            category="test",
-            description="A",
-        )
+
+def test_all_experiments_sorted():
+    registry = StudyRegistry()
+
+    registry.register_experiment(
+        make_experiment("zeta"),
     )
 
-    names = [question.name for question in reg.all_questions()]
+    registry.register_experiment(
+        make_experiment("alpha"),
+    )
 
-    assert names == [
-        "a",
-        "b",
+    registry.register_experiment(
+        make_experiment("beta"),
+    )
+
+    assert [experiment.name for experiment in registry.all_experiments()] == [
+        "alpha",
+        "beta",
+        "zeta",
     ]
 
 
-def test_register_scenario_family():
-    reg = StudyRegistry()
+def test_get_missing_experiment():
+    registry = StudyRegistry()
 
-    reg.register_scenario_family(
-        ScenarioFamilySpec(
-            name="retirement_timing",
-            title="Retirement Timing",
-            category="retirement",
-            description="Test",
+    with pytest.raises(
+        RoostError,
+        match="Experiment not found",
+    ):
+        registry.get_experiment(
+            "missing",
         )
+
+
+# =========================================================
+# Relationships
+# =========================================================
+
+
+def test_experiments_for_study():
+    registry = StudyRegistry()
+
+    registry.register_experiment(
+        make_experiment(
+            "bootstrap",
+        ),
     )
 
-    family = reg.get_scenario_family(
-        "retirement_timing",
+    registry.register_experiment(
+        make_experiment(
+            "historical",
+        ),
     )
 
-    assert family.name == ("retirement_timing")
-
-
-def test_all_scenario_families():
-    reg = StudyRegistry()
-
-    reg.register_scenario_family(
-        ScenarioFamilySpec(
-            name="b",
-            title="B",
-            category="test",
-            description="B",
-        )
+    registry.register_study(
+        make_study(
+            experiments=[
+                "bootstrap",
+                "historical",
+            ],
+        ),
     )
 
-    reg.register_scenario_family(
-        ScenarioFamilySpec(
-            name="a",
-            title="A",
-            category="test",
-            description="A",
-        )
+    experiments = registry.experiments_for_study(
+        "market_uncertainty",
     )
 
-    names = [family.name for family in reg.all_scenario_families()]
-
-    assert names == [
-        "a",
-        "b",
+    assert [experiment.name for experiment in experiments] == [
+        "bootstrap",
+        "historical",
     ]
+
+
+def test_study_with_no_experiments():
+    registry = StudyRegistry()
+
+    registry.register_study(
+        make_study(),
+    )
+
+    assert (
+        registry.experiments_for_study(
+            "market_uncertainty",
+        )
+        == []
+    )
+
+
+def test_experiments_for_unknown_study():
+    registry = StudyRegistry()
+
+    with pytest.raises(
+        RoostError,
+        match="Study not found",
+    ):
+        registry.experiments_for_study(
+            "missing",
+        )
+
+
+def test_missing_experiment_reference_raises():
+    registry = StudyRegistry()
+
+    registry.register_study(
+        make_study(
+            experiments=[
+                "bootstrap",
+            ],
+        ),
+    )
+
+    with pytest.raises(
+        RoostError,
+        match="Experiment not found",
+    ):
+        registry.experiments_for_study(
+            "market_uncertainty",
+        )

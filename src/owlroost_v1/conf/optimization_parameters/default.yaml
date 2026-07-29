@@ -1,8 +1,0 @@
-
-objective: "maxBequest"
-surviving_spouse_spending_percent: 60
-
-spending_profile: "flat"
-smile_dip: 15
-smile_increase: 12
-smile_delay: 0

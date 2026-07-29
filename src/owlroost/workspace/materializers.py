@@ -621,50 +621,50 @@ def materialize_study(
 
     study.clear()
 
-    study["scenario_families"] = {}
+    study["studies"] = {}
 
     # -----------------------------------------------------
-    # Scenario Families
+    # Studies
     # -----------------------------------------------------
 
-    for scenario_family in study_registry.all_scenario_families():
-        family = {
-            "name": scenario_family.name,
-            "title": scenario_family.title,
-            "description": (scenario_family.description),
+    for study_spec in study_registry.all_studies():
+        study_data = {
+            "name": study_spec.name,
+            "title": study_spec.title,
+            "description": study_spec.description,
             "experiments": {},
         }
 
-        templates = study_registry.experiments_for_scenario_family(
-            scenario_family.name,
+        experiments = study_registry.experiments_for_study(
+            study_spec.name,
         )
 
-        for template in templates:
+        for experiment in experiments:
             applicable = all(
                 row_value(
                     row,
                     lever_name,
                 )
-                for lever_name in (template.required_levers)
+                for lever_name in (experiment.required_levers)
             )
 
-            template_data = {
-                "name": template.name,
-                "title": template.title,
-                "description": (template.description),
+            experiment_data = {
+                "name": experiment.name,
+                "title": experiment.title,
+                "description": (experiment.description),
                 "applicable": applicable,
                 "required_levers": {},
             }
 
-            for lever_name in template.required_levers:
-                template_data["required_levers"][lever_name] = row_value(
+            for lever_name in experiment.required_levers:
+                experiment_data["required_levers"][lever_name] = row_value(
                     row,
                     lever_name,
                 )
 
-            family["experiments"][template.name] = template_data
+            study_data["experiments"][experiment.name] = experiment_data
 
-        study["scenario_families"][scenario_family.name] = family
+        study["studies"][study_spec.name] = study_data
 
     return row
 
@@ -703,59 +703,59 @@ def materialize_study_tree(
 
     root = {
         "kind": "section",
-        "label": "Scenario Families",
+        "label": "Studies",
         "children": [],
     }
 
-    study["scenario_families"] = root
+    study["studies"] = root
 
     # -----------------------------------------------------
-    # Scenario Families
+    # Studies
     # -----------------------------------------------------
 
-    for scenario_family in study_registry.all_scenario_families():
-        family_section = {
+    for study_spec in study_registry.all_studies():
+        study_section = {
             "kind": "section",
-            "label": scenario_family.title,
-            "field": (f"scenario_family.{scenario_family.name}"),
+            "label": study_spec.title,
+            "field": (f"study.{study_spec.name}"),
             "meta": {
                 "blank_before": False,
             },
             "children": [],
         }
 
-        templates = study_registry.experiments_for_scenario_family(
-            scenario_family.name,
+        experiments = study_registry.experiments_for_study(
+            study_spec.name,
         )
 
-        if templates:
-            template_group = {
+        if experiments:
+            experiment_group = {
                 "kind": "section",
                 "label": "Experiments",
                 "meta": {},
                 "children": [],
             }
 
-            for template in templates:
+            for experiment in experiments:
                 applicable = all(
                     row_value(
                         row,
                         lever_name,
                     )
-                    for lever_name in (template.required_levers)
+                    for lever_name in (experiment.required_levers)
                 )
 
-                template_section = {
+                experiment_section = {
                     "kind": "section",
-                    "label": template.title,
-                    "field": (f"experiment.{template.name}"),
+                    "label": experiment.title,
+                    "field": (f"experiment.{experiment.name}"),
                     "meta": {
                         "applicable": applicable,
                     },
                     "children": [],
                 }
 
-                if template.required_levers:
+                if experiment.required_levers:
                     lever_group = {
                         "kind": "section",
                         "label": "Required Levers",
@@ -763,8 +763,15 @@ def materialize_study_tree(
                         "children": [],
                     }
 
-                    for lever_name in template.required_levers:
-                        label = lever_name.split(".")[-1].replace("_", " ").title()
+                    for lever_name in experiment.required_levers:
+                        label = (
+                            lever_name.split(".")[-1]
+                            .replace(
+                                "_",
+                                " ",
+                            )
+                            .title()
+                        )
 
                         lever_group["children"].append(
                             {
@@ -781,20 +788,20 @@ def materialize_study_tree(
                             }
                         )
 
-                    template_section["children"].append(
+                    experiment_section["children"].append(
                         lever_group,
                     )
 
-                template_group["children"].append(
-                    template_section,
+                experiment_group["children"].append(
+                    experiment_section,
                 )
 
-            family_section["children"].append(
-                template_group,
+            study_section["children"].append(
+                experiment_group,
             )
 
         root["children"].append(
-            family_section,
+            study_section,
         )
 
     return row

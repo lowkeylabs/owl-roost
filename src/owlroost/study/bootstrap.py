@@ -9,28 +9,31 @@ Study subsystem bootstrap.
 
 Notes
 -----
-Owns construction of the study
-registry and registration of all
-study subsystem components.
+Constructs and populates the study
+definition registry.
 
 Architectural Invariant
 -----------------------
 
-The bootstrap process registers
-all definition-layer entities:
+The bootstrap process registers all
+definition-layer study entities:
 
-    Studies
-    Questions
-    Scenario Families
-    Choice Templates
-    Levers
+    • Studies
 
-The registry is fully populated
-before it is returned.
+    • Experiments
+
+The registry is fully populated before
+being returned.
 
 Registration order follows the
-conceptual hierarchy but should
-not affect correctness.
+conceptual hierarchy:
+
+    Study
+        ↓
+    Experiment
+
+Execution artifacts (Sessions, Runs,
+and Trials) are materialized elsewhere.
 """
 
 from __future__ import annotations
@@ -38,42 +41,40 @@ from __future__ import annotations
 from owlroost.study.experiments import (
     register_all_experiments,
 )
-from owlroost.study.questions import (
-    register_all_questions,
-)
 from owlroost.study.registry import (
     StudyRegistry,
-)
-from owlroost.study.scenario_families import (
-    register_all_scenario_families,
 )
 from owlroost.study.studies import (
     register_all_studies,
 )
 
+# =========================================================
+# Bootstrap
+# =========================================================
 
-def build_study_registry():
+
+def build_study_registry() -> StudyRegistry:
     """
-    Construct and populate a
-    StudyRegistry instance.
+    Construct and populate the
+    study registry.
     """
 
-    reg = StudyRegistry()
+    registry = StudyRegistry()
+
+    # -----------------------------------------------------
+    # Studies
+    # -----------------------------------------------------
 
     register_all_studies(
-        reg,
+        registry,
     )
 
-    register_all_questions(
-        reg,
-    )
-
-    register_all_scenario_families(
-        reg,
-    )
+    # -----------------------------------------------------
+    # Experiments
+    # -----------------------------------------------------
 
     register_all_experiments(
-        reg,
+        registry,
     )
 
-    return reg
+    return registry

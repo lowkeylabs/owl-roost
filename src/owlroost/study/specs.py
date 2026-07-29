@@ -9,200 +9,85 @@ Study subsystem specifications.
 
 Notes
 -----
-Owns the analytical definition layer
-of the study subsystem.
+Owns the analytical definition layer of
+the study subsystem.
 
-Conceptually:
+The study subsystem consists of two
+definition-layer concepts:
 
     Study
-        ↓
-    Question
-        ↓
-    Scenario Family
-        ↓
-    Choice Template
-        ↓
-    Lever
+        A collection of related
+        experimental designs.
 
-Studies organize related questions.
+    Experiment
+        A reusable experimental
+        methodology.
 
-Questions represent information needs.
-
-Scenario families define evidence spaces.
-
-Choice templates define methodologies.
-
-Levers determine applicability.
-
-The study subsystem defines work
-that should be performed.
-
-The realization subsystem executes
-that work and generates evidence.
-
-The interpretation layer consumes
-evidence and produces guidance.
+Execution artifacts (Sessions, Runs,
+and Trials) belong to the execution
+subsystem and are not defined here.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from owlroost.display.specs import (
-    DisplayProfile,
-)
+from owlroost.display.specs import DisplayProfile
+
+# =========================================================
+# Studies
+# =========================================================
 
 
 @dataclass(slots=True)
 class StudySpec:
     """
-    Defines a collection of
-    related retirement questions.
+    Defines a collection of related
+    experimental designs.
 
-    Studies organize analytical
-    exploration around a coherent
-    topic area.
-
-    Questions may participate in
-    multiple studies.
-
-    Studies are organizational
-    entities and do not own
-    execution artifacts.
-    """
-
-    name: str
-
-    title: str
-
-    description: str
-
-    question_names: list[str] = field(
-        default_factory=list,
-    )
-
-    profiles: dict[
-        str,
-        DisplayProfile,
-    ] = field(
-        default_factory=dict,
-    )
-
-
-@dataclass(slots=True)
-class QuestionSpec:
-    """
-    Defines a retirement question.
-
-    Questions represent the primary
-    user-facing entry point into the
-    study subsystem.
+    A study represents one coherent
+    area of retirement investigation.
 
     Examples include:
 
-        Can I retire?
+        Market Uncertainty
 
-        Should I retire?
+        Beginning-of-Year Spending
 
-        When should I retire?
+        Social Security Claiming
 
-        When should I claim
-        Social Security?
+        Roth Conversion
 
-        How much can I spend?
+        Retirement Timing
 
-    Questions identify information
-    needs.
+    Studies organize experiments.
 
-    Questions consume evidence but
-    do not directly generate it.
-
-    Evidence generation is delegated
-    to one or more scenario families.
+    Studies are definition-layer
+    objects and do not own execution
+    artifacts.
     """
+
+    #
+    # Identity
+    #
 
     name: str
 
     title: str
 
-    category: str
-
     description: str
 
-    scenario_family_names: list[str] = field(
-        default_factory=list,
-    )
-
-    required_levers: list[str] = field(
-        default_factory=list,
-    )
-
-    related_questions: list[str] = field(
-        default_factory=list,
-    )
-
-    profiles: dict[
-        str,
-        DisplayProfile,
-    ] = field(
-        default_factory=dict,
-    )
-
-
-@dataclass(slots=True)
-class ScenarioFamilySpec:
-    """
-    Defines a reusable evidence-
-    generation space.
-
-    Scenario families organize
-    related what-if investigations.
-
-    Examples include:
-
-        retirement_timing
-
-        social_security_claiming
-
-        roth_conversion
-
-        spending_level
-
-        market_regime
-
-    A scenario family answers:
-
-        What evidence should
-        be generated?
-
-    Scenario families may support
-    multiple questions.
-
-    Questions may depend upon
-    multiple scenario families.
-    """
-
-    name: str
-
-    title: str
-
-    category: str
-
-    description: str
-
-    required_levers: list[str] = field(
-        default_factory=list,
-    )
-
-    related_scenario_families: list[str] = field(
-        default_factory=list,
-    )
+    #
+    # Relationships
+    #
 
     experiment_names: list[str] = field(
         default_factory=list,
     )
 
-    defined_in: str | None = (None,)
+    #
+    # Display
+    #
 
     profiles: dict[
         str,
@@ -212,35 +97,40 @@ class ScenarioFamilySpec:
     )
 
 
+# =========================================================
+# Experiments
+# =========================================================
+
+
 @dataclass(slots=True)
 class ExperimentSpec:
     """
-    Defines an unrealized experimental
+    Defines a reusable experimental
     design.
 
-    A Choice Template specifies a
-    reusable methodology for exploring
-    a scenario family.
+    An experiment specifies a
+    methodology for generating
+    retirement evidence.
 
-    A Choice Template consists of:
+    An experiment consists of:
+
+        • Applicability requirements
 
         • Fixed model overrides
 
         • Variable model overrides
 
-        • Applicability requirements
+    Experiments are unrealized
+    analytical designs.
 
     When materialized for a household,
-    a Choice Template becomes a Session.
+    an experiment becomes a Session.
 
     The Session expands the variable
     overrides into one or more Runs.
 
-    Runs are the primary units of
-    comparison.
-
-    Sessions exist to concisely define
-    large collections of related Runs.
+    Runs are the primary analytical
+    objects compared by ROOST.
 
     Examples include:
 
@@ -293,7 +183,11 @@ class ExperimentSpec:
         default_factory=list,
     )
 
-    defined_in: str | None = (None,)
+    #
+    # Provenance
+    #
+
+    defined_in: str | None = None
 
     #
     # Display
@@ -307,6 +201,11 @@ class ExperimentSpec:
     )
 
     def hydra_overrides(self) -> list[str]:
+        """
+        Return the complete Hydra
+        override list required to
+        execute the experiment.
+        """
         return [
             *self.fixed_overrides,
             *self.variable_overrides,

@@ -117,7 +117,7 @@ def register_experiments(
 
     reg.register_experiment(
         ExperimentSpec(
-            name="fixed_return_regimes",
+            name="fixed_return_models",
             title="Fixed Return Models",
             description=(
                 "Compare retirement outcomes using deterministic long-term return models."
@@ -135,7 +135,7 @@ def register_experiments(
 
     reg.register_experiment(
         ExperimentSpec(
-            name="historical_regimes",
+            name="historical_models",
             title="Historical Average Returns",
             description=(
                 "Evaluate retirement outcomes usingreturns drawn from a historical market regime."
@@ -147,7 +147,7 @@ def register_experiments(
                 "rates_selection.method=historical",
             ],
             variable_overrides=[
-                "roost_sweeps.named_window=full,modern,lost_decade,stagflation,dotcom,secular_bull",
+                "roost_sweeps.named_window=modern,lost_decade,stagflation,secular_bull",
             ],
             defined_in=normalize_module_path(__file__),
         )
