@@ -79,9 +79,10 @@ def register_display_views(
                 # =====================================
                 # Identity
                 # =====================================
-                ("case_name", {"modes": ["pivot"]}),
-                # "basic_info.names",
                 "display.compact_id",
+                ("case_name", {"modes": ["pivot"]}),
+                ("roost_settings.study_name", {"modes": ["pivot"]}),
+                ("roost_settings.experiment_name", {"modes": ["pivot"]}),
                 "display.optimization_goal",
                 "display.compact_rates",
                 "display.completion_fraction",

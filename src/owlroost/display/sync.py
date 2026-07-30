@@ -350,6 +350,72 @@ def sync_workspace_registry(
 
 
 # =========================================================
+# Study Overlay Sync
+# =========================================================
+
+
+def sync_study_registry(
+    study_registry,
+    display_registry: DisplayRegistry,
+):
+    """
+    Generate default display overlays for
+    registered studies and experiments.
+    """
+
+    # -----------------------------------------------------
+    # Studies
+    # -----------------------------------------------------
+
+    for study in study_registry.all_studies():
+        _register_field_if_missing(
+            field_name=f"study.{study.name}",
+            description=study.description,
+            display_registry=display_registry,
+            profiles={
+                "table": DisplayProfile(
+                    label=study.title,
+                    wrap=True,
+                    content_align="left",
+                ),
+                "pivot": DisplayProfile(
+                    label=study.title,
+                    wrap=True,
+                    content_align="left",
+                ),
+            },
+        )
+
+    # -----------------------------------------------------
+    # Experiments
+    # -----------------------------------------------------
+
+    for experiment in study_registry.all_experiments():
+        _register_field_if_missing(
+            field_name=f"experiment.{experiment.name}",
+            description=experiment.description,
+            display_registry=display_registry,
+            profiles={
+                "table": DisplayProfile(
+                    label=experiment.title,
+                    wrap=True,
+                    content_align="left",
+                ),
+                "pivot": DisplayProfile(
+                    label=experiment.title,
+                    wrap=True,
+                    content_align="left",
+                ),
+            },
+            defined_in=getattr(
+                experiment,
+                "defined_in",
+                None,
+            ),
+        )
+
+
+# =========================================================
 # Guide Overlay Sync
 # =========================================================
 

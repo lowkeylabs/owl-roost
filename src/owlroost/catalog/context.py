@@ -83,9 +83,9 @@ class CatalogContext:
 
     comparison_registry: object
 
-    study_registry: object
-
     activity_registry: object
+
+    study_registry: object
 
     display_registry: object
 

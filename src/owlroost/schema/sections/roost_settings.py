@@ -96,6 +96,12 @@ class RoostSettingsConfig(
         description="Trial index within run.",
     )
 
+    study_name: str | None = Field(default=None, description="Study name (if part of study)")
+
+    experiment_name: str | None = Field(
+        default=None, description="Experiment name (if part of experiment)"
+    )
+
     # -----------------------------------------------------
     # Deterministic execution
     # -----------------------------------------------------

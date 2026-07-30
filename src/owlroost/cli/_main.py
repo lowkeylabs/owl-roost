@@ -34,6 +34,23 @@ def render_welcome(guide):
     print("welcome")
 
 
+def alias_command(base_cmd: click.Command, name: str, *, help: str | None = None) -> click.Command:
+    """Creates a new independent Command instance sharing the same core logic."""
+
+    if help is None:
+        help = base_cmd.help
+
+    return click.Command(
+        name=name,
+        callback=base_cmd.callback,
+        params=base_cmd.params,
+        help=help,
+        epilog=base_cmd.epilog,
+        short_help=base_cmd.short_help,
+        options_metavar=base_cmd.options_metavar,
+    )
+
+
 @click.group(invoke_without_command=True)
 @click.version_option(
     version=__version__,
@@ -80,9 +97,11 @@ cli.add_command(cmd_run)
 cli.add_command(cmd_reports)
 cli.add_command(cmd_results)
 
+
 cli.add_command(cmd_vars, name="vars")
-cli.add_command(cmd_vals, name="vals")
-cli.add_command(cmd_vals, name="settings")
+
+cli.add_command(alias_command(cmd_vals, name="vals", help="Display values from workspace"))
+cli.add_command(alias_command(cmd_vals, name="settings", help="Display default program settings"))
 
 cli.add_command(cmd_workspace, name="workspace")
 

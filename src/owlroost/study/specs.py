@@ -34,12 +34,84 @@ from dataclasses import dataclass, field
 
 from owlroost.display.specs import DisplayProfile
 
+STUDY_NAMESPACE = "study"
+EXPERIMENT_NAMESPACE = "experiment"
+
+
+@dataclass(
+    frozen=True,
+    slots=True,
+)
+class StudyFieldSpec:
+    """
+    Canonical description
+    """
+
+    name: str
+
+    description: str
+
+
+STUDY_FIELDS: tuple[StudyFieldSpec, ...] = (
+    StudyFieldSpec(
+        "name",
+        "Canonical study identifier.",
+    ),
+    StudyFieldSpec(
+        "title",
+        "Human-readable study title.",
+    ),
+    StudyFieldSpec(
+        "description",
+        "Study description.",
+    ),
+    StudyFieldSpec(
+        "experiment_names",
+        "Experiments belonging to the study.",
+    ),
+)
+
+EXPERIMENT_FIELDS: tuple[StudyFieldSpec, ...] = (
+    StudyFieldSpec(
+        "name",
+        "Canonical experiment identifier.",
+    ),
+    StudyFieldSpec(
+        "title",
+        "Human-readable experiment title.",
+    ),
+    StudyFieldSpec(
+        "description",
+        "Experiment description.",
+    ),
+    StudyFieldSpec(
+        "required_levers",
+        "Workspace requirements that must be satisfied.",
+    ),
+    StudyFieldSpec(
+        "optional_levers",
+        "Optional workspace capabilities.",
+    ),
+    StudyFieldSpec(
+        "fixed_overrides",
+        "Hydra overrides applied to every run.",
+    ),
+    StudyFieldSpec(
+        "variable_overrides",
+        "Hydra overrides expanded into multiple runs.",
+    ),
+    StudyFieldSpec(
+        "defined_in",
+        "Source module defining the experiment.",
+    ),
+)
+
 # =========================================================
 # Studies
 # =========================================================
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class StudySpec:
     """
     Defines a collection of related
@@ -102,7 +174,7 @@ class StudySpec:
 # =========================================================
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class ExperimentSpec:
     """
     Defines a reusable experimental
@@ -210,3 +282,23 @@ class ExperimentSpec:
             *self.fixed_overrides,
             *self.variable_overrides,
         ]
+
+
+def study_field_name(
+    name: str,
+) -> str:
+    """
+    Return the fully-qualified study
+    field name.
+    """
+    return f"{STUDY_NAMESPACE}.{name}"
+
+
+def experiment_field_name(
+    name: str,
+) -> str:
+    """
+    Return the fully-qualified
+    experiment field name.
+    """
+    return f"{EXPERIMENT_NAMESPACE}.{name}"

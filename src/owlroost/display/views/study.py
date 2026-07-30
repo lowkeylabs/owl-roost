@@ -1,4 +1,4 @@
-# src/owlroost/display/views/context.py
+# src/owlroost/display/views/study.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -34,34 +34,14 @@ def register_display_views(
 
     reg.register_view(
         DisplayView(
-            level="context",
-            name="context",
+            level="study",
+            name="study",
             entries=[
                 # =====================================
                 # Workspace context
                 # =====================================
-                ("tree", {"root": "context_tree", "depth": 2, "label": None}),
-            ],
-            description=(
-                "Summarizes the current "
-                "workspace, its readiness "
-                "for retirement planning, "
-                "and available analytical "
-                "artifacts."
-            ),
-            **SHARED_VIEW_ONTOLOGY,
-        )
-    )
-
-    reg.register_view(
-        DisplayView(
-            level="context",
-            name="studies",
-            entries=[
-                # =====================================
-                # Workspace context
-                # =====================================
-                ("tree", {"root": "study_tree.studies", "depth": 3, "label": "STUDY TREE"}),
+                "study.name",
+                "experiment.name",
             ],
             description=(
                 "Summarizes the current "

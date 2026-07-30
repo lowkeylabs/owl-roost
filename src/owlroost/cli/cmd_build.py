@@ -60,6 +60,9 @@ DEFAULT_VIEW = "build"
 def build_hydra_command(
     case_path: Path,
     overrides: list[str],
+    *,
+    study_name: str | None = None,
+    experiment_name: str | None = None,
 ):
     """
     Construct Hydra multirun command.
@@ -83,6 +86,12 @@ def build_hydra_command(
         *overrides,
     ]
 
+    if study_name is not None:
+        cmd.append(f"roost_settings.study_name={study_name}")
+    if experiment_name is not None:
+        cmd.append(f"roost_settings.experiment_name={experiment_name}")
+
+    # print(cmd)
     return cmd
 
 
@@ -189,6 +198,9 @@ def resolve_direct_case_paths(
 def run_hydra_build(
     case_path: Path,
     overrides: list[str],
+    *,
+    study_name: str | None = None,
+    experiment_name: str | None = None,
 ):
     """
     Execute Hydra generator in multirun mode.
@@ -199,6 +211,8 @@ def run_hydra_build(
     cmd = build_hydra_command(
         case_path,
         overrides,
+        study_name=study_name,
+        experiment_name=experiment_name,
     )
 
     #    click.echo("Running Hydra:")
@@ -325,6 +339,11 @@ def run_hydra_build(
     type=str,
     help=("Comma-separated list of experiment names."),
 )
+@click.option(
+    "--study",
+    type=str,
+    help=("Comma-separated list of study names."),
+)
 def cmd_build(
     ctx,
     args,
@@ -343,6 +362,7 @@ def cmd_build(
     case_folder,
     import_to,
     experiment,
+    study,
 ):
     """
     Display available cases and build sessions.
@@ -380,11 +400,10 @@ def cmd_build(
     # =====================================================
 
     experiment_names = []
-
     if experiment:
         experiment_names = [x.strip() for x in experiment.split(",") if x.strip()]
-    experiments = []
 
+    experiments = []
     for name in experiment_names:
         spec = catalog.study_registry.get_experiment(name)
 
@@ -392,6 +411,19 @@ def cmd_build(
             raise click.ClickException(f"Unknown experiment: {name}")
 
         experiments.append(spec)
+
+    study_names = []
+    if study:
+        study_names = [x.strip() for x in study.split(",") if x.strip()]
+
+    studies = []
+    for name in study_names:
+        spec = catalog.study_registry.get_study(name)
+
+        if spec is None:
+            raise click.ClickException(f"Unknown study: {name}")
+
+        studies.append(spec)
 
     direct_case_paths = resolve_direct_case_paths(
         selectors,
@@ -680,7 +712,28 @@ def cmd_build(
 
         experiment_overrides = overrides
 
-        if experiments:
+        if studies:
+            for study in studies:
+                for experiment_name in study.experiment_names:
+                    print(f"{study.name} -> {experiment_name}")
+
+                    experiment = catalog.study_registry.get_experiment(experiment_name)
+
+                    experiment_overrides = [
+                        *overrides,
+                        *experiment.hydra_overrides(),
+                    ]
+
+                    runs = run_hydra_build(
+                        case_path,
+                        list(experiment_overrides),
+                        study_name=study.name,
+                        experiment_name=experiment.name,
+                    )
+
+                    generated_runs.extend(runs)
+
+        elif experiments:
             for experiment in experiments:
                 experiment_overrides = [
                     *overrides,
@@ -690,6 +743,8 @@ def cmd_build(
                 runs = run_hydra_build(
                     case_path,
                     list(experiment_overrides),
+                    study_name=None,
+                    experiment_name=experiment.name,
                 )
 
                 generated_runs.extend(runs)
@@ -698,6 +753,8 @@ def cmd_build(
             runs = run_hydra_build(
                 case_path,
                 list(experiment_overrides),
+                study_name=None,
+                experiment_name=None,
             )
 
             generated_runs.extend(runs)

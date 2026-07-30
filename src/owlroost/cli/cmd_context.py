@@ -113,7 +113,7 @@ def cmd_context(
     if view is None:
         view = ctx.info_name or DEFAULT_VIEW
 
-    view = "context"
+    view = view or "context"
     level = "context"
     view = view or level
 
@@ -155,6 +155,37 @@ def cmd_context(
             pprint(planning_context["_activity"].keys())
         if 1:
             pprint(planning_context["_activity"])
+
+        return
+
+    # =====================================================
+    # Display views
+    # =====================================================
+
+    if view is not None:
+        table = materialize_view(
+            rows=[planning_context],
+            registry=catalog.display_registry,
+            catalog_index=catalog.catalog_index,
+            level=level,
+            mode="pivot",
+            view_name=view,
+            explain_facets=explain_facets,
+            show_header=True,
+        )
+
+        output = render_table(
+            table,
+            resolve_renderer(
+                False,
+                False,
+            ),
+        )
+
+        if output:
+            click.echo(
+                output,
+            )
 
         return
 
