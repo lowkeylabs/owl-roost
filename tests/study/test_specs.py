@@ -10,9 +10,15 @@ Tests for study subsystem specifications.
 
 from __future__ import annotations
 
+from dataclasses import fields
+
 from owlroost.study.specs import (
+    EXPERIMENT_FIELDS,
+    STUDY_FIELDS,
     ExperimentSpec,
     StudySpec,
+    experiment_field_name,
+    study_field_name,
 )
 
 # =========================================================
@@ -155,3 +161,76 @@ def test_hydra_overrides_empty():
     )
 
     assert experiment.hydra_overrides() == []
+
+
+def _assert_field_specs_match_dataclass(
+    cls,
+    field_specs,
+):
+    """
+    Every canonical field must correspond
+    to a dataclass attribute.
+    """
+
+    dataclass_fields = {field.name for field in fields(cls)}
+
+    spec_fields = {field.name for field in field_specs}
+
+    if not spec_fields <= dataclass_fields:
+        print(f"Field and class definitions are out of sync for: {cls}")
+
+    assert spec_fields <= dataclass_fields
+
+    assert len(spec_fields) == len(set(spec_fields))
+
+
+def test_study_fields_match_spec():
+    _assert_field_specs_match_dataclass(
+        StudySpec,
+        STUDY_FIELDS,
+    )
+
+
+def test_experiment_fields_match_spec():
+    _assert_field_specs_match_dataclass(
+        ExperimentSpec,
+        EXPERIMENT_FIELDS,
+    )
+
+
+def test_study_field_names_unique():
+    names = [field.name for field in STUDY_FIELDS]
+
+    assert len(names) == len(set(names))
+
+
+def test_experiment_field_names_unique():
+    names = [field.name for field in EXPERIMENT_FIELDS]
+
+    assert len(names) == len(set(names))
+
+
+def test_study_field_descriptions_present():
+    assert all(field.description for field in STUDY_FIELDS)
+
+
+def test_experiment_field_descriptions_present():
+    assert all(field.description for field in EXPERIMENT_FIELDS)
+
+
+def test_study_field_name_helper():
+    assert (
+        study_field_name(
+            "title",
+        )
+        == "study.title"
+    )
+
+
+def test_experiment_field_name_helper():
+    assert (
+        experiment_field_name(
+            "title",
+        )
+        == "experiment.title"
+    )
