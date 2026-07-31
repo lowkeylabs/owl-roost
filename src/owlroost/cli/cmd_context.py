@@ -33,7 +33,7 @@ Workspace subsystem owns:
 
 from __future__ import annotations
 
-from pprint import pprint
+from pathlib import Path
 
 import click
 
@@ -53,6 +53,15 @@ from owlroost.display.materializers.materialize import (
     materialize_view,
 )
 from owlroost.operations.resolve import build_resolver
+from owlroost.package.builder import (
+    build_evidence_package,
+)
+from owlroost.package.publish import (
+    publish_evidence_package,
+)
+from owlroost.workspace.builders import (
+    build_workspace_planning_context,
+)
 from owlroost.workspace.loaders import (
     load_workspace_row,
 )
@@ -131,10 +140,15 @@ def cmd_context(
     # Planning context
     # =====================================================
 
+    workspace_row = load_workspace_row(root)
     planning_context = materialize_planning_context(
-        load_workspace_row(root),
+        workspace_row,
         catalog,
     )
+    workspace_context = build_workspace_planning_context(
+        planning_context,
+    )
+
     resolve = build_resolver(
         catalog,
         planning_context,
@@ -147,14 +161,21 @@ def cmd_context(
             click.echo("publish requires an initialized workspace.  Use: roost workspace --init")
             return
 
-        if 1:
-            pprint(planning_context.keys())
+        print("-----------vars-----------")
+        for field in catalog.workspace_registry.all():
+            click.echo(f"{field.name}: {resolve(field.name)}")
+
         if 0:
-            pprint(planning_context["_context"])
-        if 0:
-            pprint(planning_context["_activity"].keys())
-        if 1:
-            pprint(planning_context["_activity"])
+            package = build_evidence_package(
+                workspace_context,
+            )
+
+            destination = publish_evidence_package(
+                package,
+                Path(root) / "publish",
+            )
+
+            click.echo(f"Published evidence package to:\n{destination}")
 
         return
 

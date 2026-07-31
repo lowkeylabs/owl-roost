@@ -279,11 +279,7 @@ def expand_tree(
     materializer.
     """
 
-    print("================")
-
     root = spec["root"]
-
-    print(root)
 
     depth = spec.get(
         "depth",

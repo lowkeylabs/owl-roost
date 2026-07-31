@@ -29,7 +29,7 @@ def build_household_planning_context(
     return HouseholdPlanningContext(
         name="default",
         title="Current Household",
-        description="Household characterization is under development.",
+        description="Household characterization is under development. See./workspace/builders.py",
     )
 
 
@@ -45,7 +45,7 @@ def build_workspace_planning_context(
             "context.workspace.directory_name",
             ".",
         ),
-        overview="Planning context generation is under development.",
+        overview="Planning context generation is under development. See ./workspace/builders.py",
         generated_at=datetime.now(),
         households=(household,),
     )

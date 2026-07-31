@@ -120,11 +120,17 @@ def test_load_workspace_rows_basic(
 
     workspace = row["_workspace"]
 
-    assert workspace["identity"]["name"] == "example"
+    assert "definition" in workspace
 
-    assert workspace["identity"]["title"] == "Example Workspace"
+    definition = workspace["definition"]
 
-    assert workspace["identity"]["description"] == "Example description."
+    assert definition["name"] == "example"
+    assert definition["title"] == "Example Workspace"
+    assert definition["description"] == "Example description."
+
+    assert "name" not in workspace
+    assert "title" not in workspace
+    assert "description" not in workspace
 
 
 def test_load_workspace_rows_detects_cases(

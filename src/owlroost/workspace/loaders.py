@@ -45,6 +45,9 @@ from pathlib import Path
 # =========================================================
 
 
+WORKSPACE_TOML = "workspace.toml"
+
+
 def _load_workspace_toml(
     path: Path,
 ):
@@ -96,7 +99,7 @@ def _build_context_row(
     }
 
 
-def _materialize_workspace(
+def _load_workspace_definition(
     row,
     workspace_dir: Path,
 ):
@@ -114,7 +117,7 @@ def _materialize_workspace(
         workspace.toml.
     """
 
-    workspace_file = workspace_dir / "workspace.toml"
+    workspace_file = workspace_dir / WORKSPACE_TOML
 
     workspace = _load_workspace_toml(
         workspace_file,
@@ -122,68 +125,13 @@ def _materialize_workspace(
 
     row["_workspace"] = {
         # ---------------------------------------------
-        # Identity
-        # ---------------------------------------------
-        "identity": {
-            "name": workspace.get(
-                "name",
-                workspace_dir.name,
-            ),
-            "title": workspace.get(
-                "title",
-                "",
-            ),
-            "description": (
-                workspace.get(
-                    "description",
-                    "",
-                )
-                .replace(
-                    "\n",
-                    " ",
-                )
-                .strip()
-            ),
-        },
-        # ---------------------------------------------
         # Original context
         # ---------------------------------------------
-        "raw": workspace,
-        "raw_file": str(
+        "definition": workspace,
+        "definition_file": str(
             workspace_file.resolve(),
         ),
-        "raw_note": "raw key contains original file, other workspace keys are processed in ./workspace/loaders.py",
-        # ---------------------------------------------
-        # Workspace Layout
-        # ---------------------------------------------
-        "paths": {
-            "workspace": str(
-                workspace_dir.resolve(),
-            ),
-            "cases": str(
-                (
-                    workspace_dir / workspace.get("context", {}).get("paths", {}).get("cases", ".")
-                ).resolve()
-            ),
-            "results": str(
-                (
-                    workspace_dir
-                    / workspace.get("context", {}).get("paths", {}).get("results", "results")
-                ).resolve()
-            ),
-            "reports": str(
-                (
-                    workspace_dir
-                    / workspace.get("context", {}).get("paths", {}).get("reports", "reports")
-                ).resolve()
-            ),
-            "publish": str(
-                (
-                    workspace_dir
-                    / workspace.get("context", {}).get("paths", {}).get("publish", "publish")
-                ).resolve()
-            ),
-        },
+        "definition_note": "see ./workspace/loaders.py",
     }
 
     return row
@@ -218,7 +166,7 @@ def find_workspaces(
         source.iterdir(),
         key=lambda p: p.name.lower(),
     ):
-        if child.is_dir() and (child / "workspace.toml").exists():
+        if child.is_dir() and (child / WORKSPACE_TOML).exists():
             workspaces.append(
                 child,
             )
@@ -247,10 +195,10 @@ def load_workspace_row(
         workspace_dir,
     )
 
-    workspace_file = workspace_dir / "workspace.toml"
+    workspace_file = workspace_dir / WORKSPACE_TOML
 
     if workspace_file.exists():
-        row = _materialize_workspace(
+        row = _load_workspace_definition(
             row,
             workspace_dir,
         )

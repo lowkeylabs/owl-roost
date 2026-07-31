@@ -39,5 +39,20 @@ def register_studies(
                 "fixed_return_models",
                 "historical_models",
             ],
+            # Prolog files
+            prolog_files=[],
+            # Constructed using load_case_rows()
+            case_row_views=[
+                # {"file":None}
+                {"level": "row", "view": "cases", "mode": "pivot", "explain_facets": "variables"},
+                # {"file":None}
+            ],
+            # Constructed using load_run_rows()
+            run_row_views=[
+                # {"file":None}
+                {"level": "results", "view": "results", "mode": "pivot"}
+                # {"file":None}
+            ],
+            epilog_files=[],
         )
     )

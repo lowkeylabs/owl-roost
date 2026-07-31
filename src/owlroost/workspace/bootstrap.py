@@ -15,9 +15,7 @@ and architectural role.
 
 from __future__ import annotations
 
-from owlroost.workspace.inventory import (
-    register_inventory,
-)
+from owlroost.workspace.inventory import register_inventory
 from owlroost.workspace.levers import register_all_levers
 from owlroost.workspace.registry import (
     WorkspaceRegistry,

@@ -268,9 +268,11 @@ def materialize_context(
         ):
             continue
 
-        # only display "primary" fields.
-        if field.analytic_kind != "primary":
-            continue
+        #
+        # Only materialize primary fields.
+        #
+        #        if field.analytic_kind != "primary":
+        #            continue
 
         try:
             value = field.compute_fn(
@@ -447,10 +449,6 @@ def materialize_workspace(
         ):
             continue
 
-        # only display "primary" fields.
-        if field.analytic_kind != "primary":
-            continue
-
         try:
             value = field.compute_fn(
                 row,
@@ -458,6 +456,12 @@ def materialize_workspace(
 
         except Exception:
             continue
+
+        value = apply_configuration_override(
+            row,
+            field,
+            value,
+        )
 
         _set_row_value(
             row,

@@ -109,7 +109,7 @@ ACTIVITIES = [
                 0,
             ),
             Requirement(
-                "context.directory_kind",
+                "context.workspace.directory_kind",
                 "in",
                 [
                     "empty",

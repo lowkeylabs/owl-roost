@@ -69,6 +69,22 @@ STUDY_FIELDS: tuple[StudyFieldSpec, ...] = (
         "experiment_names",
         "Experiments belonging to the study.",
     ),
+    StudyFieldSpec(
+        "prolog_files",
+        "List of files to include at top of evidence package",
+    ),
+    StudyFieldSpec(
+        "epilog_files",
+        "List of files to include at bottom of evidence package",
+    ),
+    StudyFieldSpec(
+        "case_row_views",
+        "List of views displayed using load_case_rows",
+    ),
+    StudyFieldSpec(
+        "run_row_views",
+        "List of views displayed using load_run_rows.",
+    ),
 )
 
 EXPERIMENT_FIELDS: tuple[StudyFieldSpec, ...] = (
@@ -154,6 +170,21 @@ class StudySpec:
     #
 
     experiment_names: list[str] = field(
+        default_factory=list,
+    )
+
+    prolog_files: list[dict | None] = field(
+        default_factory=list,
+    )
+
+    epilog_files: list[dict | None] = field(
+        default_factory=list,
+    )
+
+    case_row_views: list[dict | None] = field(
+        default_factory=list,
+    )
+    run_row_views: list[dict | None] = field(
         default_factory=list,
     )
 

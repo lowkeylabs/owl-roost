@@ -244,7 +244,7 @@ The following principles should guide future implementation.
 * Planning Context objects are semantic syntheses rather than primitive observations.
 * Planning Context objects are semantic documents rather than projections.
 * Workspace observations remain the canonical semantic API.
-* Planning Context consumes Workspace observations without duplicating their computation.
+* Planning Context objects consume the effective Workspace observations (after configuration has been applied).
 * Planning Context contains no execution logic.
 * Planning Context contains no analytical interpretation or recommendations.
 * Every Planning Context statement should remain explainable through underlying Workspace observations.

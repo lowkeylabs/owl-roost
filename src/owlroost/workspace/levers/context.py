@@ -183,14 +183,14 @@ def _root(
 # Household Libraries
 # =========================================================
 
-DEFAULT_HOUSEHOLD_LIBRARY_CONFIG = (
-    ("workspace", "./library/households"),
-    ("user", "~/.roost/households"),
-    ("builtin", "<builtin>"),
-)
+DEFAULT_HOUSEHOLD_LIBRARY_CONFIG = [
+    {"name": "workspace", "location": "./library/households"},
+    {"name": "user", "location": "~/.roost/households"},
+    {"name": "builtin", "location": "<builtin>"},
+]
 
 
-def default_household_library_config() -> list[tuple[str, str]]:
+def default_household_library_config() -> list[dict[str, str]]:
     """
     Return the canonical household
     library configuration used to
@@ -198,7 +198,7 @@ def default_household_library_config() -> list[tuple[str, str]]:
 
     Returns
     -------
-    list[tuple[str, str]]
+    list[[str, str]]
         Ordered pairs of
         (library_name, location).
     """
@@ -209,7 +209,7 @@ def default_household_library_config() -> list[tuple[str, str]]:
 
 
 def resolve_household_libraries(
-    values: list[tuple[str, str]],
+    values: list[dict[str, str]],
     root=".",
 ) -> list[HouseholdLibrarySpec]:
     """
@@ -237,8 +237,14 @@ def resolve_household_libraries(
 
     libraries: list[HouseholdLibrarySpec] = []
 
-    for name, location in values:
+    for entry in values:
         read_only = False
+
+        if isinstance(entry, dict):
+            name = entry["name"]
+            location = entry["location"]
+        else:
+            name, location = entry
 
         if location == "<builtin>":
             library_root = BUILTIN_HOUSEHOLD_LIBRARY
@@ -283,8 +289,9 @@ def default_household_libraries(
     list[HouseholdLibrarySpec]
     """
 
+    default_list = default_household_library_config()
     return resolve_household_libraries(
-        default_household_library_config(),
+        default_list,
         root,
     )
 
@@ -750,9 +757,38 @@ def context_workspace_path(
 # =========================================================
 
 
+def merge_household_library_config(
+    defaults: list[dict[str, str]],
+    overrides: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    """
+    Merge workspace household library
+    configuration into the canonical
+    default search order.
+
+    Existing libraries are replaced by
+    name. New libraries are appended
+    in override order.
+    """
+
+    merged = {entry["name"]: dict(entry) for entry in defaults}
+
+    order = [entry["name"] for entry in defaults]
+
+    for entry in overrides:
+        name = entry["name"]
+
+        merged[name] = dict(entry)
+
+        if name not in order:
+            order.append(name)
+
+    return [merged[name] for name in order]
+
+
 def household_libraries(
     root=".",
-    values: list[tuple[str, str]] | None = None,
+    values: list[dict[str, str]] | None = None,
 ) -> list[HouseholdLibrarySpec]:
     """
     Return the effective household
@@ -760,11 +796,16 @@ def household_libraries(
     context.
     """
 
-    if values is None:
-        values = default_household_library_config()
+    config = default_household_library_config()
+
+    if values is not None:
+        config = merge_household_library_config(
+            config,
+            values,
+        )
 
     return resolve_household_libraries(
-        values,
+        config,
         root,
     )
 
@@ -830,12 +871,14 @@ LEVERS = [
         name="workspace.case_count",
         dtype=int,
         compute_fn=case_count,
+        override_policy=OverridePolicy.RECOMPUTE,
         description="Count of OWL case files in the current planning context.",
     ),
     dict(
         name="workspace.valid_case_count",
         dtype=int,
         compute_fn=valid_case_count,
+        override_policy=OverridePolicy.RECOMPUTE,
         description="Count of loadable OWL case files in the current planning context.",
     ),
     # -----------------------------------------------------
@@ -845,18 +888,21 @@ LEVERS = [
         name="workspace.initialized",
         dtype=bool,
         compute_fn=workspace_initialized,
+        override_policy=OverridePolicy.RECOMPUTE,
         description="Current directory is an initialized workspace.",
     ),
     dict(
         name="workspace.parent_count",
         dtype=int,
         compute_fn=workspace_parent_count,
+        override_policy=OverridePolicy.RECOMPUTE,
         description="Number of parent workspaces above current subdirectory.",
     ),
     dict(
         name="workspace.child_count",
         dtype=int,
         compute_fn=workspace_child_count,
+        override_policy=OverridePolicy.RECOMPUTE,
         description="Number of immediate child workspaces.",
     ),
     #
@@ -877,6 +923,7 @@ LEVERS = [
         dtype=bool,
         analytic_kind="derived",
         compute_fn=has_valid_case,
+        override_policy=OverridePolicy.RECOMPUTE,
         description="Planning context contains at least one valid OWL case.",
     ),
     dict(
@@ -884,6 +931,7 @@ LEVERS = [
         dtype=bool,
         analytic_kind="derived",
         compute_fn=can_initialize_workspace,
+        override_policy=OverridePolicy.RECOMPUTE,
         description="Current directory satisfies the requirements for workspace initialization.",
     ),
     dict(
@@ -891,39 +939,21 @@ LEVERS = [
         dtype=bool,
         analytic_kind="derived",
         compute_fn=can_create_workspace,
+        override_policy=OverridePolicy.RECOMPUTE,
         description="A new child workspace may be created beneath the current directory.",
     ),
     dict(
-        name="directory_kind",
+        name="workspace.directory_kind",
         dtype=str,
         compute_fn=directory_kind,
+        override_policy=OverridePolicy.RECOMPUTE,
         description="Semantic classification of the current directory.",
-    ),
-    dict(
-        name="identity.name",
-        dtype=str,
-        compute_fn=context_name,
-        override_policy=OverridePolicy.NEVER,
-        description=("Canonical name of the current planning context."),
-    ),
-    dict(
-        name="identity.title",
-        dtype=str,
-        compute_fn=context_title,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description=("Human-readable title of the current planning context."),
-    ),
-    dict(
-        name="identity.description",
-        dtype=str,
-        compute_fn=context_description,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description=("Descriptive summary of the current planning context."),
     ),
     dict(
         name="paths.workspace",
         dtype=Path,
         compute_fn=context_workspace_path,
+        override_policy=OverridePolicy.RECOMPUTE,
         description=("Absolute path to the current planning context root."),
     ),
     dict(
@@ -941,6 +971,35 @@ LEVERS = [
         description=("Absolute path to the directory used for generated planning results."),
     ),
 ]
+if 0:
+    (
+        dict(
+            name="identity.name",
+            dtype=str,
+            compute_fn=context_name,
+            override_policy=OverridePolicy.NEVER,
+            description=("Canonical name of the current planning context."),
+        ),
+    )
+    (
+        dict(
+            name="identity.title",
+            dtype=str,
+            compute_fn=context_title,
+            override_policy=OverridePolicy.RECOMPUTE,
+            description=("Human-readable title of the current planning context."),
+        ),
+    )
+    (
+        dict(
+            name="identity.description",
+            dtype=str,
+            compute_fn=context_description,
+            override_policy=OverridePolicy.RECOMPUTE,
+            description=("Descriptive summary of the current planning context."),
+        ),
+    )
+
 
 # =========================================================
 # Registration

@@ -161,7 +161,7 @@ def register_display_fields(
             description=("Combined rates_method and relavant params for brevity."),
             profiles={
                 "table": DisplayProfile(
-                    label="Rate Model",
+                    label="Compact rates",
                     width="auto",
                 ),
                 "pivot": DisplayProfile(
@@ -232,13 +232,10 @@ def register_display_fields(
             "rates_selection.method",
             description=("Rates sampling methodology."),
             profiles={
-                "table": DisplayProfile(
-                    label="Rates",
-                    width=10,
-                ),
+                "table": DisplayProfile(label="Rates Method", width="auto"),
                 "pivot": DisplayProfile(
                     label="Rates Method",
-                    width=16,
+                    width="auto",
                 ),
             },
             **DISPLAY_ONTOLOGY,

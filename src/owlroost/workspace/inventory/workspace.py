@@ -42,10 +42,8 @@ from owlroost.catalog.ontology import (
 from owlroost.core.utils import (
     normalize_module_path,
 )
-from owlroost.workspace.materializers import (
-    row_lookup,
-)
 from owlroost.workspace.specs import (
+    OverridePolicy,
     WorkspaceSpec,
 )
 
@@ -68,8 +66,20 @@ WORKSPACE_VARIABLE: dict[str, Any] = dict(
 # Inventory Definitions
 # =========================================================
 
-WORKSPACE_FIELDS: list[tuple[str, str]] = []
-
+WORKSPACE_FIELDS: list[dict[str, Any]] = [
+    dict(
+        name="workspace.test_field",
+        description="This is a test field.",
+        override_policy=OverridePolicy.REPLACE,
+        default="default from ./workspace/inventory/workspace.py",
+    ),
+    dict(
+        name="workspace.name",
+        description="Name of workspace.",
+        override_policy=OverridePolicy.REPLACE,
+        default=lambda row: row["_path"].name,
+    ),
+]
 # =========================================================
 # Registration
 # =========================================================
@@ -83,15 +93,34 @@ def register_inventory(
     observations.
     """
 
-    for name, description in WORKSPACE_FIELDS:
+    for field in WORKSPACE_FIELDS:
+        default = field["default"]
+
+        #
+        # Convert the declared default into
+        # a compute function.
+        #
+        if callable(default):
+            compute_fn = default
+
+        else:
+
+            def compute_fn(
+                row,
+                value=default,
+            ):
+                return value
+
         reg.register(
             WorkspaceSpec(
-                name=name,
+                name=field["name"],
                 dtype=str,
-                compute_fn=row_lookup(
-                    name,
+                compute_fn=compute_fn,
+                override_policy=field.get(
+                    "override_policy",
+                    OverridePolicy.REPLACE,
                 ),
-                description=description,
+                description=field["description"],
                 **WORKSPACE_VARIABLE,
             )
         )

@@ -48,23 +48,38 @@ def register_display_views(
     reg.register_view(
         DisplayView(
             level="run",
-            name="results2",
+            name="table_of_runs",
             entries=[
                 # =====================================
                 # Identity
                 # =====================================
-                ("case_name", {"modes": ["pivot"]}),
-                #                "basic_info.names",
                 "display.compact_id",
+                "case_name",
+                "roost_settings.study_name",
+                "roost_settings.experiment_name",
                 "display.optimization_goal",
                 "display.compact_rates",
                 "display.completion_fraction",
-                "financial.spending.year0.today__median",
-                "financial.spending.year5.today__median",
-                "financial.spending.total.today__median",
-                "financial.taxes.total.today__median",
-                "financial.bequest.terminal.today__median",
                 # ("description", {"modes": ["pivot"]}),
+            ],
+            description=(""),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    reg.register_view(
+        DisplayView(
+            level="run",
+            name="table_of_rate_models",
+            entries=[
+                # =====================================
+                # Identity
+                # =====================================
+                "display.compact_id",
+                "display.compact_rates",
+                "rates_selection.method",
+                "rates_selection.from",
+                "rates_selection.to",
             ],
             description=(""),
             **SHARED_VIEW_ONTOLOGY,
