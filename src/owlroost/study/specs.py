@@ -31,6 +31,7 @@ subsystem and are not defined here.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from owlroost.display.specs import DisplayProfile
 
@@ -70,20 +71,16 @@ STUDY_FIELDS: tuple[StudyFieldSpec, ...] = (
         "Experiments belonging to the study.",
     ),
     StudyFieldSpec(
-        "prolog_files",
-        "List of files to include at top of evidence package",
-    ),
-    StudyFieldSpec(
-        "epilog_files",
-        "List of files to include at bottom of evidence package",
-    ),
-    StudyFieldSpec(
-        "case_row_views",
-        "List of views displayed using load_case_rows",
-    ),
-    StudyFieldSpec(
         "run_row_views",
-        "List of views displayed using load_run_rows.",
+        "Views materialized from run rows.",
+    ),
+    StudyFieldSpec(
+        "resource_dir",
+        "Directory containing study resources.",
+    ),
+    StudyFieldSpec(
+        "defined_in",
+        "Source file defining the study.",
     ),
 )
 
@@ -173,20 +170,13 @@ class StudySpec:
         default_factory=list,
     )
 
-    prolog_files: list[dict | None] = field(
-        default_factory=list,
-    )
-
-    epilog_files: list[dict | None] = field(
-        default_factory=list,
-    )
-
-    case_row_views: list[dict | None] = field(
-        default_factory=list,
-    )
     run_row_views: list[dict | None] = field(
         default_factory=list,
     )
+
+    resource_dir: Path | None = None
+
+    defined_in: Path | None = None
 
     #
     # Display

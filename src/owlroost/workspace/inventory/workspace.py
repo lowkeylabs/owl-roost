@@ -68,12 +68,6 @@ WORKSPACE_VARIABLE: dict[str, Any] = dict(
 
 WORKSPACE_FIELDS: list[dict[str, Any]] = [
     dict(
-        name="workspace.test_field",
-        description="This is a test field.",
-        override_policy=OverridePolicy.REPLACE,
-        default="default from ./workspace/inventory/workspace.py",
-    ),
-    dict(
         name="workspace.name",
         description="Name of workspace.",
         override_policy=OverridePolicy.REPLACE,

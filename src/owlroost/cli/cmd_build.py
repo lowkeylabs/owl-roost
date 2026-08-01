@@ -63,6 +63,7 @@ def build_hydra_command(
     *,
     study_name: str | None = None,
     experiment_name: str | None = None,
+    orphan_overrides: list[str] | None = None,
 ):
     """
     Construct Hydra multirun command.
@@ -90,6 +91,8 @@ def build_hydra_command(
         cmd.append(f"roost_settings.study_name={study_name}")
     if experiment_name is not None:
         cmd.append(f"roost_settings.experiment_name={experiment_name}")
+    if orphan_overrides is not None:
+        cmd.append(f"roost_settings.orphan_overrides='{','.join(orphan_overrides)}'")
 
     # print(cmd)
     return cmd
@@ -201,6 +204,7 @@ def run_hydra_build(
     *,
     study_name: str | None = None,
     experiment_name: str | None = None,
+    orphan_overrides: list[str] | None = None,
 ):
     """
     Execute Hydra generator in multirun mode.
@@ -213,6 +217,7 @@ def run_hydra_build(
         overrides,
         study_name=study_name,
         experiment_name=experiment_name,
+        orphan_overrides=orphan_overrides,
     )
 
     #    click.echo("Running Hydra:")
@@ -729,6 +734,7 @@ def cmd_build(
                         list(experiment_overrides),
                         study_name=study.name,
                         experiment_name=experiment.name,
+                        orphan_overrides=overrides,
                     )
 
                     generated_runs.extend(runs)
@@ -745,6 +751,7 @@ def cmd_build(
                     list(experiment_overrides),
                     study_name=None,
                     experiment_name=experiment.name,
+                    orphan_overrides=overrides,
                 )
 
                 generated_runs.extend(runs)
@@ -755,6 +762,7 @@ def cmd_build(
                 list(experiment_overrides),
                 study_name=None,
                 experiment_name=None,
+                orphan_overrides=overrides,
             )
 
             generated_runs.extend(runs)

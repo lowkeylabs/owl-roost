@@ -42,7 +42,7 @@ def register_display_views(
                 # =====================================
                 "study.name",
                 "experiment.name",
-                ("study.case_row_views", {"modes": ["pivot"]}),
+                "study.defined_in",
                 ("study.run_row_views", {"modes": ["pivot"]}),
             ],
             description=(

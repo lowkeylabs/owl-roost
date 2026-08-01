@@ -41,3 +41,5 @@ class EvidencePackage:
     generated_at: datetime
 
     planning_context: WorkspacePlanningContext
+
+    documents: list[dict] | None = None

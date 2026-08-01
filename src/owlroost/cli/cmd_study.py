@@ -61,9 +61,6 @@ from owlroost.display.operations.sorting import (
 from owlroost.display.operations.table_ops import (
     inject_id_column,
 )
-from owlroost.study.bootstrap import (
-    build_study_registry,
-)
 from owlroost.study.loaders import (
     load_study_rows,
 )
@@ -152,8 +149,6 @@ def cmd_study(
 
     catalog = build_catalog_context()
 
-    study_registry = build_study_registry()
-
     # =====================================================
     # Validate view
     # =====================================================
@@ -176,7 +171,7 @@ def cmd_study(
     # =====================================================
 
     rows = load_study_rows(
-        study_registry,
+        catalog.study_registry,
     )
 
     # =====================================================

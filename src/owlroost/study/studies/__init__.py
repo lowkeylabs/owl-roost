@@ -5,12 +5,21 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Study package discovery.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Discovers and registers all study
+packages contained in this directory.
+
+Each study is implemented as a Python
+package exporting a ``register_studies()``
+function.
+
+The study package directory also serves
+as the root for shared study resources,
+including Markdown documents used when
+constructing evidence packages.
 """
 
 from __future__ import annotations
@@ -21,30 +30,47 @@ from pathlib import Path
 from types import ModuleType
 
 # =========================================================
+# Package Resources
+# =========================================================
+
+RESOURCE_DIR = Path(__file__).parent
+
+# =========================================================
 # Discovery
 # =========================================================
 
 
 def _discover_modules() -> list[ModuleType]:
     """
-    Discover study modules.
+    Discover study packages.
     """
 
     modules: list[ModuleType] = []
 
-    package_path = Path(__file__).parent
-
     for module_info in sorted(
-        pkgutil.iter_modules([str(package_path)]),
+        pkgutil.iter_modules(
+            [str(RESOURCE_DIR)],
+        ),
         key=lambda m: m.name,
     ):
+        #
+        # Ignore private modules/packages.
+        #
+
         if module_info.name.startswith("_"):
             continue
 
-        module = importlib.import_module(f"{__name__}.{module_info.name}")
+        #
+        # Only import packages.
+        #
+
+        if not module_info.ispkg:
+            continue
 
         modules.append(
-            module,
+            importlib.import_module(
+                f"{__name__}.{module_info.name}",
+            )
         )
 
     return modules
@@ -59,7 +85,7 @@ def register_all_studies(
     reg,
 ):
     """
-    Register all studies.
+    Register every discovered study.
     """
 
     for module in _discover_modules():
@@ -78,5 +104,6 @@ def register_all_studies(
 
 
 __all__ = [
+    "RESOURCE_DIR",
     "register_all_studies",
 ]

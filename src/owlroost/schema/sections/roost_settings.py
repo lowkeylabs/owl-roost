@@ -102,6 +102,10 @@ class RoostSettingsConfig(
         default=None, description="Experiment name (if part of experiment)"
     )
 
+    orphan_overrides: str | None = Field(
+        default=None, description="Overrides not associated with study or experiment"
+    )
+
     # -----------------------------------------------------
     # Deterministic execution
     # -----------------------------------------------------

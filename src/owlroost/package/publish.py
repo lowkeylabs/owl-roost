@@ -5,19 +5,37 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Evidence package publisher.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Publishes an EvidencePackage to disk.
+
+The publisher owns filesystem
+serialization only.
+
+The EvidencePackage already contains
+an ordered stream of Markdown
+documents.
+
+The publisher writes:
+
+    * manifest.toml
+    * evidence.qmd
+    * Markdown documents
+    * ZIP archive
 """
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import tomlkit
+
+# =========================================================
+# Manifest
+# =========================================================
 
 
 def _write_manifest(
@@ -26,10 +44,6 @@ def _write_manifest(
 ):
     """
     Write the package manifest.
-
-    The manifest establishes the
-    identity of the published
-    evidence package.
     """
 
     doc = tomlkit.document()
@@ -51,27 +65,116 @@ def _write_manifest(
         1,
     )
 
+    package_table.add(
+        "documents",
+        len(
+            package.documents,
+        ),
+    )
+
     doc.add(
         "package",
         package_table,
     )
 
-    workspace_table = tomlkit.table()
-
-    workspace_table.add(
-        "name",
-        package.planning_context.workspace_name,
-    )
-
-    doc.add(
-        "workspace",
-        workspace_table,
-    )
-
     (destination / "manifest.toml").write_text(
-        tomlkit.dumps(doc),
+        tomlkit.dumps(
+            doc,
+        ),
         encoding="utf-8",
     )
+
+
+# =========================================================
+# Markdown documents
+# =========================================================
+
+
+def _write_documents(
+    package,
+    destination: Path,
+):
+    """
+    Write Markdown documents.
+    """
+
+    for document in package.documents:
+        (destination / document["filename"]).write_text(
+            document["markdown"],
+            encoding="utf-8",
+        )
+
+
+# =========================================================
+# Quarto
+# =========================================================
+
+
+def _write_quarto(
+    package,
+    destination: Path,
+):
+    """
+    Write the Quarto master
+    document.
+
+    The generated QMD simply
+    includes each Markdown
+    document in order.
+    """
+
+    lines = [
+        "---",
+        f'title: "{package.title}"',
+        "format:",
+        "  html: default",
+        "  pdf: default",
+        "toc: true",
+        "number-sections: false",
+        "---",
+        "",
+    ]
+
+    for document in package.documents:
+        lines.append("{{< include " + document["filename"] + " >}}")
+
+        lines.append("")
+
+    (destination / "evidence.qmd").write_text(
+        "\n".join(
+            lines,
+        ),
+        encoding="utf-8",
+    )
+
+
+# =========================================================
+# ZIP archive
+# =========================================================
+
+
+def _create_zip(
+    destination: Path,
+):
+    """
+    Create a ZIP archive of the
+    published evidence package.
+
+    The archive contains the
+    complete publication
+    directory.
+    """
+
+    shutil.make_archive(
+        str(destination),
+        "zip",
+        root_dir=destination,
+    )
+
+
+# =========================================================
+# Publish
+# =========================================================
 
 
 def publish_evidence_package(
@@ -79,7 +182,7 @@ def publish_evidence_package(
     output_dir: Path,
 ):
     """
-    Publish an evidence package.
+    Publish an EvidencePackage.
     """
 
     timestamp = package.generated_at.strftime(
@@ -95,6 +198,20 @@ def publish_evidence_package(
 
     _write_manifest(
         package,
+        destination,
+    )
+
+    _write_documents(
+        package,
+        destination,
+    )
+
+    _write_quarto(
+        package,
+        destination,
+    )
+
+    _create_zip(
         destination,
     )
 

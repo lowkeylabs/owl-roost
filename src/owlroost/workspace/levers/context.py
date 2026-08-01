@@ -167,6 +167,8 @@ class FilesystemCharacterization(
 
     can_create_workspace: bool
 
+    has_results: bool
+
 
 # =========================================================
 # Helpers

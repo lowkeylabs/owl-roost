@@ -15,12 +15,13 @@ and architectural role.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
+from pathlib import Path
 
 from owlroost.activity.materializers import materialize_activity, materialize_activity_trees
-from owlroost.workspace.specs import (
-    OverridePolicy,
-)
+from owlroost.study import studies as study_package
+from owlroost.workspace.specs import OverridePolicy
 
 # =========================================================
 # Generic, nested lookup
@@ -587,6 +588,70 @@ def materialize_workspace_tree(
 # Study Materialization
 # =========================================================
 
+# =========================================================
+# Documents
+# =========================================================
+
+
+_DOCUMENT_RE = re.compile(
+    r"^(\d+)[-_].+\.md$",
+)
+
+
+def _discover_documents(
+    *directories: Path | None,
+) -> list[dict]:
+    """
+    Discover numbered Markdown
+    documents.
+
+    Documents are gathered from the
+    supplied directories, deduplicated
+    by filename, and sorted by filename.
+
+    Returns semantic document
+    descriptors only. The Markdown
+    itself is not loaded here.
+    """
+
+    documents = {}
+
+    for directory in directories:
+        if directory is None:
+            continue
+
+        if not directory.exists():
+            continue
+
+        for path in directory.iterdir():
+            if not path.is_file():
+                continue
+
+            match = _DOCUMENT_RE.match(
+                path.name,
+            )
+
+            if match is None:
+                continue
+
+            documents.setdefault(
+                path.name,
+                {
+                    "order": int(match.group(1)),
+                    "filename": path.name,
+                    "stem": path.stem,
+                    "path": path,
+                },
+            )
+
+    return sorted(
+        documents.values(),
+        key=lambda d: (
+            d["order"],
+            d["filename"],
+        ),
+    )
+
 
 def materialize_study(
     row,
@@ -601,11 +666,12 @@ def materialize_study(
 
         row["_study"]
 
-    This structure intentionally contains
-    no presentation information.
+    This structure intentionally
+    contains no presentation
+    information.
 
-    Presentation trees are constructed
-    later by materialize_study_tree().
+    Presentation trees are
+    constructed later.
     """
 
     level = row.get(
@@ -627,6 +693,10 @@ def materialize_study(
 
     study["studies"] = {}
 
+    #
+    # Shared documents
+    #
+
     # -----------------------------------------------------
     # Studies
     # -----------------------------------------------------
@@ -636,6 +706,13 @@ def materialize_study(
             "name": study_spec.name,
             "title": study_spec.title,
             "description": study_spec.description,
+            "documents": _discover_documents(
+                study_package.RESOURCE_DIR,
+                study_spec.resource_dir,
+            ),
+            "run_row_views": list(
+                study_spec.run_row_views,
+            ),
             "experiments": {},
         }
 
@@ -655,7 +732,7 @@ def materialize_study(
             experiment_data = {
                 "name": experiment.name,
                 "title": experiment.title,
-                "description": (experiment.description),
+                "description": experiment.description,
                 "applicable": applicable,
                 "required_levers": {},
             }

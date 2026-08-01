@@ -49,9 +49,11 @@ from owlroost.cli.utils import (
 from owlroost.display.explain import (
     parse_explain_request,
 )
+from owlroost.display.loaders import load_run_rows
 from owlroost.display.materializers.materialize import (
     materialize_view,
 )
+from owlroost.display.operations.row_ops import attach_row_ids
 from owlroost.operations.resolve import build_resolver
 from owlroost.package.builder import (
     build_evidence_package,
@@ -59,9 +61,10 @@ from owlroost.package.builder import (
 from owlroost.package.publish import (
     publish_evidence_package,
 )
-from owlroost.workspace.builders import (
-    build_workspace_planning_context,
-)
+
+# from owlroost.workspace.builders import (
+#    build_workspace_planning_context,
+# )
 from owlroost.workspace.loaders import (
     load_workspace_row,
 )
@@ -137,7 +140,7 @@ def cmd_context(
     catalog = build_catalog_context()
 
     # =====================================================
-    # Planning context
+    # Load workspaces
     # =====================================================
 
     workspace_row = load_workspace_row(root)
@@ -145,10 +148,6 @@ def cmd_context(
         workspace_row,
         catalog,
     )
-    workspace_context = build_workspace_planning_context(
-        planning_context,
-    )
-
     resolve = build_resolver(
         catalog,
         planning_context,
@@ -161,21 +160,24 @@ def cmd_context(
             click.echo("publish requires an initialized workspace.  Use: roost workspace --init")
             return
 
-        print("-----------vars-----------")
-        for field in catalog.workspace_registry.all():
-            click.echo(f"{field.name}: {resolve(field.name)}")
+        run_rows = load_run_rows(
+            metrics_registry=catalog.metrics_registry,
+            results_root=resolve("context.paths.results"),
+        )
+        run_rows = attach_row_ids(run_rows)
 
-        if 0:
-            package = build_evidence_package(
-                workspace_context,
-            )
+        package = build_evidence_package(
+            planning_context,
+            run_rows,
+            catalog,
+        )
 
-            destination = publish_evidence_package(
-                package,
-                Path(root) / "publish",
-            )
+        destination = publish_evidence_package(
+            package,
+            Path(root) / "publish",
+        )
 
-            click.echo(f"Published evidence package to:\n{destination}")
+        click.echo(f"Published evidence package to:\n{destination}")
 
         return
 
