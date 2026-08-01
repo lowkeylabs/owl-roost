@@ -61,6 +61,31 @@ def format_value(value, fmt: str | None):
         if not value:
             return "-"
 
+        if isinstance(value, str) and "=" in value:
+            #            print(value)
+            #            value = {k: v for param in value.split(",") for k, v in [param.split("=")]}
+            result = {}
+
+            key = None
+            parts = []
+
+            for token in value.split(","):
+                if "=" in token:
+                    # Finish the previous key/value pair.
+                    if key is not None:
+                        result[key] = ",".join(parts)
+
+                    key, first_value = token.split("=", 1)
+                    parts = [first_value]
+                else:
+                    parts.append(token)
+
+            # Save the final pair.
+            if key is not None:
+                result[key] = ", ".join(parts)
+
+            value = result
+
         if isinstance(value, dict):
             PREFERRED_ORDER = {
                 "method": 0,

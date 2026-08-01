@@ -209,11 +209,14 @@ def _register_field_if_missing(
         (
             "common_overrides",
             "run_specific_overrides",
+            "orphan_overrides",
             "task_overrides",
         )
     ):
         table_fmt = "overrides"
         pivot_fmt = "overrides"
+        table_wrap = True
+        pivot_wrap = True
 
     if field_name.endswith("description"):
         table_wrap = True
