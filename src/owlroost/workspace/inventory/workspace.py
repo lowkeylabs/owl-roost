@@ -53,8 +53,8 @@ from owlroost.workspace.specs import (
 
 WORKSPACE_VARIABLE: dict[str, Any] = dict(
     owner="ROOST",
-    semantic_domain="planning",
-    value_origin="roost-computed",
+    semantic_domain="execution",
+    value_origin="user-specified",
     projection_kind="canonical",
     analytic_kind="primary",
     materialization_level="workspace",
@@ -66,12 +66,52 @@ WORKSPACE_VARIABLE: dict[str, Any] = dict(
 # Inventory Definitions
 # =========================================================
 
+
+def compute_workspace_name(row):
+    """
+    Compute the workspace name.
+
+    Returns
+    -------
+    str
+        Workspace title.
+    """
+    title = row.get("_workspace", {}).get("definition", {}).get("name", None)
+    if not title:
+        title = row.get("_context", {}).get("workspace", {}).get("directory_name", "(undefined)")
+
+
+def compute_workspace_overrides(row):
+    """
+    Compute the workspace overrides.
+
+    Returns
+    -------
+    list[str]
+        Workspace overrides.
+    """
+    overrides = row.get("_workspace", {}).get("definition", {}).get("overrides", [])
+    try:
+        overrides = [f"{line['key']}={line['value']}" for line in overrides]
+    except Exception as e:
+        #print(e)
+        raise e
+        pass
+    return overrides
+
+
 WORKSPACE_FIELDS: list[dict[str, Any]] = [
     dict(
         name="workspace.name",
         description="Name of workspace.",
         override_policy=OverridePolicy.REPLACE,
-        default=lambda row: row["_path"].name,
+        default=compute_workspace_name,
+    ),
+    dict(
+        name="workspace.overrides",
+        description="Overrides for the workspace.",
+        override_policy=OverridePolicy.REPLACE,
+        default=compute_workspace_overrides,
     ),
 ]
 # =========================================================

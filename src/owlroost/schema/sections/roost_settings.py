@@ -106,6 +106,10 @@ class RoostSettingsConfig(
         default=None, description="Overrides not associated with study or experiment"
     )
 
+    workspace_overrides: str | None = Field(
+        default=None, description="Overrides associated with workspace"
+    )
+
     # -----------------------------------------------------
     # Deterministic execution
     # -----------------------------------------------------

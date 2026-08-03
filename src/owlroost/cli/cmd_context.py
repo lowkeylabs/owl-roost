@@ -186,6 +186,13 @@ def cmd_context(
     # =====================================================
 
     if view is not None:
+        if 0:
+            print(planning_context.keys())
+            print("==workspace============================")
+            print(planning_context.get("_workspace", {}))
+            print("==context==============================")
+            print(planning_context.get("_context", {}))
+            print("==table================================")
         table = materialize_view(
             rows=[planning_context],
             registry=catalog.display_registry,
@@ -195,6 +202,7 @@ def cmd_context(
             view_name=view,
             explain_facets=explain_facets,
             show_header=True,
+            title=f"View: {level}/{view}",
         )
 
         output = render_table(

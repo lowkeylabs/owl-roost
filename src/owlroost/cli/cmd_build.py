@@ -46,7 +46,14 @@ from owlroost.display.operations.filtering import apply_filters
 from owlroost.display.operations.row_ops import apply_top, attach_row_ids
 from owlroost.display.operations.sorting import apply_canonical_sort, apply_sort
 from owlroost.display.operations.table_ops import inject_id_column
+from owlroost.operations.resolve import build_resolver
 from owlroost.schema.sweeps import expand_cli_overrides
+from owlroost.workspace.loaders import (
+    load_workspace_row,
+)
+from owlroost.workspace.materializers import (
+    materialize_planning_context,
+)
 
 DEFAULT_LEVEL = "case"
 DEFAULT_VIEW = "build"
@@ -64,6 +71,7 @@ def build_hydra_command(
     study_name: str | None = None,
     experiment_name: str | None = None,
     orphan_overrides: list[str] | None = None,
+    workspace_overrides: list[str] | None = None,
 ):
     """
     Construct Hydra multirun command.
@@ -75,6 +83,9 @@ def build_hydra_command(
 
     overrides = expand_cli_overrides(overrides)
 
+    if workspace_overrides is None:
+        workspace_overrides = []
+
     cmd = [
         sys.executable,
         "-m",
@@ -85,6 +96,7 @@ def build_hydra_command(
         (f"case.file={str(case_path.resolve())}"),
         (f"case.name={case_path.stem}"),
         *overrides,
+        *workspace_overrides,
     ]
 
     if study_name is not None:
@@ -93,6 +105,8 @@ def build_hydra_command(
         cmd.append(f"roost_settings.experiment_name={experiment_name}")
     if orphan_overrides is not None:
         cmd.append(f"roost_settings.orphan_overrides='{','.join(orphan_overrides)}'")
+    if workspace_overrides is not None:
+        cmd.append(f"roost_settings.workspace_overrides='{','.join(workspace_overrides)}'")
 
     # print(cmd)
     return cmd
@@ -205,6 +219,7 @@ def run_hydra_build(
     study_name: str | None = None,
     experiment_name: str | None = None,
     orphan_overrides: list[str] | None = None,
+    workspace_overrides: list[str] | None = None,
 ):
     """
     Execute Hydra generator in multirun mode.
@@ -218,6 +233,7 @@ def run_hydra_build(
         study_name=study_name,
         experiment_name=experiment_name,
         orphan_overrides=orphan_overrides,
+        workspace_overrides=workspace_overrides,
     )
 
     #    click.echo("Running Hydra:")
@@ -691,6 +707,20 @@ def cmd_build(
         return
 
     # ----------------------------------------
+    # Process load workspace
+    # ----------------------------------------
+    workspace_row = load_workspace_row(case_folder)
+    planning_context = materialize_planning_context(
+        workspace_row,
+        catalog,
+    )
+    resolve = build_resolver(
+        catalog,
+        planning_context,
+    )
+    # print(resolve("workspace.overrides"))
+
+    # ----------------------------------------
     # Process selected rows
     # ----------------------------------------
 
@@ -735,6 +765,7 @@ def cmd_build(
                         study_name=study.name,
                         experiment_name=experiment.name,
                         orphan_overrides=overrides,
+                        workspace_overrides=resolve("workspace.overrides"),
                     )
 
                     generated_runs.extend(runs)
@@ -752,6 +783,7 @@ def cmd_build(
                     study_name=None,
                     experiment_name=experiment.name,
                     orphan_overrides=overrides,
+                    workspace_overrides=resolve("workspace.overrides"),
                 )
 
                 generated_runs.extend(runs)
@@ -763,6 +795,7 @@ def cmd_build(
                 study_name=None,
                 experiment_name=None,
                 orphan_overrides=overrides,
+                workspace_overrides=resolve("workspace.overrides"),
             )
 
             generated_runs.extend(runs)
