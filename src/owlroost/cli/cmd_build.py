@@ -103,10 +103,12 @@ def build_hydra_command(
         cmd.append(f"roost_settings.study_name={study_name}")
     if experiment_name is not None:
         cmd.append(f"roost_settings.experiment_name={experiment_name}")
-    if orphan_overrides is not None:
-        cmd.append(f"roost_settings.orphan_overrides='{','.join(orphan_overrides)}'")
     if workspace_overrides is not None:
+        # print(workspace_overrides)
         cmd.append(f"roost_settings.workspace_overrides='{','.join(workspace_overrides)}'")
+    if orphan_overrides is not None:
+        # print(orphan_overrides)
+        cmd.append(f"roost_settings.orphan_overrides='{','.join(orphan_overrides)}'")
 
     # print(cmd)
     return cmd

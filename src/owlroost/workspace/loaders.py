@@ -66,8 +66,9 @@ def _load_workspace_toml(
             path.read_text(),
         )
 
-    except Exception:
-        return {}
+    except Exception as e:
+        print(e)
+        raise e
 
 
 # =========================================================
