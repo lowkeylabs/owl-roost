@@ -68,17 +68,12 @@ WORKSPACE_VARIABLE: dict[str, Any] = dict(
 
 
 def compute_workspace_name(row):
-    """
-    Compute the workspace name.
+    title = row.get("_workspace", {}).get("definition", {}).get("name")
 
-    Returns
-    -------
-    str
-        Workspace title.
-    """
-    title = row.get("_workspace", {}).get("definition", {}).get("name", None)
     if not title:
         title = row.get("_context", {}).get("workspace", {}).get("directory_name", "(undefined)")
+
+    return title
 
 
 def compute_workspace_overrides(row):
@@ -94,7 +89,7 @@ def compute_workspace_overrides(row):
     try:
         overrides = [f"{line['key']}={line['value']}" for line in overrides]
     except Exception as e:
-        #print(e)
+        # print(e)
         raise e
         pass
     return overrides

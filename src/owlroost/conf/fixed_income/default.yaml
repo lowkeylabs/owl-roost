@@ -6,6 +6,7 @@ social_security_pia_amounts: null
 social_security_ages: null
 social_security_trim_pct: null
 social_security_trim_year: null
+social_security_survivor_claim_age: null
 spia_individuals: null
 spia_buy_years: null
 spia_premiums: null

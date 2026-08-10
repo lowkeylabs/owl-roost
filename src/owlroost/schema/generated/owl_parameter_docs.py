@@ -541,6 +541,13 @@ OWL_PARAMETER_DOCS = {
         "units": "usd",
         "notes": None,
     },
+    "social_security_survivor_claim_age": {
+        "section": "fixed_income",
+        "type": "string or float",
+        "description": '*(Optional, couples only)* When the surviving spouse claims the survivor benefit: "immediate" (default) as soon as eligible, "fra" at their survivor FRA, or an explicit age in 60–70. Never starts before age 60 or before the first passing, and an age beyond the survivor FRA is capped there. The survivor\'s own benefit keeps the age given in social_security_ages; the larger of the two is paid each year',
+        "units": "years",
+        "notes": None,
+    },
     "social_security_trim_pct": {
         "section": "fixed_income",
         "type": "integer",

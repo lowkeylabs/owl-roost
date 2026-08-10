@@ -186,7 +186,8 @@ def cmd_context(
     # =====================================================
 
     if view is not None:
-        if 0:
+        if 1:
+            print("==planning_context.keys================")
             print(planning_context.keys())
             print("==workspace============================")
             print(planning_context.get("_workspace", {}))

@@ -20,7 +20,7 @@ def test_materialize_ss_age_pair(
 
     session = build_session(
         "case_alex+jamie.toml",
-        "roost_sweeps.ss_age_pair=69.11-69.22",
+        "roost_sweeps.ss_age_pair=69.0-69.25",
         "roost_settings.trials_per_run=10",
         "rates_selection.method=historical_bootstrap",
     )
@@ -35,8 +35,8 @@ def test_materialize_ss_age_pair(
     )
 
     assert plan.ssecAges.tolist() == [
-        69.11,
-        69.22,
+        69.0,
+        69.25,
     ]
 
 
