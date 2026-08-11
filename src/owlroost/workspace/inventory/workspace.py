@@ -14,22 +14,30 @@ describing the workspace itself.
 
 These observations represent:
 
-    - workspace identity
-    - workspace documentation
-    - workspace filesystem layout
+    * workspace identity
+    * workspace documentation
+    * workspace filesystem layout
 
 rather than realized analytical content.
 
+Workspace configuration is loaded and
+composed by workspace.loaders.
+
+Configuration defaults are defined
+exclusively by the packaged workspace.toml
+template. This module interprets effective
+configuration but does not define
+configuration defaults.
+
 Architectural Invariant
 -----------------------
-Inventory-backed workspace metrics are
-materialized directly from the corresponding
-path within:
+Inventory-backed workspace observations are
+materialized directly from the effective
+workspace definition or other already
+materialized semantic state.
 
-    row["_workspace"]
-
-The metric name therefore serves as the
-canonical inventory path.
+Dynamic workspace configuration is not
+represented in WorkspaceSpec metadata.
 """
 
 from __future__ import annotations
@@ -43,13 +51,13 @@ from owlroost.core.utils import (
     normalize_module_path,
 )
 from owlroost.workspace.specs import (
-    OverridePolicy,
     WorkspaceSpec,
 )
 
 # =========================================================
 # Ontology
 # =========================================================
+
 
 WORKSPACE_VARIABLE: dict[str, Any] = dict(
     owner="ROOST",
@@ -59,56 +67,119 @@ WORKSPACE_VARIABLE: dict[str, Any] = dict(
     analytic_kind="primary",
     materialization_level="workspace",
     node_type=CatalogNodeType.VARIABLE,
-    defined_in=normalize_module_path(__file__),
+    defined_in=normalize_module_path(
+        __file__,
+    ),
 )
 
+
 # =========================================================
-# Inventory Definitions
+# Helpers
 # =========================================================
 
 
-def compute_workspace_name(row):
-    title = row.get("_workspace", {}).get("definition", {}).get("name")
+def _workspace_definition(
+    row,
+):
+    """
+    Return the effective workspace
+    definition.
 
-    if not title:
-        title = row.get("_context", {}).get("workspace", {}).get("directory_name", "(undefined)")
+    The definition has already been
+    composed by workspace.loaders from:
 
-    return title
+        packaged workspace.toml defaults
+        +
+        local workspace.toml overrides
+    """
+
+    return row.get(
+        "_workspace",
+        {},
+    ).get(
+        "definition",
+        {},
+    )
 
 
-def compute_workspace_overrides(row):
+# =========================================================
+# Inventory Computation
+# =========================================================
+
+
+def compute_workspace_name(
+    row,
+):
+    """
+    Compute the semantic workspace name.
+
+    Workspace identity is derived from
+    the planning-context directory name.
+
+    The directory name is a semantic
+    filesystem observation rather than
+    workspace configuration.
+    """
+
+    return (
+        row.get(
+            "_context",
+            {},
+        )
+        .get(
+            "workspace",
+            {},
+        )
+        .get(
+            "directory_name",
+            "(undefined)",
+        )
+    )
+
+
+def compute_workspace_overrides(
+    row,
+):
     """
     Compute the workspace overrides.
 
     Returns
     -------
     list[str]
-        Workspace overrides.
+        Workspace overrides represented
+        as key=value strings.
     """
-    overrides = row.get("_workspace", {}).get("definition", {}).get("overrides", [])
-    try:
-        overrides = [f"{line['key']}={line['value']}" for line in overrides]
-    except Exception as e:
-        # print(e)
-        raise e
-        pass
-    return overrides
+
+    definition = _workspace_definition(
+        row,
+    )
+
+    overrides = definition["workspace"]["overrides"]
+
+    return [f"{entry['key']}={entry['value']}" for entry in overrides]
+
+
+# =========================================================
+# Inventory Definitions
+# =========================================================
 
 
 WORKSPACE_FIELDS: list[dict[str, Any]] = [
     dict(
         name="workspace.name",
+        dtype=str,
         description="Name of workspace.",
-        override_policy=OverridePolicy.REPLACE,
-        default=compute_workspace_name,
+        compute_fn=compute_workspace_name,
     ),
     dict(
         name="workspace.overrides",
+        dtype=list[str],
         description="Overrides for the workspace.",
-        override_policy=OverridePolicy.REPLACE,
-        default=compute_workspace_overrides,
+        compute_fn=compute_workspace_overrides,
     ),
 ]
+
+
 # =========================================================
 # Registration
 # =========================================================
@@ -118,37 +189,16 @@ def register_inventory(
     reg,
 ):
     """
-    Register workspace identity
-    observations.
+    Register canonical workspace
+    inventory observations.
     """
 
     for field in WORKSPACE_FIELDS:
-        default = field["default"]
-
-        #
-        # Convert the declared default into
-        # a compute function.
-        #
-        if callable(default):
-            compute_fn = default
-
-        else:
-
-            def compute_fn(
-                row,
-                value=default,
-            ):
-                return value
-
         reg.register(
             WorkspaceSpec(
                 name=field["name"],
-                dtype=str,
-                compute_fn=compute_fn,
-                override_policy=field.get(
-                    "override_policy",
-                    OverridePolicy.REPLACE,
-                ),
+                dtype=field["dtype"],
+                compute_fn=field["compute_fn"],
                 description=field["description"],
                 **WORKSPACE_VARIABLE,
             )

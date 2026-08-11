@@ -176,8 +176,10 @@ CANONICAL_METRICS: list[MetricSpec] = [
         default_aggregates=[
             "mean",
             "median",
+            "p05",
             "p10",
             "p90",
+            "p95",
         ],
         **OWL_DECISION_OUTPUT,
     ),
@@ -190,8 +192,10 @@ CANONICAL_METRICS: list[MetricSpec] = [
         default_aggregates=[
             "mean",
             "median",
+            "p05",
             "p10",
             "p90",
+            "p95",
         ],
         **OWL_DECISION_OUTPUT,
     ),
@@ -204,8 +208,10 @@ CANONICAL_METRICS: list[MetricSpec] = [
         default_aggregates=[
             "mean",
             "median",
+            "p05",
             "p10",
             "p90",
+            "p95",
         ],
         **OWL_DECISION_OUTPUT,
     ),
@@ -218,8 +224,10 @@ CANONICAL_METRICS: list[MetricSpec] = [
         default_aggregates=[
             "mean",
             "median",
+            "p05",
             "p10",
             "p90",
+            "p95",
         ],
     ),
     MetricSpec(
@@ -231,8 +239,10 @@ CANONICAL_METRICS: list[MetricSpec] = [
         default_aggregates=[
             "mean",
             "median",
+            "p05",
             "p10",
             "p90",
+            "p95",
         ],
     ),
     MetricSpec(
@@ -244,8 +254,40 @@ CANONICAL_METRICS: list[MetricSpec] = [
         default_aggregates=[
             "mean",
             "median",
+            "p05",
             "p10",
             "p90",
+            "p95",
+        ],
+    ),
+    MetricSpec(
+        name="financial.taxes.year5.today",
+        description=("Taxes paid through year 5."),
+        **OWL_DECISION_OUTPUT,
+        dtype=float,
+        aggregatable=True,
+        default_aggregates=[
+            "mean",
+            "median",
+            "p05",
+            "p10",
+            "p90",
+            "p95",
+        ],
+    ),
+    MetricSpec(
+        name="financial.taxes.year10.today",
+        description=("Taxes paid through year 10."),
+        **OWL_DECISION_OUTPUT,
+        dtype=float,
+        aggregatable=True,
+        default_aggregates=[
+            "mean",
+            "median",
+            "p05",
+            "p10",
+            "p90",
+            "p95",
         ],
     ),
     MetricSpec(
@@ -257,8 +299,10 @@ CANONICAL_METRICS: list[MetricSpec] = [
         default_aggregates=[
             "mean",
             "median",
+            "p05",
             "p10",
             "p90",
+            "p95",
         ],
     ),
     MetricSpec(
@@ -270,8 +314,10 @@ CANONICAL_METRICS: list[MetricSpec] = [
         default_aggregates=[
             "mean",
             "median",
+            "p05",
             "p10",
             "p90",
+            "p95",
         ],
     ),
     MetricSpec(
@@ -283,8 +329,10 @@ CANONICAL_METRICS: list[MetricSpec] = [
         default_aggregates=[
             "mean",
             "median",
+            "p05",
             "p10",
             "p90",
+            "p95",
         ],
     ),
     MetricSpec(
@@ -303,8 +351,10 @@ CANONICAL_METRICS: list[MetricSpec] = [
         default_aggregates=[
             "mean",
             "median",
+            "p05",
             "p10",
             "p90",
+            "p95",
         ],
     ),
     MetricSpec(

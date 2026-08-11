@@ -7,28 +7,50 @@
 """
 Household test fixtures.
 
-Notes
------
+## Notes
+
 Provides reusable fixtures for the
 Household subsystem test suite.
 
-Architectural Invariants
-------------------------
+Tests exercising Household bootstrap
+operate within an explicit temporary
+workspace context.
+
+The temporary workspace uses the
+canonical packaged workspace.toml
+template so tests exercise the same
+Household Library configuration used
+by production code.
+
+## Architectural Invariants
 
 Tests should construct Household
 Registries through the public
 bootstrap interface whenever
 practical.
 
-Temporary Household Libraries
-should be used for filesystem
-mutation tests.
+Bootstrap tests must provide an
+explicit workspace context rather
+than depend on the pytest process
+working directory.
+
+Temporary Household Libraries should
+be used for filesystem mutation tests.
+
+The canonical workspace.toml template
+defines Household Library search
+policy.
 """
 
 from __future__ import annotations
 
+import shutil
+
 import pytest
 
+from owlroost.core.settings import (
+    get_workspace_template_dir,
+)
 from owlroost.household.bootstrap import (
     build_household_registry,
 )
@@ -37,15 +59,60 @@ from owlroost.household.specs import (
     HouseholdSpec,
 )
 
+# =========================================================
+# Workspace Context
+# =========================================================
+
 
 @pytest.fixture
-def registry():
+def workspace_root(
+    tmp_path,
+):
     """
-    Return the populated Household
-    Registry.
+    Temporary workspace root.
+
+    The workspace definition is copied
+    from the canonical packaged
+    workspace.toml template.
     """
 
-    return build_household_registry()
+    root = tmp_path / "workspace"
+
+    root.mkdir()
+
+    template_file = get_workspace_template_dir() / "workspace" / "workspace.toml"
+
+    shutil.copyfile(
+        template_file,
+        root / "workspace.toml",
+    )
+
+    return root
+
+
+# =========================================================
+# Registry
+# =========================================================
+
+
+@pytest.fixture
+def registry(
+    workspace_root,
+):
+    """
+    Return the Household Registry
+    visible to the temporary workspace
+    context.
+    """
+
+    return build_household_registry(
+        root=workspace_root,
+    )
+
+
+# =========================================================
+# Household Libraries
+# =========================================================
 
 
 @pytest.fixture
@@ -86,6 +153,11 @@ def readonly_library(
         root=root,
         read_only=True,
     )
+
+
+# =========================================================
+# Household Projects
+# =========================================================
 
 
 @pytest.fixture

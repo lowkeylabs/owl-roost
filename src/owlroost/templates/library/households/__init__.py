@@ -1,4 +1,4 @@
-# src/owlroost/household/households/__init__.py
+# src/owlroost/templates/library/households/__init__.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later

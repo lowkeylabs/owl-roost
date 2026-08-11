@@ -7,17 +7,21 @@ from owlroost.workspace.loaders import (
     load_workspace_rows,
 )
 from owlroost.workspace.materializers import (
+    materialize_context,
     materialize_workspace,
 )
 
 
-def test_materialize_workspace_inventory(
+def test_materialize_workspace_name(
     sample_workspace,
 ):
     """
-    Workspace inventory is
-    materialized from defaults
-    and workspace.toml.
+    Workspace identity is materialized
+    from semantic planning-context state.
+
+    The workspace name is the workspace
+    directory name rather than a
+    configuration default.
     """
 
     rows = load_workspace_rows(
@@ -30,66 +34,32 @@ def test_materialize_workspace_inventory(
 
     catalog = build_catalog_context()
 
-    materialize_workspace(
+    #
+    # Context observations must be
+    # materialized first because workspace
+    # observations may depend upon them.
+    #
+
+    materialize_context(
         row,
         catalog.workspace_registry,
     )
-
-    workspace = row["_workspace"]
-
-    #
-    # Overridden by workspace.toml.
-    #
-    assert workspace["name"] == "example"
-
-    #
-    # Defaulted by inventory.
-    #
-    ##assert workspace["test_field"] == ("default from ./workspace/inventory/workspace.py")
-
-
-def test_materialize_workspace_defaults(
-    sample_workspace,
-):
-    """
-    Missing workspace.toml values
-    fall back to inventory defaults.
-    """
-
-    rows = load_workspace_rows(
-        sample_workspace.parent,
-    )
-
-    row = rows[0]
-
-    #
-    # Simulate an omitted value.
-    #
-    del row["_workspace"]["definition"]["name"]
-
-    catalog = build_catalog_context()
 
     materialize_workspace(
         row,
         catalog.workspace_registry,
     )
 
-    workspace = row["_workspace"]
-
-    #
-    # Default comes from the inventory
-    # compute function.
-    #
-    #    assert workspace["name"] == sample_workspace.name
-    assert workspace["name"] == "(undefined)"
+    assert row["_workspace"]["name"] == sample_workspace.name
 
 
-def test_materialize_workspace_replaces_default(
+def test_materialize_workspace_overrides(
     sample_workspace,
 ):
     """
-    Workspace configuration
-    replaces computed defaults.
+    Workspace overrides are materialized
+    from the effective workspace
+    configuration.
     """
 
     rows = load_workspace_rows(
@@ -100,9 +70,63 @@ def test_materialize_workspace_replaces_default(
 
     catalog = build_catalog_context()
 
+    materialize_context(
+        row,
+        catalog.workspace_registry,
+    )
+
     materialize_workspace(
         row,
         catalog.workspace_registry,
     )
 
-    assert row["_workspace"]["name"] == row["_workspace"]["definition"]["name"]
+    workspace = row["_workspace"]
+
+    definition = workspace["definition"]
+
+    assert "workspace" in definition
+
+    assert "overrides" in definition["workspace"]
+
+    assert isinstance(
+        workspace["overrides"],
+        list,
+    )
+
+
+def test_materialize_workspace_preserves_definition(
+    sample_workspace,
+):
+    """
+    Semantic workspace materialization
+    does not mutate or replace the
+    effective workspace definition.
+    """
+
+    rows = load_workspace_rows(
+        sample_workspace.parent,
+    )
+
+    row = rows[0]
+
+    definition = row["_workspace"]["definition"]
+
+    expected_title = definition["title"]
+
+    expected_description = definition["description"]
+
+    catalog = build_catalog_context()
+
+    materialize_context(
+        row,
+        catalog.workspace_registry,
+    )
+
+    materialize_workspace(
+        row,
+        catalog.workspace_registry,
+    )
+
+    assert row["_workspace"]["definition"]["title"] == expected_title
+
+    assert row["_workspace"]["definition"]["description"] == expected_description

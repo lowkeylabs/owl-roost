@@ -2,7 +2,17 @@
 
 from __future__ import annotations
 
+import shutil
+
 import pytest
+
+from owlroost.core.settings import (
+    get_workspace_template_dir,
+)
+
+# =========================================================
+# Workspace Fixtures
+# =========================================================
 
 
 @pytest.fixture
@@ -22,30 +32,38 @@ def sample_workspace(
 ):
     """
     Single initialized workspace.
+
+    The workspace definition is copied
+    from the canonical packaged
+    workspace.toml template.
+
+    This ensures test workspaces use the
+    same configuration schema and defaults
+    as production workspaces.
     """
 
     ws = workspace_root / "example"
 
     ws.mkdir()
 
-    (ws / "workspace.toml").write_text(
-        """
-name = "example"
+    template_file = get_workspace_template_dir() / "workspace" / "workspace.toml"
 
-title = "Example Workspace"
-
-description = "Example description."
-"""
+    shutil.copyfile(
+        template_file,
+        ws / "workspace.toml",
     )
 
-    (ws / "Makefile").write_text("-include $(shell roost info --path=makefile)\n")
+    (ws / "Makefile").write_text(
+        "-include $(shell roost info --path=makefile)\n",
+        encoding="utf-8",
+    )
 
     return ws
 
 
-# =====================================================
+# =========================================================
 # Household Fixtures
-# =====================================================
+# =========================================================
 
 
 @pytest.fixture
@@ -60,7 +78,8 @@ def workspace_with_household(
     (sample_workspace / "case.toml").write_text(
         """
 name = "Example Household"
-"""
+""",
+        encoding="utf-8",
     )
 
     return sample_workspace
@@ -77,6 +96,7 @@ def workspace_with_hfp(
 
     (workspace_with_household / "case.xlsx").write_text(
         "",
+        encoding="utf-8",
     )
 
     return workspace_with_household
@@ -93,18 +113,20 @@ def workspace_with_multiple_households(
 
     (sample_workspace / "case1.toml").write_text(
         "",
+        encoding="utf-8",
     )
 
     (sample_workspace / "case2.toml").write_text(
         "",
+        encoding="utf-8",
     )
 
     return sample_workspace
 
 
-# =====================================================
+# =========================================================
 # Inventory Fixtures
-# =====================================================
+# =========================================================
 
 
 @pytest.fixture

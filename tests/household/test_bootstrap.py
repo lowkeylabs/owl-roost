@@ -7,12 +7,13 @@
 """
 Tests for household bootstrap.
 
-Notes
------
+## Notes
+
 Verifies that the public bootstrap
 constructs a populated Household
-Registry from the effective
-Household Libraries.
+Registry from the effective Household
+Libraries configured by an explicit
+workspace context.
 """
 
 from __future__ import annotations
@@ -26,13 +27,17 @@ from owlroost.household.specs import (
 )
 
 
-def test_household_libraries_returns_library_specs():
+def test_household_libraries_returns_library_specs(
+    workspace_root,
+):
     """
     Household libraries are represented
     by HouseholdLibrarySpec objects.
     """
 
-    libraries = household_libraries()
+    libraries = household_libraries(
+        root=workspace_root,
+    )
 
     assert libraries
 
@@ -45,78 +50,104 @@ def test_household_libraries_returns_library_specs():
     )
 
 
-def test_household_libraries_contains_builtin():
+def test_household_libraries_contains_builtin(
+    workspace_root,
+):
     """
     The built-in Household Library is
-    visible through the planning
+    visible through the workspace
     context.
     """
 
-    libraries = household_libraries()
+    libraries = household_libraries(
+        root=workspace_root,
+    )
 
     assert any(library.name == "builtin" for library in libraries)
 
 
-def test_build_household_registry_returns_registry():
+def test_build_household_registry_returns_registry(
+    workspace_root,
+):
     """
     The public bootstrap constructs
     a Household Registry.
     """
 
-    registry = build_household_registry()
+    registry = build_household_registry(
+        root=workspace_root,
+    )
 
     assert registry is not None
 
 
-def test_build_household_registry_discovers_households():
+def test_build_household_registry_discovers_households(
+    workspace_root,
+):
     """
     At least one Household Project is
     discovered.
     """
 
-    registry = build_household_registry()
+    registry = build_household_registry(
+        root=workspace_root,
+    )
 
     assert len(registry) >= 1
 
 
-def test_build_household_registry_discovers_minimum():
+def test_build_household_registry_discovers_minimum(
+    workspace_root,
+):
     """
     The built-in minimum household
     is registered.
     """
 
-    registry = build_household_registry()
+    registry = build_household_registry(
+        root=workspace_root,
+    )
 
     assert registry.has_household(
         "builtin/minimum",
     )
 
 
-def test_build_household_registry_contains_expected_ids():
+def test_build_household_registry_contains_expected_ids(
+    workspace_root,
+):
     """
     Household identifiers are
     discoverable through the public
     registry interface.
     """
 
-    registry = build_household_registry()
+    registry = build_household_registry(
+        root=workspace_root,
+    )
 
     assert "builtin/minimum" in registry.household_ids()
 
 
-def test_build_household_registry_minimum_spec():
+def test_build_household_registry_minimum_spec(
+    workspace_root,
+):
     """
     The built-in minimum household
     exposes both local and global
     identifiers.
     """
 
-    registry = build_household_registry()
+    registry = build_household_registry(
+        root=workspace_root,
+    )
 
     spec = registry.get_household(
         "builtin/minimum",
     )
 
     assert spec.id == "minimum"
+
     assert spec.global_id == "builtin/minimum"
+
     assert spec.library.name == "builtin"

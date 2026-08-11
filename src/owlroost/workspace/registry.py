@@ -5,12 +5,21 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Workspace semantic registry.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+WorkspaceRegistry contains the stable
+workspace observations understood by
+ROOST.
+
+The registry describes workspace
+semantics, not workspace configuration.
+
+Dynamic workspace configuration and
+its defaults are defined by the
+workspace.toml template and loaded by
+the workspace loader.
 """
 
 from __future__ import annotations
@@ -24,7 +33,8 @@ from owlroost.workspace.specs import (
 
 class WorkspaceRegistry:
     """
-    Registry of workspace observations.
+    Registry of canonical workspace
+    observations.
     """
 
     def __init__(
@@ -39,6 +49,10 @@ class WorkspaceRegistry:
         self,
         field: WorkspaceSpec,
     ):
+        """
+        Register a workspace observation.
+        """
+
         if field.name in self._fields:
             raise ValueError(f"Duplicate workspace field registered: {field.name}")
 
@@ -48,22 +62,47 @@ class WorkspaceRegistry:
         self,
         name: str,
     ) -> WorkspaceSpec:
+        """
+        Return a registered workspace
+        observation.
+        """
+
         return self._fields[name]
 
     def exists(
         self,
         name: str,
     ) -> bool:
+        """
+        Return whether an observation
+        is registered.
+        """
+
         return name in self._fields
 
     def all(
         self,
     ) -> list[WorkspaceSpec]:
-        return [self._fields[name] for name in sorted(self._fields)]
+        """
+        Return all registered observations
+        in canonical name order.
+        """
+
+        return [
+            self._fields[name]
+            for name in sorted(
+                self._fields,
+            )
+        ]
 
     def items(
         self,
     ):
+        """
+        Iterate over observation names
+        and specifications.
+        """
+
         for name in sorted(
             self._fields,
         ):

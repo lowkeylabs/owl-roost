@@ -14,10 +14,10 @@ workspace inventory ontology.
 
 Workspace observations describe:
 
-    - workspace identity
-    - workspace structure
-    - workspace inventory
-    - workspace realization state
+    * workspace identity
+    * workspace structure
+    * workspace inventory
+    * workspace realization state
 
 These values materialize into:
 
@@ -25,6 +25,12 @@ These values materialize into:
 
 and participate in catalog synthesis
 alongside schema and metrics.
+
+Workspace configuration is intentionally
+separate from the semantic ontology.
+
+Dynamic workspace configuration and its
+defaults are defined by workspace.toml.
 """
 
 from __future__ import annotations
@@ -32,26 +38,11 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-from enum import StrEnum
 from typing import Any
 
 from owlroost.catalog.ontology import (
     OntologySpec,
 )
-
-
-class OverridePolicy(StrEnum):
-    """
-    Policy governing whether and how a
-    semantic observation may be replaced
-    by persisted workspace configuration.
-    """
-
-    NEVER = "never"
-
-    REPLACE = "replace"
-
-    RECOMPUTE = "recompute"
 
 
 @dataclass(kw_only=True)
@@ -60,6 +51,14 @@ class WorkspaceSpec(
 ):
     """
     Canonical workspace observation.
+
+    WorkspaceSpec describes stable
+    semantic observations understood
+    by ROOST.
+
+    Dynamic workspace configuration
+    belongs to workspace.toml and is
+    intentionally not modeled here.
     """
 
     # =====================================================
@@ -86,16 +85,13 @@ class WorkspaceSpec(
     # Materialization
     # =====================================================
 
-    compute_fn: Callable[[dict[str, Any]], Any] | None = None
-
-    # =====================================================
-    # Configuration
-    # =====================================================
-    #
-    # Workspace configuration may replace
-    # this computed semantic observation.
-    #
-    override_policy: OverridePolicy = OverridePolicy.NEVER
+    compute_fn: (
+        Callable[
+            [dict[str, Any]],
+            Any,
+        ]
+        | None
+    ) = None
 
     # =====================================================
     # Notes
@@ -104,9 +100,9 @@ class WorkspaceSpec(
     notes: str = ""
 
 
-# =====================================================
+# =========================================================
 # Planning Context
-# =====================================================
+# =========================================================
 
 
 @dataclass(slots=True, frozen=True)
@@ -138,34 +134,31 @@ class HouseholdPlanningContext:
     It is intended to be consumed by:
 
         * Activity evaluation
-
         * Reports
-
         * Published evidence packages
-
         * LLM interfaces
 
     It is intentionally independent of
     presentation.
     """
 
-    #
+    # =====================================================
     # Identity
-    #
+    # =====================================================
 
     name: str
 
     title: str
 
-    #
+    # =====================================================
     # Narrative
-    #
+    # =====================================================
 
     description: str
 
-    #
+    # =====================================================
     # Planning characterization
-    #
+    # =====================================================
 
     sections: tuple[PlanningSection, ...] = ()
 
@@ -196,6 +189,12 @@ class WorkspacePlanningContext:
 
     generated_at: datetime
 
-    households: tuple[HouseholdPlanningContext, ...] = ()
+    households: tuple[
+        HouseholdPlanningContext,
+        ...,
+    ] = ()
 
-    sections: tuple[PlanningSection, ...] = ()
+    sections: tuple[
+        PlanningSection,
+        ...,
+    ] = ()

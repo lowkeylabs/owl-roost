@@ -131,3 +131,76 @@ def register_display_views(
             **SHARED_VIEW_ONTOLOGY,
         )
     )
+    reg.register_view(
+        DisplayView(
+            level="run",
+            name="spending",
+            entries=[
+                # =====================================
+                # Identity
+                # =====================================
+                "display.compact_id",
+                ("case_name", {"modes": ["pivot"]}),
+                ("roost_settings.study_name", {"modes": ["pivot"]}),
+                ("roost_settings.experiment_name", {"modes": ["pivot"]}),
+                "display.optimization_goal",
+                "display.compact_rates",
+                "display.completion_fraction",
+                ("section", "First year spending (todays dollars)"),
+                ("financial.spending.year0.today__p05", {"modes": ["table", "pivot"]}),
+                ("financial.spending.year0.today__p10", {"modes": ["table", "pivot"]}),
+                "financial.spending.year0.today__median",
+                ("section", "Spending through year 5 (todays dollars)"),
+                ("financial.spending.year5.today__p05", {"modes": ["table", "pivot"]}),
+                ("financial.spending.year5.today__p10", {"modes": ["table", "pivot"]}),
+                "financial.spending.year5.today__median",
+                ("section", "Spending through year 10 (todays dollars)"),
+                ("financial.spending.year10.today__p05", {"modes": ["table", "pivot"]}),
+                ("financial.spending.year10.today__p10", {"modes": ["table", "pivot"]}),
+                "financial.spending.year10.today__median",
+                ("section", "Lifetime spending (todays dollars)"),
+                ("financial.spending.total.today__p05", {"modes": ["table", "pivot"]}),
+                ("financial.spending.total.today__p10", {"modes": ["table", "pivot"]}),
+                "financial.spending.total.today__median",
+            ],
+            description=(""),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )
+
+    reg.register_view(
+        DisplayView(
+            level="run",
+            name="taxes",
+            entries=[
+                # =====================================
+                # Identity
+                # =====================================
+                "display.compact_id",
+                ("case_name", {"modes": ["pivot"]}),
+                ("roost_settings.study_name", {"modes": ["pivot"]}),
+                ("roost_settings.experiment_name", {"modes": ["pivot"]}),
+                "display.optimization_goal",
+                "display.compact_rates",
+                "display.completion_fraction",
+                ("section", "First year taxes (todays dollars)"),
+                ("financial.taxes.year0.today__p05", {"modes": ["table", "pivot"]}),
+                ("financial.taxes.year0.today__p10", {"modes": ["table", "pivot"]}),
+                "financial.taxes.year0.today__median",
+                ("section", "Cumulative taxes through year 5 (todays dollars)"),
+                ("financial.taxes.year5.today__p05", {"modes": ["table", "pivot"]}),
+                ("financial.taxes.year5.today__p10", {"modes": ["table", "pivot"]}),
+                "financial.taxes.year5.today__median",
+                ("section", "Cumulative taxes through year 10 (todays dollars)"),
+                ("financial.taxes.year10.today__p05", {"modes": ["table", "pivot"]}),
+                ("financial.taxes.year10.today__p10", {"modes": ["table", "pivot"]}),
+                "financial.taxes.year10.today__median",
+                ("section", "Lifetime taxes (todays dollars)"),
+                ("financial.taxes.total.today__p05", {"modes": ["table", "pivot"]}),
+                ("financial.taxes.total.today__p10", {"modes": ["table", "pivot"]}),
+                "financial.taxes.total.today__median",
+            ],
+            description=(""),
+            **SHARED_VIEW_ONTOLOGY,
+        )
+    )

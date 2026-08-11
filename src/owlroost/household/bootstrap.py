@@ -9,53 +9,68 @@ Household subsystem bootstrap.
 
 Notes
 -----
-Construct the Household Registry by
+Constructs the Household Registry by
 discovering Household Projects within
-the effective Household Libraries for
-the current planning context.
+the Household Libraries configured for
+the current workspace context.
+
+Household Library configuration is
+defined by the effective workspace
+definition:
+
+    workspace.toml
+
+The workspace loader owns composition of
+canonical workspace defaults and local
+workspace overrides.
+
+This module interprets the resulting
+household library configuration and
+converts it into HouseholdLibrarySpec
+objects.
 
 Architectural Invariants
 ------------------------
 
-Bootstrap owns:
+Workspace owns:
 
-    * Registry construction
-    * Registry assembly
+    * workspace configuration
+    * workspace configuration defaults
+    * composition of local overrides
+    * household library search policy
 
-Bootstrap does not own:
+Household bootstrap owns:
 
-    * Planning context resolution
-    * Filesystem discovery
-    * Manifest parsing
-    * Household construction
-    * Household mutation
+    * interpretation of configured
+      household libraries
+    * resolution of library filesystem
+      roots
+    * HouseholdLibrarySpec construction
+    * HouseholdRegistry assembly
 
-Planning context resolution belongs to
-the workspace subsystem.
+Household loaders own:
 
-Filesystem discovery belongs to the
-household loaders.
+    * filesystem discovery
+    * manifest parsing
+    * HouseholdSpec construction
 
-Registration belongs to the registry.
+Household registry owns:
 
-Future Directions
------------------
+    * registration
+    * lookup
+    * enumeration
 
-Future revisions may construct
-registries for alternate planning
-contexts or explicitly supplied
-household libraries.
-
-The public interface should remain
-stable:
-
-    build_household_registry()
+The Household subsystem does not require
+workspace configuration to be represented
+as WorkspaceSpec observations.
 """
 
 from __future__ import annotations
 
-from owlroost.catalog.context import (
-    build_catalog_context,
+from pathlib import Path
+
+from owlroost.core.settings import (
+    get_workspace_template_dir,
 )
 from owlroost.household.loaders import (
     discover_household_library,
@@ -66,15 +81,37 @@ from owlroost.household.registry import (
 from owlroost.household.specs import (
     HouseholdLibrarySpec,
 )
-from owlroost.operations.resolve import (
-    build_resolver,
-)
 from owlroost.workspace.loaders import (
-    load_workspace_row,
+    load_workspace_definition,
 )
-from owlroost.workspace.materializers import (
-    materialize_planning_context,
-)
+
+# =========================================================
+# Library Root Resolution
+# =========================================================
+
+
+def _resolve_household_library_root(
+    name: str,
+    location: str,
+    workspace_root: Path,
+) -> Path:
+    """
+    Resolve one configured Household
+    Library location.
+    """
+
+    path = Path(
+        location,
+    ).expanduser()
+
+    if path.is_absolute():
+        return path.resolve()
+
+    if name == "builtin":
+        return (get_workspace_template_dir() / path).resolve()
+
+    return (workspace_root / path).resolve()
+
 
 # =========================================================
 # Household Libraries
@@ -87,35 +124,90 @@ def household_libraries(
     """
     Return the effective Household
     Libraries visible to the current
-    planning context.
+    workspace context.
 
     Parameters
     ----------
     root
-        Planning context root.
+        Workspace root.
 
     Returns
     -------
     list[HouseholdLibrarySpec]
+        Household Libraries in configured
+        search order.
+
+    Notes
+    -----
+    Library ordering is significant.
+
+    Household discovery follows the order
+    declared by:
+
+        context.households
+
+    in the effective workspace definition.
     """
 
-    catalog = build_catalog_context()
+    workspace_root = Path(
+        root,
+    ).resolve()
 
-    planning_context = materialize_planning_context(
-        load_workspace_row(
-            root,
-        ),
-        catalog,
+    definition = load_workspace_definition(
+        workspace_root,
     )
 
-    resolve = build_resolver(
-        catalog,
-        planning_context,
+    context = definition.get(
+        "context",
+        {},
     )
 
-    return resolve(
-        "context.household.libraries",
+    configured_libraries = context.get(
+        "households",
+        [],
     )
+
+    libraries: list[HouseholdLibrarySpec] = []
+
+    for configured in configured_libraries:
+        name = configured.get(
+            "name",
+        )
+
+        location = configured.get(
+            "location",
+        )
+
+        if not name:
+            raise ValueError("Household library configuration requires 'name'.")
+
+        if not location:
+            raise ValueError(f"Household library {name!r} requires 'location'.")
+
+        root_path = _resolve_household_library_root(
+            name=name,
+            location=location,
+            workspace_root=workspace_root,
+        )
+
+        #
+        # Built-in libraries are package
+        # resources and therefore
+        # immutable from the household
+        # subsystem.
+        #
+
+        read_only = name == "builtin"
+
+        libraries.append(
+            HouseholdLibrarySpec(
+                name=name,
+                root=root_path,
+                read_only=read_only,
+            )
+        )
+
+    return libraries
 
 
 def household_library(
@@ -123,16 +215,30 @@ def household_library(
     root=".",
 ) -> HouseholdLibrarySpec:
     """
-    Return one configured household
-    library.
+    Return one configured Household
+    Library.
+
+    Parameters
+    ----------
+    name
+        Logical Household Library name.
+
+    root
+        Workspace root.
+
+    Returns
+    -------
+    HouseholdLibrarySpec
 
     Raises
     ------
     KeyError
-        Unknown household library.
+        Unknown Household Library.
     """
 
-    for library in household_libraries(root):
+    for library in household_libraries(
+        root,
+    ):
         if library.name == name:
             return library
 
@@ -144,10 +250,17 @@ def household_library(
 # =========================================================
 
 
-def build_household_registry() -> HouseholdRegistry:
+def build_household_registry(
+    root=".",
+) -> HouseholdRegistry:
     """
-    Construct the complete Household
-    Registry.
+    Construct the Household Registry
+    visible to a workspace context.
+
+    Parameters
+    ----------
+    root
+        Workspace root.
 
     Returns
     -------
@@ -156,7 +269,9 @@ def build_household_registry() -> HouseholdRegistry:
 
     registry = HouseholdRegistry()
 
-    for library in household_libraries():
+    for library in household_libraries(
+        root,
+    ):
         registry.register_many(
             discover_household_library(
                 library,

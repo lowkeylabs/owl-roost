@@ -1,8 +1,13 @@
 # tests/workspace/test_loaders.py
 
+from __future__ import annotations
+
+import pytest
 
 from owlroost.workspace.loaders import (
     find_workspaces,
+    load_workspace_definition,
+    load_workspace_row,
     load_workspace_rows,
 )
 
@@ -29,19 +34,27 @@ def test_find_workspaces_discovers_workspace(
     """
     Directories containing
     workspace.toml are workspaces.
+
+    Discovery depends only on the
+    presence of workspace.toml.
     """
 
-    ws = tmp_path / "example"
+    workspace = tmp_path / "example"
 
-    ws.mkdir()
+    workspace.mkdir()
 
-    (ws / "workspace.toml").write_text('name = "example"\n')
+    (workspace / "workspace.toml").write_text(
+        "",
+        encoding="utf-8",
+    )
 
     workspaces = find_workspaces(
         tmp_path,
     )
 
-    assert workspaces == [ws]
+    assert workspaces == [
+        workspace,
+    ]
 
 
 def test_find_workspaces_ignores_non_workspace_dirs(
@@ -49,65 +62,47 @@ def test_find_workspaces_ignores_non_workspace_dirs(
 ):
     """
     Directories without workspace.toml
-    are ignored.
+    are not workspaces.
     """
 
-    (tmp_path / "foo").mkdir()
+    (tmp_path / "example").mkdir()
 
-    workspaces = find_workspaces(
-        tmp_path,
+    assert (
+        find_workspaces(
+            tmp_path,
+        )
+        == []
     )
 
-    assert workspaces == []
 
-
-def test_load_workspace_rows_empty(
+def test_load_workspace_row_context(
     tmp_path,
 ):
     """
-    Empty source directory
-    produces no rows.
+    Every directory produces a planning
+    context even when it is not an
+    initialized workspace.
     """
 
-    rows = load_workspace_rows(
+    row = load_workspace_row(
         tmp_path,
     )
 
-    assert rows == []
+    assert row["_path"] == (tmp_path.resolve())
+
+    assert row["_meta"]["level"] == "workspace"
+
+    assert row["_context"]["root"] == str(tmp_path.resolve())
+
+    assert "_workspace" not in row
 
 
 def test_load_workspace_rows_assigns_ids(
-    tmp_path,
-):
-    """
-    Workspace ids are assigned.
-    """
-
-    for name in [
-        "alpha",
-        "beta",
-    ]:
-        ws = tmp_path / name
-
-        ws.mkdir()
-
-        (ws / "workspace.toml").write_text(f'name = "{name}"\n')
-
-    rows = load_workspace_rows(
-        tmp_path,
-    )
-
-    ids = [row["_meta"]["workspace_id"] for row in rows]
-
-    assert ids == [0, 1]
-
-
-def test_load_workspace_rows_basic(
     sample_workspace,
 ):
     """
-    Workspace metadata loads
-    into workspace rows.
+    Discovered workspaces receive
+    sequential workspace identifiers.
     """
 
     rows = load_workspace_rows(
@@ -116,48 +111,235 @@ def test_load_workspace_rows_basic(
 
     assert len(rows) == 1
 
-    row = rows[0]
+    assert rows[0]["_meta"]["workspace_id"] == 0
 
-    workspace = row["_workspace"]
+
+def test_load_workspace_definition_applies_local_overrides(
+    sample_workspace,
+):
+    """
+    Local workspace configuration
+    overrides canonical template
+    defaults.
+    """
+
+    definition = load_workspace_definition(
+        sample_workspace,
+    )
+
+    #
+    # These values are supplied by the
+    # local sample workspace.
+    #
+
+    assert definition["title"] == "Workspace"
+
+
+def test_load_workspace_rows_basic(
+    sample_workspace,
+):
+    """
+    Effective workspace configuration
+    is attached to workspace rows.
+    """
+
+    rows = load_workspace_rows(
+        sample_workspace.parent,
+    )
+
+    assert len(rows) == 1
+
+    workspace = rows[0]["_workspace"]
 
     assert "definition" in workspace
 
     definition = workspace["definition"]
 
-    assert definition["name"] == "example"
-    assert definition["title"] == "Example Workspace"
-    assert definition["description"] == "Example description."
-
-    assert "name" not in workspace
-    assert "title" not in workspace
-    assert "description" not in workspace
+    assert definition["title"] == "Workspace"
 
 
-def test_load_workspace_rows_detects_cases(
+def test_load_workspace_definition_supplies_template_defaults(
+    tmp_path,
+):
+    """
+    Values omitted from local
+    workspace.toml are supplied by the
+    canonical workspace template.
+    """
+
+    workspace = tmp_path / "example"
+
+    workspace.mkdir()
+
+    #
+    # An empty local definition should
+    # inherit the complete canonical
+    # template.
+    #
+
+    (workspace / "workspace.toml").write_text(
+        "",
+        encoding="utf-8",
+    )
+
+    definition = load_workspace_definition(
+        workspace,
+    )
+
+    assert "title" in definition
+    assert "description" in definition
+
+    assert "workspace" in definition
+    assert "overrides" in (definition["workspace"])
+
+    assert "context" in definition
+
+    assert "households" in (definition["context"])
+
+    assert "paths" in (definition["context"])
+
+    assert "cases" in (definition["context"]["paths"])
+
+    assert "results" in (definition["context"]["paths"])
+
+
+def test_load_workspace_definition_applies_nested_overrides(
+    tmp_path,
+):
+    """
+    Local nested configuration values
+    override corresponding canonical
+    template values without removing
+    sibling defaults.
+    """
+
+    workspace = tmp_path / "example"
+
+    workspace.mkdir()
+
+    (workspace / "workspace.toml").write_text(
+        "\n".join(
+            [
+                "[context.paths]",
+                'results = "./custom-results"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    definition = load_workspace_definition(
+        workspace,
+    )
+
+    assert definition["context"]["paths"]["results"] == "./custom-results"
+
+    #
+    # The sibling template default must
+    # survive the nested merge.
+    #
+
+    assert "cases" in (definition["context"]["paths"])
+
+
+def test_load_workspace_definition_warns_unknown_keys(
+    tmp_path,
+):
+    """
+    Unknown local workspace configuration
+    keys generate a warning and are not
+    added to the effective definition.
+    """
+
+    workspace = tmp_path / "example"
+
+    workspace.mkdir()
+
+    (workspace / "workspace.toml").write_text(
+        "\n".join(
+            [
+                'unknown_setting = "value"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.warns(
+        UserWarning,
+        match=("Unknown workspace configuration key"),
+    ):
+        definition = load_workspace_definition(
+            workspace,
+        )
+
+    assert "unknown_setting" not in definition
+
+
+def test_load_workspace_definition_warns_unknown_nested_keys(
+    tmp_path,
+):
+    """
+    Unknown nested configuration keys
+    also generate warnings and are not
+    added to the effective definition.
+    """
+
+    workspace = tmp_path / "example"
+
+    workspace.mkdir()
+
+    (workspace / "workspace.toml").write_text(
+        "\n".join(
+            [
+                "[context.paths]",
+                'unknown_path = "./somewhere"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.warns(
+        UserWarning,
+        match=("Unknown workspace configuration key"),
+    ):
+        definition = load_workspace_definition(
+            workspace,
+        )
+
+    assert "unknown_path" not in definition["context"]["paths"]
+
+
+def test_load_workspace_rows_preserves_workspace_path(
     sample_workspace,
 ):
     """
-    cases directory presence
-    is detected.
+    Loaded workspace rows retain the
+    canonical workspace filesystem path.
     """
 
-    (sample_workspace / "cases").mkdir()
-
-    _row = load_workspace_rows(
+    rows = load_workspace_rows(
         sample_workspace.parent,
-    )[0]
+    )
+
+    assert len(rows) == 1
+
+    assert rows[0]["_path"] == sample_workspace.resolve()
 
 
-def test_load_workspace_rows_detects_results(
+def test_load_workspace_rows_contains_results_configuration(
     sample_workspace,
 ):
     """
-    results directory presence
-    is detected.
+    Effective workspace configuration
+    contains the configured results path.
     """
 
-    (sample_workspace / "results").mkdir()
-
-    _row = load_workspace_rows(
+    rows = load_workspace_rows(
         sample_workspace.parent,
-    )[0]
+    )
+
+    definition = rows[0]["_workspace"]["definition"]
+
+    assert "results" in (definition["context"]["paths"])

@@ -12,17 +12,18 @@ Notes
 Owns filesystem operations
 performed on workspaces.
 
-A workspace is currently defined
-as a directory containing:
+A workspace is defined as a
+directory containing:
 
     workspace.toml
 
 Workspace capability queries
 belong in workspace.checks.
 
-This module should perform
-mutations only.
+Workspace configuration loading
+belongs in workspace.loaders.
 
+This module performs mutations only.
 """
 
 from __future__ import annotations
@@ -30,7 +31,6 @@ from __future__ import annotations
 import os
 import re
 import shutil
-import tomllib
 from pathlib import Path
 
 import yaml
@@ -47,21 +47,38 @@ from owlroost.display.discovery import (
 from owlroost.exceptions import (
     RoostError,
 )
-from owlroost.workspace.default_toml import (
-    render_workspace_toml,
+from owlroost.workspace.levers.context import (
+    workspace_initialized,
 )
-from owlroost.workspace.levers.context import workspace_initialized
+from owlroost.workspace.loaders import (
+    load_workspace_definition,
+)
 
-# These files should exist and be stored in ./src/owlroost/templates/workspace
-# The user can create "makefile.mk" to hold local commands
-# The Makefile will autoload ./templates/workspace/default-makefile.mk
+# =========================================================
+# Templates
+# =========================================================
+
+# These files should exist in:
+#
+#     ./src/owlroost/templates/workspace
+#
+# The user may create "makefile.mk" to hold local commands.
+# The Makefile autoloads:
+#
+#     ./templates/workspace/default-makefile.mk
 
 WORKSPACE_TEMPLATE_FILES = [
     "index.qmd",
     "Makefile",
     "_quarto.yml",
     "_variables.yml",
+    "workspace.toml",
 ]
+
+
+# =========================================================
+# Workspace Operations
+# =========================================================
 
 
 def rename_workspace(
@@ -96,19 +113,29 @@ def install_workspace_templates(
     *,
     force: bool = False,
 ) -> None:
-    """Install standard workspace template files."""
+    """
+    Install standard workspace template
+    files.
+
+    Existing files are preserved unless
+    force=True.
+    """
 
     template_dir = get_workspace_template_dir() / "workspace"
 
     for filename in WORKSPACE_TEMPLATE_FILES:
         src = template_dir / filename
+
         dst = workspace_dir / filename
 
         if not src.exists():
             raise RoostError(f"Missing workspace template: {src}")
 
         if force or not dst.exists():
-            shutil.copy2(src, dst)
+            shutil.copy2(
+                src,
+                dst,
+            )
 
 
 def init_workspace(
@@ -121,13 +148,20 @@ def init_workspace(
     Initialize an existing directory
     as a workspace.
 
-    Missing files are created.
+    Standard workspace files are copied
+    from the packaged workspace templates.
 
-    Existing files are preserved
-    unless force=True.
+    Existing files are preserved unless
+    force=True.
+
+    workspace.toml is installed from the
+    canonical packaged template and is
+    never generated programmatically.
     """
 
-    parent = Path(parent)
+    parent = Path(
+        parent,
+    )
 
     workspace_dir = Path(
         parent / workspace_dir,
@@ -139,29 +173,17 @@ def init_workspace(
     if not workspace_dir.is_dir():
         raise RoostError(f"Not a directory: {workspace_dir}")
 
-    workspace_exists = workspace_initialized(
-        workspace_dir,
-    )
-
-    workspace_toml = workspace_dir / "workspace.toml"
-
-    # -----------------------------------------
-    # workspace.toml
-    # -----------------------------------------
-
-    if force or not workspace_exists:
-        workspace_toml.write_text(
-            render_workspace_toml(
-                workspace_dir,
-            )
-        )
-
     install_workspace_templates(
         workspace_dir,
         force=force,
     )
 
     return workspace_dir
+
+
+# =========================================================
+# Results Catalog
+# =========================================================
 
 
 def sync_results_catalog(
@@ -179,6 +201,12 @@ def sync_results_catalog(
         _metadata.yml
 
     beneath the results tree.
+
+    Workspace configuration is obtained
+    from workspace.loaders so that
+    canonical workspace defaults and
+    local overrides are applied
+    consistently.
 
     If force=False:
 
@@ -202,29 +230,19 @@ def sync_results_catalog(
     ):
         raise RoostError(f"Missing workspace.toml: {workspace_dir / 'workspace.toml'}")
 
-    workspace_file = workspace_dir / "workspace.toml"
+    # =====================================================
+    # Workspace configuration
+    # =====================================================
 
-    if not workspace_file.exists():
-        raise RoostError(f"Missing workspace.toml: {workspace_file}")
-
-    with open(
-        workspace_file,
-        "rb",
-    ) as fh:
-        workspace = tomllib.load(
-            fh,
-        )
+    workspace = load_workspace_definition(
+        workspace_dir,
+    )
 
     # =====================================================
     # Results directory
     # =====================================================
 
-    results_dir = Path(
-        workspace.get(
-            "results_dir",
-            "results",
-        )
-    )
+    results_dir = Path(workspace["results_dir"])
 
     if not results_dir.is_absolute():
         results_dir = workspace_dir / results_dir
@@ -238,14 +256,17 @@ def sync_results_catalog(
     # Template directory
     # =====================================================
 
-    template_root = workspace.get(
-        "results_template_dir",
-    )
+    template_root = workspace["results_template_dir"]
 
     if template_root:
         template_root = Path(
             template_root,
-        ).resolve()
+        )
+
+        if not template_root.is_absolute():
+            template_root = workspace_dir / template_root
+
+        template_root = template_root.resolve()
 
     else:
         template_root = (get_workspace_template_dir() / "results").resolve()
@@ -262,6 +283,11 @@ def sync_results_catalog(
         level,
         level_template_dir,
     ):
+        """
+        Write generated metadata for a
+        results catalog directory.
+        """
+
         metadata = {
             "level": level,
             "paths": {
@@ -304,6 +330,11 @@ def sync_results_catalog(
         template_file,
         level,
     ):
+        """
+        Synchronize one generated Quarto
+        catalog file and its metadata.
+        """
+
         qmd_file.parent.mkdir(
             parents=True,
             exist_ok=True,
@@ -338,7 +369,9 @@ def sync_results_catalog(
             # -------------------------------------
 
             if not force and "__PAYLOAD_DIR__" not in include_target:
-                filename = Path(include_target).name
+                filename = Path(
+                    include_target,
+                ).name
 
             else:
                 filename = Path(

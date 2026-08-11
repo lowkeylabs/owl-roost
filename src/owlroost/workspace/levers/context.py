@@ -5,12 +5,61 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Planning context semantic levers.
 
-Notes
------
-Describe responsibilities, ownership,
-and architectural role.
+## Notes
+
+Defines semantic observations describing
+the current planning context.
+
+These observations characterize:
+
+* filesystem inventory
+* workspace state
+* planning artifacts
+* workflow readiness
+* configured workspace paths
+
+Workspace configuration is loaded and
+composed by workspace.loaders.
+
+Configuration defaults are defined
+exclusively by the packaged workspace.toml
+template. This module interprets effective
+configuration but does not define
+configuration defaults.
+
+Household Library configuration is owned
+by workspace.toml, but interpretation of
+that configuration belongs to the
+household subsystem.
+
+## Architectural Invariants
+
+WorkspaceSpec describes stable semantic
+observations.
+
+Dynamic workspace configuration is
+provided through:
+
+    row["_workspace"]["definition"]
+
+Compute functions explicitly consume
+configuration when required.
+
+The workspace registry and materializers
+do not implement configuration override
+policy.
+
+Household Library resolution does not
+belong here. The household subsystem
+interprets:
+
+    context.households
+
+from the effective workspace definition
+and constructs HouseholdLibrarySpec
+objects.
 """
 
 from __future__ import annotations
@@ -35,18 +84,14 @@ from owlroost.catalog.ontology import (
 from owlroost.core.utils import (
     normalize_module_path,
 )
-from owlroost.household.households import (
-    BUILTIN_HOUSEHOLD_LIBRARY,
-)
-from owlroost.household.specs import HouseholdLibrarySpec
 from owlroost.workspace.specs import (
-    OverridePolicy,
     WorkspaceSpec,
 )
 
 # =========================================================
 # Ontology
 # =========================================================
+
 
 LEVER_ONTOLOGY: dict[str, Any] = dict(
     owner="ROOST",
@@ -56,8 +101,11 @@ LEVER_ONTOLOGY: dict[str, Any] = dict(
     analytic_kind="primary",
     materialization_level="context",
     node_type=CatalogNodeType.VARIABLE,
-    defined_in=normalize_module_path(__file__),
+    defined_in=normalize_module_path(
+        __file__,
+    ),
 )
+
 
 # =========================================================
 # Directory Characterization
@@ -178,124 +226,75 @@ class FilesystemCharacterization(
 def _root(
     root=".",
 ) -> Path:
-    return Path(root).resolve()
-
-
-# =========================================================
-# Household Libraries
-# =========================================================
-
-DEFAULT_HOUSEHOLD_LIBRARY_CONFIG = [
-    {"name": "workspace", "location": "./library/households"},
-    {"name": "user", "location": "~/.roost/households"},
-    {"name": "builtin", "location": "<builtin>"},
-]
-
-
-def default_household_library_config() -> list[dict[str, str]]:
     """
-    Return the canonical household
-    library configuration used to
-    initialize new workspaces.
-
-    Returns
-    -------
-    list[[str, str]]
-        Ordered pairs of
-        (library_name, location).
+    Resolve a planning context root.
     """
 
-    return list(
-        DEFAULT_HOUSEHOLD_LIBRARY_CONFIG,
+    return Path(
+        root,
+    ).resolve()
+
+
+def _workspace_definition(
+    row,
+):
+    """
+    Return the effective workspace
+    configuration attached to a row.
+
+    The definition has already been
+    composed by workspace.loaders from
+    canonical template defaults and
+    local workspace overrides.
+
+    A planning context that is not an
+    initialized workspace has no
+    workspace definition.
+    """
+
+    return row.get(
+        "_workspace",
+        {},
+    ).get(
+        "definition",
+        {},
     )
 
 
-def resolve_household_libraries(
-    values: list[dict[str, str]],
-    root=".",
-) -> list[HouseholdLibrarySpec]:
+def _configuration_value(
+    definition,
+    path: tuple[str, ...],
+):
     """
-    Resolve configured household
-    library definitions into
-    HouseholdLibrarySpec objects.
+    Resolve a value from the effective
+    workspace definition.
 
     Parameters
     ----------
-    values
-        Ordered household library
-        configuration.
+    definition
+        Effective workspace definition.
 
-    root
-        Planning context root.
-
-    Returns
-    -------
-    list[HouseholdLibrarySpec]
-    """
-
-    root = _root(
-        root,
-    )
-
-    libraries: list[HouseholdLibrarySpec] = []
-
-    for entry in values:
-        read_only = False
-
-        if isinstance(entry, dict):
-            name = entry["name"]
-            location = entry["location"]
-        else:
-            name, location = entry
-
-        if location == "<builtin>":
-            library_root = BUILTIN_HOUSEHOLD_LIBRARY
-            read_only = False
-
-        elif location.startswith(
-            "~/",
-        ):
-            library_root = Path(
-                location,
-            ).expanduser()
-
-        else:
-            library_root = (root / location).resolve()
-
-        libraries.append(
-            HouseholdLibrarySpec(
-                name=name,
-                root=library_root,
-                read_only=read_only,
-            )
-        )
-
-    return libraries
-
-
-def default_household_libraries(
-    root=".",
-) -> list[HouseholdLibrarySpec]:
-    """
-    Return the canonical household
-    libraries for the current
-    planning context.
-
-    Parameters
-    ----------
-    root
-        Planning context root.
+    path
+        Nested configuration path.
 
     Returns
     -------
-    list[HouseholdLibrarySpec]
+    object
+        Configured value.
+
+    Raises
+    ------
+    KeyError
+        Configuration path does not
+        exist.
     """
 
-    default_list = default_household_library_config()
-    return resolve_household_libraries(
-        default_list,
-        root,
-    )
+    value = definition
+
+    for key in path:
+        value = value[key]
+
+    return value
 
 
 # =========================================================
@@ -316,16 +315,21 @@ def is_valid_case(
         return False
 
     try:
-        s = StringIO()
+        stream = StringIO()
 
         diconf, dirname, _ = load_toml(
-            str(filename),
+            str(
+                filename,
+            ),
         )
 
         config_to_plan(
             diconf,
             dirname=dirname,
-            logstreams=[s, s],
+            logstreams=[
+                stream,
+                stream,
+            ],
         )
 
         return True
@@ -355,22 +359,25 @@ def is_planning_artifact(
 
     name = path.name
 
-    #
-    # Hidden support directories.
-    #
+    # -----------------------------------------------------
+    # Hidden support directories
+    # -----------------------------------------------------
+
     if path.is_dir():
         return name in {
             ".quarto",
             "cases",
+            "library",
             "studies",
             "results",
             "reports",
             "docs",
         }
 
-    #
-    # Workspace metadata.
-    #
+    # -----------------------------------------------------
+    # Workspace metadata
+    # -----------------------------------------------------
+
     if name in {
         "workspace.toml",
         "study.toml",
@@ -380,27 +387,31 @@ def is_planning_artifact(
     }:
         return True
 
-    #
-    # Quarto documents.
-    #
+    # -----------------------------------------------------
+    # Quarto documents
+    # -----------------------------------------------------
+
     if path.suffix.lower() == ".qmd":
         return True
 
-    #
-    # Makefiles.
-    #
+    # -----------------------------------------------------
+    # Makefiles
+    # -----------------------------------------------------
+
     if name == "Makefile" or name.startswith("makefile"):
         return True
 
-    #
-    # Case definitions.
-    #
+    # -----------------------------------------------------
+    # Case definitions
+    # -----------------------------------------------------
+
     if path.suffix.lower() == ".toml" and name.lower().startswith("case"):
         return True
 
-    #
-    # Household Financial Profile.
-    #
+    # -----------------------------------------------------
+    # Household Financial Profile
+    # -----------------------------------------------------
+
     if path.suffix.lower() == ".xlsx" and name.lower().startswith("hfp"):
         return True
 
@@ -425,49 +436,54 @@ def characterize_directory_kind(
     particular workflow.
     """
 
-    #
-    # Already initialized.
-    #
+    # -----------------------------------------------------
+    # Already initialized
+    # -----------------------------------------------------
+
     if fs["workspace_initialized"]:
         return DirectoryKind.WORKSPACE
 
-    #
-    # Empty.
-    #
+    # -----------------------------------------------------
+    # Empty
+    # -----------------------------------------------------
+
     if not fs["files"] and not fs["directories"]:
         return DirectoryKind.EMPTY
 
     planning = 0
     foreign = 0
 
-    #
-    # Count recognized artifacts.
-    #
+    # -----------------------------------------------------
+    # Count recognized artifacts
+    # -----------------------------------------------------
+
     for path in fs["files"] + fs["directories"]:
         if is_planning_artifact(
             path,
         ):
             planning += 1
+
         else:
             foreign += 1
 
-    #
-    # Entirely planning content.
-    #
+    # -----------------------------------------------------
+    # Entirely planning content
+    # -----------------------------------------------------
+
     if planning > 0 and foreign == 0:
         return DirectoryKind.PLANNING
 
-    #
-    # Mixture of planning and
-    # unrelated content.
-    #
+    # -----------------------------------------------------
+    # Mixture of planning and unrelated content
+    # -----------------------------------------------------
+
     if planning > 0 and foreign > 0:
         return DirectoryKind.MIXED
 
-    #
-    # Nothing recognizable as a
-    # planning directory.
-    #
+    # -----------------------------------------------------
+    # Nothing recognizable
+    # -----------------------------------------------------
+
     return DirectoryKind.FOREIGN
 
 
@@ -504,6 +520,12 @@ def characterize_can_initialize_workspace(
 def characterize_can_create_workspace(
     inventory: FilesystemInventory,
 ) -> bool:
+    """
+    Determine whether a child workspace
+    may be created beneath the current
+    planning context.
+    """
+
     return inventory["workspace_parent_count"] == 0
 
 
@@ -536,23 +558,25 @@ def inventory_filesystem(
     # Immediate inventory
     # -----------------------------------------------------
 
-    files = sorted(p for p in root.iterdir() if p.is_file())
+    files = sorted(path for path in root.iterdir() if path.is_file())
 
-    directories = sorted(p for p in root.iterdir() if p.is_dir())
+    directories = sorted(path for path in root.iterdir() if path.is_dir())
 
     case_files = [
-        p for p in files if (p.name.lower().startswith("c") and p.suffix.lower() == ".toml")
+        path
+        for path in files
+        if (path.name.lower().startswith("c") and path.suffix.lower() == ".toml")
     ]
 
     valid_case_files = [
-        p
-        for p in case_files
+        path
+        for path in case_files
         if is_valid_case(
-            p,
+            path,
         )
     ]
 
-    hfp_files = [p for p in files if p.suffix.lower() == ".xlsx"]
+    hfp_files = [path for path in files if path.suffix.lower() == ".xlsx"]
 
     # -----------------------------------------------------
     # Parent workspaces
@@ -572,7 +596,9 @@ def inventory_filesystem(
     # Immediate child workspaces
     # -----------------------------------------------------
 
-    child_workspaces = [d for d in directories if (d / "workspace.toml").exists()]
+    child_workspaces = [
+        directory for directory in directories if (directory / "workspace.toml").exists()
+    ]
 
     # -----------------------------------------------------
     # Inventory
@@ -586,12 +612,12 @@ def inventory_filesystem(
         case_files=case_files,
         valid_case_files=valid_case_files,
         hfp_files=hfp_files,
-        workspace_initialized=workspace_file.exists(),
-        workspace_parent_count=parent_count,
+        workspace_initialized=(workspace_file.exists()),
+        workspace_parent_count=(parent_count),
         workspace_child_count=len(
             child_workspaces,
         ),
-        workspace_children=child_workspaces,
+        workspace_children=(child_workspaces),
     )
 
 
@@ -604,6 +630,11 @@ def inventory_filesystem(
 def characterize_filesystem(
     root=".",
 ) -> FilesystemCharacterization:
+    """
+    Characterize the filesystem state of
+    a planning context.
+    """
+
     inventory = inventory_filesystem(
         root,
     )
@@ -637,6 +668,11 @@ def characterize_filesystem(
 def directory_name(
     root=".",
 ):
+    """
+    Return the current planning context
+    directory name.
+    """
+
     return characterize_filesystem(
         root,
     )["directory_name"]
@@ -650,6 +686,10 @@ def directory_name(
 def case_count(
     root=".",
 ):
+    """
+    Count OWL case files.
+    """
+
     return len(
         characterize_filesystem(
             root,
@@ -660,6 +700,10 @@ def case_count(
 def valid_case_count(
     root=".",
 ):
+    """
+    Count loadable OWL case files.
+    """
+
     return len(
         characterize_filesystem(
             root,
@@ -670,6 +714,11 @@ def valid_case_count(
 def workspace_initialized(
     root=".",
 ):
+    """
+    Return whether the current directory
+    is an initialized workspace.
+    """
+
     return characterize_filesystem(
         root,
     )["workspace_initialized"]
@@ -678,6 +727,10 @@ def workspace_initialized(
 def workspace_parent_count(
     root=".",
 ):
+    """
+    Count parent workspaces.
+    """
+
     return characterize_filesystem(
         root,
     )["workspace_parent_count"]
@@ -687,127 +740,69 @@ def workspace_child_count(
     root=".",
 ):
     """
-    Count immediate child
-    workspaces.
+    Count immediate child workspaces.
 
-    This intentionally does
-    not recurse.
+    This intentionally does not recurse.
     """
+
     return characterize_filesystem(
         root,
     )["workspace_child_count"]
 
 
-def context_name(
-    root=".",
-    value: str | None = None,
-) -> str:
-    if value is None:
-        value = _root(root).name
-
-    return value
-
-
-def context_title(
-    root=".",
-    value: str | None = None,
-) -> str:
-    if value is None:
-        value = _root(root).name
-
-    return value
-
-
-def context_description(
-    root=".",
-    value: str | None = None,
-) -> str:
-    if value is None:
-        value = _root(root).name
-
-    return value
+# =========================================================
+# Configured Semantic Values
+# =========================================================
 
 
 def context_results_path(
-    root=".",
-    value: str | None = None,
+    root,
+    value: str,
 ) -> Path:
-    if value is None:
-        value = "./results"
+    """
+    Resolve the configured results
+    directory relative to the planning
+    context root.
+    """
 
-    return (_root(root) / value).resolve()
+    path = Path(
+        value,
+    ).expanduser()
+
+    if not path.is_absolute():
+        path = _root(root) / path
+
+    return path.resolve()
 
 
 def context_cases_path(
-    root=".",
-    value: str | None = None,
+    root,
+    value: str,
 ) -> Path:
-    if value is None:
-        value = "."
+    """
+    Resolve the configured case directory
+    relative to the planning context root.
+    """
 
-    return (_root(root) / value).resolve()
+    path = Path(
+        value,
+    ).expanduser()
+
+    if not path.is_absolute():
+        path = _root(root) / path
+
+    return path.resolve()
 
 
 def context_workspace_path(
     root=".",
 ) -> Path:
-    return _root(root)
-
-
-# =========================================================
-# Search Paths
-# =========================================================
-
-
-def merge_household_library_config(
-    defaults: list[dict[str, str]],
-    overrides: list[dict[str, str]],
-) -> list[dict[str, str]]:
     """
-    Merge workspace household library
-    configuration into the canonical
-    default search order.
-
-    Existing libraries are replaced by
-    name. New libraries are appended
-    in override order.
+    Return the absolute planning context
+    root.
     """
 
-    merged = {entry["name"]: dict(entry) for entry in defaults}
-
-    order = [entry["name"] for entry in defaults]
-
-    for entry in overrides:
-        name = entry["name"]
-
-        merged[name] = dict(entry)
-
-        if name not in order:
-            order.append(name)
-
-    return [merged[name] for name in order]
-
-
-def household_libraries(
-    root=".",
-    values: list[dict[str, str]] | None = None,
-) -> list[HouseholdLibrarySpec]:
-    """
-    Return the effective household
-    libraries for the current planning
-    context.
-    """
-
-    config = default_household_library_config()
-
-    if values is not None:
-        config = merge_household_library_config(
-            config,
-            values,
-        )
-
-    return resolve_household_libraries(
-        config,
+    return _root(
         root,
     )
 
@@ -820,6 +815,11 @@ def household_libraries(
 def has_valid_case(
     root=".",
 ):
+    """
+    Return whether the planning context
+    contains at least one valid case.
+    """
+
     return (
         valid_case_count(
             root,
@@ -831,6 +831,11 @@ def has_valid_case(
 def can_initialize_workspace(
     root=".",
 ):
+    """
+    Return whether the current directory
+    may be initialized as a workspace.
+    """
+
     return characterize_filesystem(
         root,
     )["can_initialize_workspace"]
@@ -839,6 +844,11 @@ def can_initialize_workspace(
 def can_create_workspace(
     root=".",
 ):
+    """
+    Return whether a child workspace may
+    be created.
+    """
+
     return characterize_filesystem(
         root,
     )["can_create_workspace"]
@@ -847,6 +857,11 @@ def can_create_workspace(
 def directory_kind(
     root=".",
 ):
+    """
+    Return the semantic directory
+    classification.
+    """
+
     return characterize_filesystem(
         root,
     )["directory_kind"]
@@ -856,6 +871,7 @@ def directory_kind(
 # Lever Definitions
 # =========================================================
 
+
 LEVERS = [
     # -----------------------------------------------------
     # Context identity
@@ -864,7 +880,7 @@ LEVERS = [
         name="workspace.directory_name",
         dtype=str,
         compute_fn=directory_name,
-        description="Current planning context directory name.",
+        description=("Current planning context directory name."),
     ),
     # -----------------------------------------------------
     # Case inventory
@@ -873,15 +889,13 @@ LEVERS = [
         name="workspace.case_count",
         dtype=int,
         compute_fn=case_count,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description="Count of OWL case files in the current planning context.",
+        description=("Count of OWL case files in the current planning context."),
     ),
     dict(
         name="workspace.valid_case_count",
         dtype=int,
         compute_fn=valid_case_count,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description="Count of loadable OWL case files in the current planning context.",
+        description=("Count of loadable OWL case files in the current planning context."),
     ),
     # -----------------------------------------------------
     # Workspace inventory
@@ -890,32 +904,19 @@ LEVERS = [
         name="workspace.initialized",
         dtype=bool,
         compute_fn=workspace_initialized,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description="Current directory is an initialized workspace.",
+        description=("Current directory is an initialized workspace."),
     ),
     dict(
         name="workspace.parent_count",
         dtype=int,
         compute_fn=workspace_parent_count,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description="Number of parent workspaces above current subdirectory.",
+        description=("Number of parent workspaces above current subdirectory."),
     ),
     dict(
         name="workspace.child_count",
         dtype=int,
         compute_fn=workspace_child_count,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description="Number of immediate child workspaces.",
-    ),
-    #
-    # Household Libraries
-    #
-    dict(
-        name="household.libraries",
-        dtype=list[HouseholdLibrarySpec],
-        compute_fn=household_libraries,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description=("Ordered household libraries visible to the current planning context."),
+        description=("Number of immediate child workspaces."),
     ),
     # -----------------------------------------------------
     # Workflow readiness
@@ -925,82 +926,60 @@ LEVERS = [
         dtype=bool,
         analytic_kind="derived",
         compute_fn=has_valid_case,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description="Planning context contains at least one valid OWL case.",
+        description=("Planning context contains at least one valid OWL case."),
     ),
     dict(
         name="can_initialize_workspace",
         dtype=bool,
         analytic_kind="derived",
         compute_fn=can_initialize_workspace,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description="Current directory satisfies the requirements for workspace initialization.",
+        description=("Current directory satisfies the requirements for workspace initialization."),
     ),
     dict(
         name="can_create_workspace",
         dtype=bool,
         analytic_kind="derived",
         compute_fn=can_create_workspace,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description="A new child workspace may be created beneath the current directory.",
+        description=("A new child workspace may be created beneath the current directory."),
     ),
     dict(
         name="workspace.directory_kind",
         dtype=str,
         compute_fn=directory_kind,
-        override_policy=OverridePolicy.RECOMPUTE,
-        description="Semantic classification of the current directory.",
+        description=("Semantic classification of the current directory."),
     ),
+    # -----------------------------------------------------
+    # Paths
+    # -----------------------------------------------------
     dict(
         name="paths.workspace",
         dtype=Path,
         compute_fn=context_workspace_path,
-        override_policy=OverridePolicy.RECOMPUTE,
         description=("Absolute path to the current planning context root."),
     ),
     dict(
         name="paths.cases",
         dtype=Path,
         compute_fn=context_cases_path,
-        override_policy=OverridePolicy.RECOMPUTE,
+        config_path=(
+            "context",
+            "paths",
+            "cases",
+        ),
         description=("Absolute path to the directory containing household case files."),
     ),
     dict(
         name="paths.results",
         dtype=Path,
         compute_fn=context_results_path,
-        override_policy=OverridePolicy.RECOMPUTE,
+        config_path=(
+            "context",
+            "paths",
+            "results",
+        ),
         description=("Absolute path to the directory used for generated planning results."),
     ),
 ]
-if 0:
-    (
-        dict(
-            name="identity.name",
-            dtype=str,
-            compute_fn=context_name,
-            override_policy=OverridePolicy.NEVER,
-            description=("Canonical name of the current planning context."),
-        ),
-    )
-    (
-        dict(
-            name="identity.title",
-            dtype=str,
-            compute_fn=context_title,
-            override_policy=OverridePolicy.RECOMPUTE,
-            description=("Human-readable title of the current planning context."),
-        ),
-    )
-    (
-        dict(
-            name="identity.description",
-            dtype=str,
-            compute_fn=context_description,
-            override_policy=OverridePolicy.RECOMPUTE,
-            description=("Descriptive summary of the current planning context."),
-        ),
-    )
 
 
 # =========================================================
@@ -1008,19 +987,45 @@ if 0:
 # =========================================================
 
 
-def make_compute_fn(fn):
+def make_compute_fn(
+    fn,
+    config_path=None,
+):
+    """
+    Adapt a context computation to the
+    WorkspaceSpec row interface.
+
+    Computations without a configuration
+    path receive only the planning context
+    root.
+
+    Configured computations receive the
+    effective value supplied by the nested
+    workspace.toml definition.
+    """
+
     def compute(
         row,
-        override=None,
     ):
         root = row["_path"]
 
-        if override is None:
-            return fn(root)
+        if config_path is None:
+            return fn(
+                root,
+            )
+
+        definition = _workspace_definition(
+            row,
+        )
+
+        value = _configuration_value(
+            definition,
+            config_path,
+        )
 
         return fn(
             root,
-            override,
+            value,
         )
 
     return compute
@@ -1030,7 +1035,8 @@ def register_levers(
     reg,
 ):
     """
-    Register planning context levers.
+    Register planning context semantic
+    observations.
     """
 
     for lever in LEVERS:
@@ -1046,12 +1052,13 @@ def register_levers(
 
         reg.register(
             WorkspaceSpec(
-                name=f"context.{lever['name']}",
+                name=(f"context.{lever['name']}"),
                 dtype=lever["dtype"],
-                compute_fn=make_compute_fn(lever["compute_fn"]),
-                override_policy=lever.get(
-                    "override_policy",
-                    OverridePolicy.NEVER,
+                compute_fn=make_compute_fn(
+                    lever["compute_fn"],
+                    lever.get(
+                        "config_path",
+                    ),
                 ),
                 description=lever["description"],
                 **ontology,

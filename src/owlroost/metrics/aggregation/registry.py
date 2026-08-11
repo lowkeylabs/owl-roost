@@ -56,8 +56,10 @@ AGG_DEFAULT_FMT: dict[
     "std": "float2",
     "min": "float2",
     "max": "float2",
+    "p05": "float2",
     "p10": "float2",
     "p90": "float2",
+    "p95": "float2",
     "p99": "float2",
     "constant": "str",
 }
@@ -204,6 +206,11 @@ register_aggregation(
 )
 
 register_aggregation(
+    "p05",
+    lambda v: float(np.percentile(v, 5)),
+)
+
+register_aggregation(
     "p10",
     lambda v: float(np.percentile(v, 10)),
 )
@@ -211,6 +218,11 @@ register_aggregation(
 register_aggregation(
     "p90",
     lambda v: float(np.percentile(v, 90)),
+)
+
+register_aggregation(
+    "p95",
+    lambda v: float(np.percentile(v, 95)),
 )
 
 register_aggregation(

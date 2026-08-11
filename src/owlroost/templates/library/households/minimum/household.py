@@ -1,4 +1,4 @@
-# src/owlroost/household/households/minimum/household.py
+# src/owlroost/templates/library/households/minimum/household.py
 #
 # Copyright (c) 2026 John Leonard
 # SPDX-License-Identifier: GPL-3.0-or-later

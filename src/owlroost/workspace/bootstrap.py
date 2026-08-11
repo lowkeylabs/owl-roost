@@ -5,18 +5,31 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Workspace semantic registry bootstrap.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Constructs the canonical WorkspaceRegistry
+used by ROOST.
+
+The registry contains stable semantic
+workspace observations contributed by
+workspace inventory and lever subsystems.
+
+Dynamic workspace configuration is not
+registered here. It is defined by the
+workspace.toml template and composed by
+workspace loaders.
 """
 
 from __future__ import annotations
 
-from owlroost.workspace.inventory import register_inventory
-from owlroost.workspace.levers import register_all_levers
+from owlroost.workspace.inventory import (
+    register_inventory,
+)
+from owlroost.workspace.levers import (
+    register_all_levers,
+)
 from owlroost.workspace.registry import (
     WorkspaceRegistry,
 )
@@ -24,15 +37,18 @@ from owlroost.workspace.registry import (
 
 def build_workspace_registry():
     """
-    Construct WorkspaceRegistry.
+    Construct the canonical
+    WorkspaceRegistry.
     """
 
-    reg = WorkspaceRegistry()
+    registry = WorkspaceRegistry()
 
     register_inventory(
-        reg,
+        registry,
     )
 
-    register_all_levers(reg)
+    register_all_levers(
+        registry,
+    )
 
-    return reg
+    return registry

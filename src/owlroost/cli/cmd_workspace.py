@@ -15,7 +15,6 @@ workspace-level operations.
 
 Architectural Invariant
 -----------------------
-
 Workspace CLI owns:
 
     * Argument parsing
@@ -29,11 +28,15 @@ Workspace subsystem owns:
     * Creation
     * Rename operations
     * Filesystem mutation
+
+Workspace configuration is loaded and
+composed by the workspace subsystem.
+
+The CLI does not load, merge, validate,
+or interpret workspace.toml directly.
 """
 
 from __future__ import annotations
-
-from pathlib import Path
 
 import click
 
@@ -66,15 +69,11 @@ from owlroost.display.operations.sorting import (
 from owlroost.display.operations.table_ops import (
     inject_id_column,
 )
-from owlroost.operations.resolve import build_resolver
-from owlroost.package.builder import (
-    build_evidence_package,
+from owlroost.operations.resolve import (
+    build_resolver,
 )
-from owlroost.package.publish import (
-    publish_evidence_package,
-)
-from owlroost.workspace.builders import (
-    build_workspace_planning_context,
+from owlroost.workspace.levers.context import (
+    workspace_initialized,
 )
 from owlroost.workspace.loaders import (
     load_workspace_row,
@@ -140,7 +139,7 @@ from owlroost.workspace.operations import (
 @click.option(
     "--init",
     is_flag=True,
-    help="Initialize current directory as a workspace.",
+    help=("Initialize current directory as a workspace."),
 )
 @click.option(
     "--sync-results-catalog",
@@ -162,8 +161,16 @@ from owlroost.workspace.operations import (
     is_flag=True,
     help="Publish the current evidence package.",
 )
-@click.option("--assist", flag_value="", help="Append guidance to display.")
-@click.option("--discover", is_flag=True, help="Append guidance to display.")
+@click.option(
+    "--assist",
+    flag_value="",
+    help="Append guidance to display.",
+)
+@click.option(
+    "--discover",
+    is_flag=True,
+    help="Append guidance to display.",
+)
 def cmd_workspace(
     ctx,
     selectors,
@@ -200,33 +207,19 @@ def cmd_workspace(
     )
 
     # =====================================================
-    # Catalog
+    # Immediate initialization
     # =====================================================
-
-    catalog = build_catalog_context()
-
-    # =====================================================
-    # Current planning context
-    # =====================================================
-
-    planning_row = materialize_planning_context(
-        load_workspace_row(root),
-        catalog,
-    )
-
-    resolve = build_resolver(
-        catalog,
-        planning_row,
-    )
-
-    # =====================================================
-    # Immediate operations
-    # =====================================================
+    #
+    # Initialization is a filesystem operation.
+    #
+    # It intentionally occurs before catalog construction
+    # and planning-context materialization.
+    #
 
     if init:
         if (
-            resolve(
-                "context.workspace_initialized",
+            workspace_initialized(
+                root,
             )
             and not force
         ):
@@ -243,23 +236,39 @@ def cmd_workspace(
 
         return
 
+    # =====================================================
+    # Catalog
+    # =====================================================
+
+    catalog = build_catalog_context()
+
+    # =====================================================
+    # Current planning context
+    # =====================================================
+
+    planning_row = materialize_planning_context(
+        load_workspace_row(
+            root,
+        ),
+        catalog,
+    )
+
+    resolve = build_resolver(
+        catalog,
+        planning_row,
+    )
+
+    # =====================================================
+    # Immediate workspace operations
+    # =====================================================
+
     if publish:
-        workspace_context = build_workspace_planning_context(
-            planning_row,
+        raise click.ClickException(
+            "Workspace publishing requires "
+            "materialized run rows and has "
+            "not yet been connected to the "
+            "canonical results-loading pipeline."
         )
-
-        package = build_evidence_package(
-            workspace_context,
-        )
-
-        destination = publish_evidence_package(
-            package,
-            Path(root) / "publish",
-        )
-
-        click.echo(f"Published evidence package to:\n{destination}")
-
-        return
 
     if sync_results_catalog_flag:
         sync_results_catalog(
@@ -293,7 +302,7 @@ def cmd_workspace(
     # =====================================================
 
     if resolve(
-        "context.workspace_initialized",
+        "context.workspace.initialized",
     ):
         rows = load_workspace_rows(
             root,
@@ -348,6 +357,7 @@ def cmd_workspace(
 
     if not rows:
         click.echo("No matching rows.")
+
         return
 
     # =====================================================
@@ -367,7 +377,12 @@ def cmd_workspace(
     # =====================================================
 
     if rename:
-        if len(selected_rows) != 1:
+        if (
+            len(
+                selected_rows,
+            )
+            != 1
+        ):
             raise click.ClickException("--rename requires exactly one workspace.")
 
         renamed = rename_workspace(
@@ -385,10 +400,10 @@ def cmd_workspace(
 
     table = materialize_view(
         rows=selected_rows,
-        registry=catalog.display_registry,
-        catalog_index=catalog.catalog_index,
+        registry=(catalog.display_registry),
+        catalog_index=(catalog.catalog_index),
         level=level,
-        mode="pivot" if pivot else "table",
+        mode=("pivot" if pivot else "table"),
         view_name=view,
         explain_facets=explain_facets,
     )
@@ -396,7 +411,6 @@ def cmd_workspace(
     if not pivot:
         table = inject_id_column(
             table,
-            # selected_rows,
         )
 
     output = render_table(

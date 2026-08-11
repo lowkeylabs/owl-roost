@@ -1,347 +1,107 @@
 # Workspace Subsystem
 
-The `workspace/` subsystem owns planning investigations within ROOST.
+The `workspace/` subsystem owns the **planning context** within ROOST.
 
-A workspace organizes one or more canonical households into a reproducible planning investigation.
+A planning context describes the environment in which retirement planning is being performed. It provides filesystem context, workspace configuration when available, semantic characterization, planning intent, and the information needed by other subsystems to construct reproducible analytical investigations.
 
-The workspace preserves planning intent, characterizes the planning situation, identifies applicable analytical methodologies, and assembles execution plans.
+A planning context always exists.
 
-The workspace explains **why** an analytical investigation exists.
+An initialized workspace is an optional persisted planning artifact represented by:
 
-It does not define canonical households, execute analytical investigations, or own execution artifacts.
+```text
+workspace.toml
+```
 
-This document complements the project `README.md` and `ARCHITECTURE.md` by describing the architectural responsibilities owned by the workspace subsystem.
+The workspace subsystem explains **where planning is occurring, how that environment is configured, and what the planning situation means**.
+
+It does not own canonical household projects, household discovery, analytical methodologies, execution, or presentation.
+
+This document complements the project `README.md` and `ARCHITECTURE.md` by describing the architectural responsibilities and invariants of the workspace subsystem.
 
 ---
 
 # Architectural Role
 
-Within the overall ROOST architecture, the workspace bridges canonical household definitions and analytical execution.
+Within the overall ROOST architecture, the workspace subsystem provides the semantic planning context connecting filesystem state, workspace configuration, households, studies, and analytical execution.
 
 Conceptually:
 
 ```text
-Canonical Household(s)
+Planning Directory
         │
         ▼
-Planning Investigation
+Planning Context
+        │
+        ├── Filesystem Inventory
+        │
+        ├── Workspace Configuration
+        │
+        └── Planning State
         │
         ▼
 Characterization
         │
         ▼
-Levers
+Semantic Observations
         │
         ▼
-Applicable Methodologies
-        │
-        ▼
-Execution Plan
-        │
-        ▼
-Execution Subsystem
+Households / Studies / Execution
 ```
 
-The workspace understands the current planning situation.
+The workspace subsystem characterizes the environment.
 
-It determines which investigations should be performed.
-
-It does not execute those investigations.
+Other subsystems consume that characterization.
 
 ---
 
-# Responsibilities
+# Planning Context
 
-The workspace owns four primary responsibilities.
+A **planning context** is the fundamental workspace-level abstraction.
 
-## Planning Investigation
+Every filesystem directory may be treated as a planning context regardless of whether it contains an initialized workspace.
 
-The workspace organizes one or more canonical households into a coherent planning investigation.
-
-A planning investigation combines:
-
-* Canonical household definitions
-* Realized planning state
-* Planning intent
-* Workspace configuration
-* Supporting documentation
-
-The workspace preserves the context explaining why the investigation exists.
-
-That context should remain understandable long after analytical execution has completed.
-
----
-
-## Characterization
-
-The workspace characterizes the current planning situation.
-
-Characterization begins with inventory.
-
-Inventory identifies the resources available within the planning investigation.
-
-Examples include:
-
-* Canonical households
-* Realized planning state
-* Household Financial Profiles
-* Previous execution artifacts
-* Reports
-* Supporting documentation
-
-Characterization computes semantic observations describing the planning situation.
-
-These observations are called **Levers**.
-
-Characterization is performed whenever the workspace subsystem observes a planning context.
-
-A persisted `workspace.toml` is not required.
-
-The same inventory, characterization, and lever-computation pipeline may be applied to:
-
-* an initialized workspace
-* a directory containing canonical households
-* a directory containing execution artifacts
-* an empty directory
-* a household library
-
-The persisted workspace stores planning intent and documentation.
-
-Inventory, characterization, and levers are computed observations rather than stored state.
-
----
-
-## Discovery
-
-The workspace determines which analytical methodologies are applicable.
-
-Rather than exposing every possible investigation, the workspace identifies those appropriate for the current planning situation.
-
-Examples include:
-
-* Spending investigations
-* Retirement timing
-* Social Security claiming
-* Roth conversions
-* Asset allocation studies
-
-Discovery depends upon computed lever values.
-
-The workspace determines applicability.
-
-The study subsystem defines the analytical methodologies themselves.
-
----
-
-## Execution Planning
-
-The workspace assembles execution plans.
-
-Execution plans combine:
-
-* One or more canonical households
-* Planning intent
-* Analytical methodologies
-* Experimental overrides
-
-into reproducible analytical investigations.
-
-The execution subsystem realizes and executes those plans.
-
-The workspace preserves the planning context from which those execution plans were derived.
-
----
-
-# Workspaces
-
-A workspace is the primary planning unit within ROOST.
-
-Workspaces are intended to be:
-
-* Portable
-* Reproducible
-* Self-documenting
-* Shareable
-* Rebuildable
-
-A workspace may be distributed as:
-
-* A directory
-* A Git repository
-* An educational example
-* A research artifact
-* A published study
-
-A workspace represents one planning investigation involving one or more canonical households.
-
-As households evolve over time, new workspaces naturally capture new planning investigations while preserving previous planning context.
-
----
-
-# Realized Planning State
-
-A workspace preserves the current realized planning state of every participating household.
-
-Rather than modifying canonical household definitions, the workspace records changes that have actually occurred since those households were originally defined.
-
-Conceptually:
+For example, ROOST may characterize:
 
 ```text
-Canonical Household
-        +
-Realized Changes
-        │
-        ▼
-Current Planning State
+an empty directory
+
+a directory containing planning artifacts
+
+an initialized workspace
+
+a directory containing child workspaces
+
+a directory containing execution results
+
+a mixed planning directory
 ```
 
-The resulting planning state becomes the basis for characterization, methodology selection, and execution planning.
+The planning context therefore exists independently of `workspace.toml`.
 
-Canonical households remain unchanged.
-
----
-
-# Characterization
-
-Characterization computes semantic observations describing the planning investigation.
-
-Characterization answers questions such as:
-
-* Which households participate?
-* What planning changes have been realized?
-* Which planning capabilities exist?
-* Which analytical methodologies are applicable?
-* Which previous investigations already exist?
-
-Characterization produces levers.
-
-Other architectural subsystems consume them.
-
----
-
-# Levers
-
-Levers are semantic observations describing the planning investigation.
-
-Levers are computed.
-
-They are never maintained manually.
-
-Levers are transient semantic observations.
-
-They are derived from the current planning context each time characterization is performed rather than persisted within a workspace.
-
-This allows identical analytical workflows to operate on both persistent workspaces and transient directory contexts.
-
-Levers may be:
-
-* Boolean
-* Categorical
-* Continuous
-
-Examples include:
-
-* Social Security eligibility
-* Retirement status
-* Tax-deferred assets available
-* Home ownership
-* Pension availability
-
-Levers describe the planning environment.
-
-They do not represent recommendations.
-
----
-
-# Applicable Methodologies
-
-Computed levers determine which analytical methodologies are appropriate.
-
-Conceptually:
+At its simplest, a planning context contains identity such as:
 
 ```text
-Planning Investigation
-        │
-        ▼
-Characterization
-        │
-        ▼
-Levers
-        │
-        ▼
-Applicable Methodologies
+filesystem root
+directory name
+filesystem inventory
+workspace status
 ```
 
-For example:
+Additional semantic observations are materialized from that context.
 
-* Social Security investigations require eligible participants.
-* Roth conversion investigations require tax-deferred assets.
-* Housing investigations require home ownership.
-
-The workspace determines applicability.
-
-The study subsystem defines the methodologies.
+This separation allows commands such as workspace discovery and initialization to operate before a workspace exists.
 
 ---
 
-# Realized and Experimental Changes
+# Initialized Workspaces
 
-The workspace distinguishes between two classes of change.
+An **initialized workspace** is a planning context containing:
 
-**Realized changes** describe events that have already occurred.
+```text
+workspace.toml
+```
 
-**Experimental changes** describe hypothetical future scenarios explored analytically.
-
-Both use the same override semantics.
-
-They differ only by provenance.
-
-This shared representation allows historical household evolution and future analytical exploration to use a consistent analytical model.
-
----
-
-# Inventory
-
-Workspace inventory describes the resources available within a planning investigation.
-
-Examples include:
-
-* Canonical households
-* Realized planning state
-* Household Financial Profiles
-* Workspace configuration
-* Previous execution artifacts
-* Documentation
-* Supporting files
-
-Inventory is descriptive rather than analytical.
-
-Characterization builds upon inventory.
-
----
-
-# Generated Artifacts
-
-A workspace may reference generated execution artifacts, reports, figures, dashboards, and documentation.
-
-These artifacts are owned by the execution and display subsystems.
-
-The workspace preserves the planning context required to regenerate them.
-
-Generated artifacts should remain reproducible rather than authoritative.
-
-The authoritative planning sources remain:
-
-* Canonical households
-* Realized planning state
-* Planning intent
-* Workspace configuration
-
----
-
-# Minimal Workspace
-
-The minimal workspace remains intentionally small.
+The minimal initialized workspace is intentionally small:
 
 ```text
 workspace/
@@ -349,192 +109,838 @@ workspace/
 └── Makefile
 ```
 
-Additional organization should emerge naturally as analytical requirements increase.
+Additional organization emerges as planning requirements increase.
 
-Simple planning investigations should remain simple.
+An initialized workspace adds persisted configuration and planning intent to the otherwise transient planning context.
+
+The presence of `workspace.toml` therefore means:
+
+> This planning context has an explicit persisted workspace definition.
+
+It does not create the planning context itself.
+
+---
+
+# Workspace Configuration
+
+Workspace configuration is represented by:
+
+```text
+workspace.toml
+```
+
+Configuration controls workspace-level policy such as:
+
+```text
+workspace documentation
+
+planning context paths
+
+household library search locations
+
+workspace-wide execution overrides
+```
+
+The effective workspace definition is composed by the workspace loader.
+
+Conceptually:
+
+```text
+Packaged workspace.toml
+        +
+Local workspace.toml
+        │
+        ▼
+Effective Workspace Definition
+```
+
+The packaged template defines both:
+
+```text
+recognized configuration structure
+
+default configuration values
+```
+
+The local `workspace.toml` selectively overrides those defaults.
+
+Local configuration does not need to repeat the complete template.
+
+---
+
+# Configuration Ownership
+
+The workspace subsystem owns:
+
+```text
+workspace configuration schema
+
+workspace configuration defaults
+
+loading local workspace configuration
+
+validation of configuration keys
+
+composition of defaults and overrides
+
+workspace-level search policy
+```
+
+Configuration defaults belong in the packaged `workspace.toml` template.
+
+They should not be duplicated as Python defaults in inventory definitions, semantic levers, or downstream subsystems.
+
+This establishes a single authoritative source for workspace configuration defaults.
+
+---
+
+# Nested Configuration
+
+Workspace configuration is hierarchical.
+
+For example:
+
+```toml
+[context.paths]
+
+cases = "."
+results = "./results"
+```
+
+and:
+
+```toml
+[[context.households]]
+name = "workspace"
+location = "./library/households"
+
+[[context.households]]
+name = "user"
+location = "~/.roost/library/households"
+
+[[context.households]]
+name = "builtin"
+location = "library/households"
+```
+
+Local configuration is recursively merged with the packaged template.
+
+A nested override replaces the corresponding configured value without removing unrelated sibling defaults.
+
+For example:
+
+```toml
+[context.paths]
+
+results = "./custom-results"
+```
+
+changes the results path while preserving the configured cases path.
+
+Unknown configuration keys are rejected from the effective definition and reported to the user.
+
+---
+
+# Household Library Search Policy
+
+The workspace configuration defines the **ordered household library search policy** visible to the planning context.
+
+The standard search order is:
+
+```text
+workspace
+    ./library/households
+
+user
+    ~/.roost/library/households
+
+builtin
+    templates/library/households
+```
+
+Conceptually:
+
+```text
+workspace.toml
+        │
+        ▼
+context.households
+        │
+        ▼
+Household Bootstrap
+        │
+        ▼
+HouseholdLibrarySpec
+        │
+        ▼
+Household Discovery
+```
+
+The distinction in ownership is important.
+
+The **workspace subsystem owns the configuration and search policy**.
+
+The **household subsystem owns interpretation of that configuration, filesystem discovery, household manifests, HouseholdSpec construction, and household registration**.
+
+The workspace subsystem should therefore not discover household projects or construct household registries.
+
+---
+
+# Filesystem Inventory
+
+The workspace subsystem inventories the current planning context.
+
+Inventory contains direct observations rather than interpretation.
+
+Examples include:
+
+```text
+root path
+
+directory name
+
+files
+
+directories
+
+case files
+
+Household Financial Profiles
+
+workspace.toml presence
+
+parent workspaces
+
+child workspaces
+```
+
+Inventory answers:
+
+> **What exists here?**
+
+It does not answer:
+
+> **What does it mean?**
+
+That distinction belongs to characterization.
+
+---
+
+# Characterization
+
+Characterization interprets filesystem inventory and other available planning information.
+
+Examples include:
+
+```text
+directory kind
+
+workspace initialization state
+
+workspace initialization readiness
+
+workspace creation readiness
+
+valid planning artifacts
+
+configured planning paths
+```
+
+Characterization answers questions such as:
+
+```text
+Is this an initialized workspace?
+
+Is this an empty planning context?
+
+Does this directory contain recognizable planning material?
+
+May this directory be initialized as a workspace?
+
+Are there parent or child workspaces?
+
+Where are cases and results located?
+```
+
+Characterization produces semantic observations that may be registered in the workspace registry and exposed through the catalog.
+
+---
+
+# Semantic Levers
+
+Workspace levers are computed semantic observations describing the planning context.
+
+They are computed rather than persisted.
+
+Examples include:
+
+```text
+context.workspace.directory_name
+
+context.workspace.initialized
+
+context.workspace.parent_count
+
+context.workspace.child_count
+
+context.workspace.directory_kind
+
+context.paths.workspace
+
+context.paths.cases
+
+context.paths.results
+```
+
+Levers characterize the environment.
+
+They do not represent recommendations.
+
+They should describe stable semantic concepts rather than mirror arbitrary configuration structure.
+
+---
+
+# Configuration Is Not Inventory
+
+Workspace configuration and workspace inventory are related but distinct.
+
+For example:
+
+```toml
+[context.paths]
+
+results = "./results"
+```
+
+is configuration.
+
+The corresponding resolved semantic observation:
+
+```text
+context.paths.results
+```
+
+is derived state.
+
+Likewise:
+
+```toml
+[[context.households]]
+name = "workspace"
+location = "./library/households"
+```
+
+is configuration.
+
+The `HouseholdLibrarySpec` constructed from that configuration belongs to the household subsystem.
+
+This distinction prevents configuration representation from leaking unnecessarily into semantic registries.
+
+---
+
+# Workspace Inventory
+
+The workspace also materializes semantic observations describing the workspace itself.
+
+These observations may include:
+
+```text
+workspace.name
+
+workspace.overrides
+```
+
+Workspace inventory consumes the already composed effective workspace definition.
+
+It does not define configuration defaults and does not perform configuration merging.
+
+The flow is:
+
+```text
+Packaged Configuration
+        +
+Local Configuration
+        │
+        ▼
+Workspace Loader
+        │
+        ▼
+Effective Definition
+        │
+        ▼
+Workspace Materialization
+        │
+        ▼
+Semantic Workspace Observations
+```
+
+---
+
+# Workspace Identity
+
+Human-readable workspace documentation belongs in `workspace.toml`.
+
+Examples include:
+
+```toml
+title = "2026 Retirement Planning"
+
+description = """
+Planning investigation for the
+2026 planning cycle.
+"""
+```
+
+Semantic workspace identity may additionally be computed from the planning context.
+
+Filesystem identity and human-readable documentation should remain distinguishable.
+
+A directory name is an observable filesystem fact.
+
+A title is persisted workspace documentation.
+
+They need not be identical.
+
+---
+
+# Workspace Overrides
+
+Workspace configuration may contribute overrides that apply to analytical execution originating from that workspace.
+
+For example:
+
+```toml
+[workspace]
+
+overrides = [
+]
+```
+
+Workspace overrides represent persisted planning intent.
+
+They are distinct from:
+
+```text
+study overrides
+
+experiment overrides
+
+run-specific overrides
+```
+
+Those sources may eventually be combined when execution plans are realized.
+
+The workspace subsystem owns the workspace contribution.
+
+It does not own realization of the final execution configuration.
+
+---
+
+# Realized and Experimental Changes
+
+ROOST distinguishes between changes that describe the current planning state and changes introduced for analytical experimentation.
+
+**Realized changes** describe events that have already occurred.
+
+**Experimental changes** describe hypothetical analytical alternatives.
+
+Where practical, both should use compatible override semantics.
+
+They differ primarily by provenance and purpose.
+
+Conceptually:
+
+```text
+Canonical Household
+        +
+Realized Planning State
+        │
+        ▼
+Current Planning State
+        │
+        +
+Experimental Overrides
+        │
+        ▼
+Analytical Run
+```
+
+Canonical household definitions remain unchanged.
+
+---
+
+# Discovery
+
+The planning context provides semantic information that may be used to determine which analytical methodologies are applicable.
+
+Conceptually:
+
+```text
+Planning Context
+        │
+        ▼
+Characterization
+        │
+        ▼
+Semantic Observations
+        │
+        ▼
+Applicable Methodologies
+```
+
+The workspace subsystem provides characterization.
+
+The study subsystem defines analytical methodologies.
+
+The execution subsystem realizes analytical runs.
+
+These responsibilities should remain separate.
+
+---
+
+# Generated Artifacts
+
+A workspace may contain or reference generated artifacts such as:
+
+```text
+results
+
+reports
+
+figures
+
+tables
+
+published evidence packages
+```
+
+These artifacts are not authoritative workspace configuration.
+
+They are generated consequences of analytical execution and presentation.
+
+The workspace preserves enough planning context and configuration to make those artifacts reproducible whenever practical.
 
 ---
 
 # Public Workflow
 
-The workspace provides a consistent public interface for planning investigations.
-
-Typical operations include:
+The workspace subsystem supports a workflow conceptually resembling:
 
 ```text
-inventory
+observe planning context
 
-characterize
+        ↓
 
-discover
+load workspace configuration
+if initialized
 
-assemble execution plans
+        ↓
 
-document planning intent
+compose effective definition
+
+        ↓
+
+inventory filesystem
+
+        ↓
+
+characterize planning context
+
+        ↓
+
+materialize semantic observations
+
+        ↓
+
+provide context to downstream subsystems
 ```
 
-The execution subsystem realizes and executes those plans.
-
-The display subsystem communicates the resulting evidence.
+Downstream subsystems then perform household discovery, study selection, execution, display, and publishing as appropriate.
 
 ---
 
 # Relationship to Other Subsystems
 
-The workspace cooperates closely with other architectural subsystems.
+## Household
 
-### Household
+The household subsystem owns canonical Household Projects.
 
-The household subsystem owns canonical household definitions.
+It owns:
 
-The workspace organizes one or more canonical households into a planning investigation.
+```text
+HouseholdLibrarySpec
+
+HouseholdSpec
+
+household manifest parsing
+
+household filesystem discovery
+
+household registry construction
+
+household lookup
+```
+
+The workspace owns the configured household library **search policy**.
+
+The household subsystem interprets and realizes that policy.
 
 ---
 
-### Study
+## Study
 
 The study subsystem defines reusable analytical methodologies.
 
-The workspace determines which methodologies are applicable.
+Workspace characterization may provide semantic information used to determine which methodologies are applicable.
+
+The workspace does not define study methodologies.
 
 ---
 
-### Execution
+## Execution
 
-The workspace assembles execution plans.
+Workspace configuration and planning intent contribute to execution planning.
 
-The execution subsystem realizes and executes those plans while preserving execution artifacts.
+The execution subsystem realizes and executes analytical runs.
 
----
-
-### Catalog
-
-The catalog provides semantic identity and explainability.
-
-The workspace computes observations consumed by the catalog.
+Execution artifacts do not become authoritative workspace state merely because they reside beneath a workspace.
 
 ---
 
-### Display
+## Catalog
 
-The display subsystem communicates planning investigations and execution artifacts.
+The catalog provides semantic identity, metadata, and explainability.
 
-The workspace does not own presentation.
+Workspace inventory and semantic levers register stable observations with the catalog.
+
+Raw dynamic configuration should not be duplicated indiscriminately as catalog observations.
 
 ---
 
-### Metrics
+## Display
 
-Metrics describe analytical evidence generated through execution.
+The display subsystem presents planning contexts, workspaces, households, studies, runs, and analytical evidence.
 
-The workspace owns planning context rather than analytical evidence.
+The workspace subsystem does not own presentation.
+
+---
+
+## Package
+
+The package subsystem assembles and publishes evidence derived from analytical execution.
+
+Workspace configuration and context may contribute provenance to an evidence package.
+
+The workspace does not own package rendering or publication.
 
 ---
 
 # Architectural Invariants
 
-The following concepts should remain stable.
+The following invariants should remain stable.
 
-## The workspace owns planning investigations.
+## A planning context always exists.
 
-Canonical households belong to the household subsystem.
+A directory may be characterized without being an initialized workspace.
 
-Execution plans belong to the execution subsystem.
-
-The workspace preserves the planning context connecting them.
+`workspace.toml` adds persisted workspace configuration; it does not create the underlying planning context.
 
 ---
 
-## Characterization precedes analysis.
+## Workspace configuration has one source of defaults.
 
-The planning situation should be understood before analytical methodologies are selected.
+The packaged `workspace.toml` template defines canonical configuration defaults.
+
+Python modules should not independently reproduce those defaults.
+
+---
+
+## Local workspace configuration selectively overrides canonical configuration.
+
+The effective workspace definition is:
+
+```text
+canonical defaults
++
+local overrides
+```
+
+Nested configuration is recursively composed.
+
+Unknown configuration keys are not silently incorporated.
+
+---
+
+## Configuration and semantic observations are distinct.
+
+`workspace.toml` describes configuration.
+
+Workspace inventory and levers describe semantic observations derived from the effective planning context.
+
+Configuration structure should not automatically become registry structure.
+
+---
+
+## The workspace owns household search policy, not household discovery.
+
+`context.households` defines the ordered Household Libraries visible to the workspace.
+
+The household subsystem resolves those libraries, discovers Household Projects, parses manifests, constructs HouseholdSpec objects, and populates the HouseholdRegistry.
+
+---
+
+## Household libraries are searched in configured order.
+
+The normal search order is:
+
+```text
+workspace
+
+user
+
+builtin
+```
+
+Ordering is meaningful and should be preserved.
+
+---
+
+## Built-in resources are read-only.
+
+Built-in Household Libraries are distributed with ROOST and should not be modified through household operations.
+
+Workspace and user libraries may be writable according to their semantics.
 
 ---
 
 ## Characterization is independent of persistence.
 
-Inventory, characterization, and lever computation are services provided by the workspace subsystem.
+Filesystem inventory and characterization operate on planning contexts whether or not `workspace.toml` exists.
 
-They may be applied to either transient directory contexts or persisted workspaces.
-
-Persisted workspaces record planning intent rather than computed observations.
+Operations requiring workspace configuration must explicitly require an initialized workspace.
 
 ---
 
-## Levers characterize planning investigations.
+## Levers are computed.
 
-Levers describe the planning context.
+Semantic observations are materialized from the current planning context.
 
-They determine applicability.
-
-They do not represent recommendations.
+They are not manually maintained as duplicated persistent state.
 
 ---
 
-## Discovery follows characterization.
+## Loaders compose configuration.
 
-Applicable analytical methodologies are determined from computed levers rather than direct inspection of household definitions.
+Workspace loaders own:
+
+```text
+loading canonical defaults
+
+loading local configuration
+
+validating configuration
+
+recursive composition
+
+construction of the effective definition
+```
+
+Materializers consume that definition.
+
+They do not repeat configuration composition.
 
 ---
 
-## Realized and experimental changes share a common representation.
+## Materializers produce semantic state.
 
-Historical household evolution and future analytical exploration should use the same override semantics whenever practical.
+Materializers transform loaded planning context into stable semantic observations.
 
-They differ only by provenance.
+They should not perform filesystem mutation or redefine configuration policy.
 
 ---
 
-## Execution plans preserve planning intent.
+## Bootstrap assembles registries.
 
-The workspace assembles execution plans.
+Bootstrap modules construct subsystem registries from the appropriate effective context.
 
-The execution subsystem realizes and executes them.
+For example, household bootstrap consumes configured Household Libraries and assembles the HouseholdRegistry.
 
-Planning intent remains independent of execution artifacts.
+Registry construction should not be hidden inside workspace configuration loading.
+
+---
+
+## Filesystem mutation belongs to operations.
+
+Creation, initialization, rename, synchronization, and other filesystem mutations belong to workspace operations.
+
+Loaders and materializers remain observational.
 
 ---
 
 ## Planning investigations are reproducible.
 
-Execution artifacts should be regenerable from canonical households, planning intent, realized planning state, and workspace configuration whenever practical.
+Analytical artifacts should be regenerable from authoritative planning inputs whenever practical.
 
----
+Those inputs include:
 
-## The workspace owns planning context.
+```text
+canonical households
 
-Canonical households belong elsewhere.
+realized planning state
 
-Analytical methodologies belong elsewhere.
+workspace configuration
 
-Execution belongs elsewhere.
+planning intent
 
-Presentation belongs elsewhere.
+study definitions
 
-Analytical evidence belongs elsewhere.
+experimental configuration
+```
 
-The workspace owns the organization, characterization, and documentation of planning investigations.
+Generated artifacts are evidence of execution rather than authoritative planning definitions.
 
 ---
 
 # Long-Term Direction
 
-The workspace is evolving toward the semantic entry point for retirement planning within ROOST.
+The workspace subsystem is evolving toward the semantic entry point for retirement planning within ROOST.
 
-Future capabilities are expected to include:
+Future capabilities may include:
 
-* Richer characterization
-* Additional semantic levers
-* Automatic methodology discovery
-* Adaptive planning workflows
-* Household readiness assessment
-* Multi-household investigations
-* Longitudinal planning support
-* Workspace diagnostics
-* Improved planning reproducibility
+```text
+richer planning-context characterization
 
-Regardless of implementation, the workspace should continue to answer one architectural question:
+additional semantic levers
 
-> **How should one or more canonical households be organized into a reproducible planning investigation, and which analytical investigations should be performed?**
+methodology applicability
 
-Every subsequent stage of the ROOST workflow builds upon that planning investigation.
+workspace diagnostics
+
+planning readiness assessment
+
+multi-household investigations
+
+longitudinal planning support
+
+stronger provenance
+
+improved reproducibility
+```
+
+Regardless of implementation details, the workspace subsystem should continue to answer:
+
+> **What is the current planning context, how is it configured, and what semantic information does it provide to the rest of ROOST?**
+
+The household subsystem can then answer:
+
+> **Which canonical households are available in that context?**
+
+The study subsystem can answer:
+
+> **Which analytical methodologies are available and applicable?**
+
+The execution subsystem can answer:
+
+> **How are those methodologies realized and executed?**
+
+Keeping those questions separate preserves the architectural boundaries on which ROOST depends.

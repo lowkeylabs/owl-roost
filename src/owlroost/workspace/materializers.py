@@ -5,12 +5,43 @@
 # See LICENSE file in repository root.
 
 """
-TODO: Document module.
+Workspace semantic materializers.
 
 Notes
 -----
-Describe responsibilities, ownership,
-and architectural role.
+Materializes semantic workspace and
+planning-context observations from their
+registered WorkspaceSpec definitions.
+
+Workspace configuration is loaded and
+composed by workspace.loaders.
+
+Configuration-aware compute functions
+explicitly consume effective configuration
+from:
+
+    row["_workspace"]["definition"]
+
+Materializers therefore know nothing about
+configuration defaults or configuration
+override policy.
+
+Responsibilities
+----------------
+* Materialize context observations
+* Materialize workspace observations
+* Build context and workspace trees
+* Materialize studies
+* Build study trees
+* Orchestrate complete planning-context
+  materialization
+
+Does NOT
+--------
+* Load workspace configuration
+* Define configuration defaults
+* Apply configuration overrides
+* Perform filesystem mutation
 """
 
 from __future__ import annotations
@@ -19,13 +50,18 @@ import re
 from collections.abc import Callable
 from pathlib import Path
 
-from owlroost.activity.materializers import materialize_activity, materialize_activity_trees
-from owlroost.study import studies as study_package
-from owlroost.workspace.specs import OverridePolicy
+from owlroost.activity.materializers import (
+    materialize_activity,
+    materialize_activity_trees,
+)
+from owlroost.study import (
+    studies as study_package,
+)
 
 # =========================================================
-# Generic, nested lookup
+# Generic Nested Lookup
 # =========================================================
+
 
 _MISSING = object()
 
@@ -73,7 +109,7 @@ def resolve_nested_value(
 
 
 # =========================================================
-# row lookups
+# Row Lookups
 # =========================================================
 
 
@@ -81,15 +117,17 @@ def row_lookup(
     field_name: str,
 ) -> Callable:
     """
-    Resolve a materialized row value.
+    Return a function that resolves a
+    materialized row value.
 
     Examples
     --------
-
     context.has_results
+
         -> row["_context"]["has_results"]
 
     workspace.identity.name
+
         -> row["_workspace"]["identity"]["name"]
     """
 
@@ -97,7 +135,9 @@ def row_lookup(
 
     root_name = f"_{namespace}"
 
-    def compute_fn(row):
+    def compute_fn(
+        row,
+    ):
         return resolve_nested_value(
             row.get(
                 root_name,
@@ -156,7 +196,6 @@ def _set_row_value(
 
     Examples
     --------
-
     context.has_results
 
         -> row["_context"]["has_results"]
@@ -182,57 +221,9 @@ def _set_row_value(
     current[parts[-1]] = value
 
 
-def apply_configuration_override(
-    row,
-    field,
-    value,
-):
-    """
-    Apply persisted workspace
-    configuration to a computed
-    semantic observation.
-    """
-
-    if field.override_policy is OverridePolicy.NEVER:
-        return value
-
-    workspace = row.get(
-        "_workspace",
-    )
-
-    if workspace is None:
-        return value
-
-    definition = workspace.get(
-        "definition",
-        {},
-    )
-
-    override = resolve_nested_value(
-        definition,
-        field.name.split("."),
-    )
-
-    if override is _MISSING:
-        return value
-
-    #
-    # Replace the computed semantic value.
-    #
-    if field.override_policy is OverridePolicy.REPLACE:
-        return override
-
-    #
-    # Recompute the semantic value from
-    # the configured override.
-    #
-    if field.override_policy is OverridePolicy.RECOMPUTE:
-        return field.compute_fn(
-            row,
-            override,
-        )
-
-    return value
+# =========================================================
+# Context Materialization
+# =========================================================
 
 
 def materialize_context(
@@ -240,14 +231,20 @@ def materialize_context(
     workspace_registry,
 ):
     """
-    Materialize planning-context observations.
+    Materialize planning-context
+    observations.
 
     Writes values into:
 
         row["_context"]
 
-    Only variables within the
+    Only observations within the
     'context.' namespace participate.
+
+    WorkspaceSpec compute functions own
+    all semantic computation, including
+    interpretation of effective workspace
+    configuration where required.
     """
 
     level = row.get(
@@ -269,12 +266,6 @@ def materialize_context(
         ):
             continue
 
-        #
-        # Only materialize primary fields.
-        #
-        #        if field.analytic_kind != "primary":
-        #            continue
-
         try:
             value = field.compute_fn(
                 row,
@@ -282,12 +273,6 @@ def materialize_context(
 
         except Exception:
             continue
-
-        value = apply_configuration_override(
-            row,
-            field,
-            value,
-        )
 
         _set_row_value(
             row,
@@ -303,8 +288,8 @@ def materialize_context_tree(
     workspace_registry,
 ):
     """
-    Materialize planning-context observations
-    as a presentation tree.
+    Materialize planning-context
+    observations as a presentation tree.
 
     Writes into:
 
@@ -347,7 +332,7 @@ def materialize_context_tree(
         )
 
         #
-        # Variable was not materialized.
+        # Observation was not materialized.
         #
         if value is None:
             continue
@@ -358,7 +343,9 @@ def materialize_context_tree(
 
         for part in path[:-1]:
             key = (
-                id(parent),
+                id(
+                    parent,
+                ),
                 part,
             )
 
@@ -406,6 +393,11 @@ def materialize_context_tree(
     return row
 
 
+# =========================================================
+# Workspace Materialization
+# =========================================================
+
+
 def materialize_workspace(
     row,
     workspace_registry,
@@ -417,12 +409,17 @@ def materialize_workspace(
 
         row["_workspace"]
 
-    Only variables within the
+    Only observations within the
     'workspace.' namespace participate.
 
     If the planning context does not
     contain an initialized workspace,
-    no materialization occurs.
+    no workspace materialization occurs.
+
+    WorkspaceSpec compute functions own
+    all semantic computation, including
+    interpretation of effective workspace
+    configuration where required.
     """
 
     level = row.get(
@@ -457,12 +454,6 @@ def materialize_workspace(
 
         except Exception:
             continue
-
-        value = apply_configuration_override(
-            row,
-            field,
-            value,
-        )
 
         _set_row_value(
             row,
@@ -525,7 +516,7 @@ def materialize_workspace_tree(
         )
 
         #
-        # Variable was not materialized.
+        # Observation was not materialized.
         #
         if value is None:
             continue
@@ -536,7 +527,9 @@ def materialize_workspace_tree(
 
         for part in path[:-1]:
             key = (
-                id(parent),
+                id(
+                    parent,
+                ),
                 part,
             )
 
@@ -637,7 +630,11 @@ def _discover_documents(
             documents.setdefault(
                 path.name,
                 {
-                    "order": int(match.group(1)),
+                    "order": int(
+                        match.group(
+                            1,
+                        )
+                    ),
                     "filename": path.name,
                     "stem": path.stem,
                     "path": path,
@@ -646,9 +643,9 @@ def _discover_documents(
 
     return sorted(
         documents.values(),
-        key=lambda d: (
-            d["order"],
-            d["filename"],
+        key=lambda document: (
+            document["order"],
+            document["filename"],
         ),
     )
 
@@ -693,22 +690,20 @@ def materialize_study(
 
     study["studies"] = {}
 
-    #
-    # Shared documents
-    #
-
-    # -----------------------------------------------------
+    # =====================================================
     # Studies
-    # -----------------------------------------------------
+    # =====================================================
 
     for study_spec in study_registry.all_studies():
         study_data = {
             "name": study_spec.name,
             "title": study_spec.title,
-            "description": study_spec.description,
-            "documents": _discover_documents(
-                study_package.RESOURCE_DIR,
-                study_spec.resource_dir,
+            "description": (study_spec.description),
+            "documents": (
+                _discover_documents(
+                    study_package.RESOURCE_DIR,
+                    study_spec.resource_dir,
+                )
             ),
             "run_row_views": list(
                 study_spec.run_row_views,
@@ -732,7 +727,7 @@ def materialize_study(
             experiment_data = {
                 "name": experiment.name,
                 "title": experiment.title,
-                "description": experiment.description,
+                "description": (experiment.description),
                 "applicable": applicable,
                 "required_levers": {},
             }
@@ -755,10 +750,9 @@ def materialize_study_tree(
     study_registry,
 ):
     """
-    Materialize study information.
-
-    Produces a generic hierarchical tree
-    suitable for tree expansion.
+    Materialize study information as a
+    generic hierarchical presentation
+    tree.
 
     Writes into:
 
@@ -790,9 +784,9 @@ def materialize_study_tree(
 
     study["studies"] = root
 
-    # -----------------------------------------------------
+    # =====================================================
     # Studies
-    # -----------------------------------------------------
+    # =====================================================
 
     for study_spec in study_registry.all_studies():
         study_section = {
@@ -860,9 +854,11 @@ def materialize_study_tree(
                                 "label": label,
                                 "field": lever_name,
                                 "meta": {
-                                    "applicable": row_value(
-                                        row,
-                                        lever_name,
+                                    "applicable": (
+                                        row_value(
+                                            row,
+                                            lever_name,
+                                        )
                                     ),
                                 },
                                 "children": [],
@@ -898,16 +894,24 @@ def materialize_planning_context(
     catalog,
 ):
     """
-    Materialize a complete planning context.
+    Materialize a complete planning
+    context.
 
     This computes every semantic namespace
     currently owned by ROOST.
 
     The input row is always a planning
-    context. If the planning context
-    contains an initialized workspace,
-    workspace observations are also
-    materialized.
+    context.
+
+    If the planning context contains an
+    initialized workspace, workspace
+    observations are also materialized.
+
+    Workspace configuration has already
+    been loaded and composed before this
+    function is called. Materialization
+    therefore operates exclusively on the
+    effective semantic row.
 
     Parameters
     ----------
@@ -919,9 +923,9 @@ def materialize_planning_context(
         build_catalog_context().
     """
 
-    #
+    # =====================================================
     # Context
-    #
+    # =====================================================
 
     row = materialize_context(
         row,
@@ -933,9 +937,9 @@ def materialize_planning_context(
         catalog.workspace_registry,
     )
 
-    #
+    # =====================================================
     # Workspace
-    #
+    # =====================================================
 
     row = materialize_workspace(
         row,
@@ -947,9 +951,9 @@ def materialize_planning_context(
         catalog.workspace_registry,
     )
 
-    #
+    # =====================================================
     # Study
-    #
+    # =====================================================
 
     row = materialize_study(
         row,
@@ -961,9 +965,9 @@ def materialize_planning_context(
         catalog.study_registry,
     )
 
-    #
-    # Guide
-    #
+    # =====================================================
+    # Activity
+    # =====================================================
 
     row = materialize_activity(
         row,
