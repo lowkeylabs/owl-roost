@@ -19,9 +19,6 @@ minTaxableBalance: null
 fixedSpending: null
 spendingSlack: null
 noLateSurplus: null
-amoConstraints: null
-amoRoth: null
-amoSurplus: null
 bigMamo: null
 bigMaca: null
 bigMss: null
@@ -36,7 +33,6 @@ withNIIT: null
 withSSTaxability: null
 withDecomposition: null
 withSSAges: null
-withSCLoop: null
 withDuals: null
 withdrawalOrder: null
 previousMAGIs: null

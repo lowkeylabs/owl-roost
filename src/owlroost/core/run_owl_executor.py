@@ -17,7 +17,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import multiprocessing
 import os
+import sys
 import time
 import tomllib
 from concurrent.futures import (
@@ -46,6 +48,7 @@ from owlroost.metrics.builders import (
 )
 
 __all__ = [
+    "run_owl_file",
     "run_trial_from_toml",
     "index_runs",
     "resolve_run_selection",
@@ -91,6 +94,117 @@ def validate_execution_plan(run_dirs):
                 "  - mosek Python package installed\n"
                 "  - MOSEKLM_LICENSE_FILE configured\n"
             )
+
+
+def _run_owl_file_worker(
+    toml_file: Path,
+):
+    """
+    Execute one OWL TOML file inside
+    a worker process.
+    """
+
+    toml_file = Path(
+        toml_file,
+    ).resolve()
+
+    toml_dict = toml.load(
+        toml_file,
+    )
+
+    toml_str = toml.dumps(
+        toml_dict,
+    )
+
+    buf = StringIO(
+        toml_str,
+    )
+
+    old_dir = Path.cwd()
+
+    try:
+        os.chdir(
+            toml_file.parent,
+        )
+
+        plan = owl.readConfig(
+            buf,
+            logstreams=[
+                sys.stdout,
+                sys.stderr,
+            ],
+            loadHFP=True,
+        )
+
+        plan.solve(
+            plan.objective,
+            plan.solverOptions,
+        )
+
+    finally:
+        os.chdir(
+            old_dir,
+        )
+
+
+def run_owl_file(
+    toml_file: Path,
+):
+    """
+    Execute one OWL TOML configuration
+    directly.
+
+    OWL executes in a child process so
+    Ctrl-C can terminate execution even
+    when the solver is blocked in native
+    code.
+    """
+
+    toml_file = Path(
+        toml_file,
+    ).resolve()
+
+    if not toml_file.is_file():
+        raise RuntimeError(f"TOML file not found: {toml_file}")
+
+    process = multiprocessing.Process(
+        target=_run_owl_file_worker,
+        args=(toml_file,),
+    )
+
+    process.start()
+
+    try:
+        while process.is_alive():
+            process.join(
+                timeout=0.25,
+            )
+
+    except KeyboardInterrupt:
+        click.echo(
+            "\nInterrupting OWL...",
+            err=True,
+        )
+
+        process.terminate()
+
+        process.join(
+            timeout=5,
+        )
+
+        if process.is_alive():
+            click.echo(
+                "OWL did not terminate; killing process.",
+                err=True,
+            )
+
+            process.kill()
+            process.join()
+
+        raise
+
+    if process.exitcode != 0:
+        raise RuntimeError(f"OWL execution failed with exit code {process.exitcode}.")
 
 
 # =========================================================

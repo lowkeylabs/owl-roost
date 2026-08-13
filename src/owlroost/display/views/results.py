@@ -58,6 +58,8 @@ def register_display_views(
                 "roost_settings.study_name",
                 "roost_settings.experiment_name",
                 "roost_settings.orphan_overrides",
+                # "roost_settings.experiment_overrides",
+                # "roost_settings.workspace_overrides",
                 ("display.optimization_goal", {"modes": ["pivot"]}),
                 ("display.compact_rates", {"modes": ["pivot"]}),
                 ("display.completion_fraction", {"modes": ["pivot"]}),
@@ -77,10 +79,12 @@ def register_display_views(
                 # Identity
                 # =====================================
                 "display.compact_id",
+                "case_name",
                 "display.compact_rates",
                 "rates_selection.method",
                 "rates_selection.from",
                 "rates_selection.to",
+                "display.completion_fraction",
             ],
             description=(""),
             **SHARED_VIEW_ONTOLOGY,

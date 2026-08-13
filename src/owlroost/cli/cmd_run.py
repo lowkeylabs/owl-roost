@@ -29,7 +29,10 @@ from owlroost.cli.utils import (
     render_table,
     resolve_renderer,
 )
-from owlroost.core.run_owl_executor import execute_runs
+from owlroost.core.run_owl_executor import (
+    execute_runs,
+    run_owl_file,
+)
 from owlroost.display.loaders import load_run_rows
 from owlroost.display.materializers.materialize import materialize_view
 from owlroost.display.operations.filtering import apply_filters
@@ -102,6 +105,16 @@ from owlroost.display.operations.sorting import apply_canonical_sort, apply_sort
     default=False,
     help="Display matching runs but do not execute.",
 )
+@click.option(
+    "--file",
+    "toml_file",
+    type=click.Path(
+        exists=True,
+        dir_okay=False,
+        path_type=Path,
+    ),
+    help="Run one OWL TOML file directly.",
+)
 def cmd_run(
     selectors,
     root,
@@ -115,6 +128,7 @@ def cmd_run(
     progress,
     rerun,
     list_only,
+    toml_file,
 ):
     """
     Display and execute runs.
@@ -131,6 +145,26 @@ def cmd_run(
     - single-trial runs are bundled
     - multi-trial runs execute independently
     """
+
+    # =====================================================
+    # Direct OWL File Execution
+    # =====================================================
+
+    if toml_file is not None:
+        if selectors:
+            raise click.UsageError("Selectors cannot be used with --file.")
+
+        if rerun:
+            raise click.UsageError("--rerun cannot be used with --file.")
+
+        if list_only:
+            raise click.UsageError("--list-only cannot be used with --file.")
+
+        run_owl_file(
+            toml_file,
+        )
+
+        return
 
     root = Path(root).resolve()
 
