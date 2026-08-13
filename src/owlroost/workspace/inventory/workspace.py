@@ -143,20 +143,22 @@ def compute_workspace_overrides(
     """
     Compute the workspace overrides.
 
+    Workspace overrides are stored in the
+    effective workspace definition as
+    key=value strings.
+
     Returns
     -------
     list[str]
-        Workspace overrides represented
-        as key=value strings.
+        Workspace overrides in configured
+        order.
     """
 
     definition = _workspace_definition(
         row,
     )
 
-    overrides = definition["workspace"]["overrides"]
-
-    return [f"{entry['key']}={entry['value']}" for entry in overrides]
+    return list(definition["workspace"]["overrides"])
 
 
 # =========================================================

@@ -1,5 +1,8 @@
 # tests/operations/test_resolve.py
 
+from __future__ import annotations
+
+from pathlib import Path
 from types import SimpleNamespace
 
 from owlroost.activity.materializers import (
@@ -40,6 +43,11 @@ class DummyDisplayRegistry:
 
 
 def make_fake_catalog():
+    """
+    Construct the minimum catalog required
+    by the resolver unit tests.
+    """
+
     return SimpleNamespace(
         catalog_index={
             "context.workspace.case_count": {},
@@ -51,6 +59,11 @@ def make_fake_catalog():
 
 
 def make_fake_row():
+    """
+    Construct the minimum materialized row
+    required by the resolver unit tests.
+    """
+
     return {
         "_context": {
             "case_count": 5,
@@ -62,10 +75,68 @@ def make_fake_row():
         },
         "_activity": {
             "workspace": {
-                "initialize": "roost workspace --init",
+                "initialize": ("roost workspace --init"),
             },
         },
     }
+
+
+# =========================================================
+# Integration-test workspace
+# =========================================================
+
+
+def make_test_workspace(
+    root: Path,
+) -> Path:
+    """
+    Construct an isolated initialized
+    workspace for integration testing.
+
+    Notes
+    -----
+    The Workspace subsystem composes the
+    packaged workspace.toml defaults with
+    the local workspace.toml.
+
+    The local file therefore contains only
+    configuration intentionally owned by
+    this test.
+
+    The test must not depend on:
+
+        * the pytest working directory
+        * the repository root
+        * a developer workspace.toml
+        * user ~/.roost configuration
+    """
+
+    workspace = root / "workspace"
+
+    workspace.mkdir()
+
+    (workspace / "workspace.toml").write_text(
+        """
+title = "Resolver Test Workspace"
+
+description = '''
+Isolated workspace used by resolver
+integration tests.
+'''
+
+[context.paths]
+
+cases = "."
+results = "./results"
+
+[workspace]
+
+overrides = []
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    return workspace
 
 
 # =========================================================
@@ -73,42 +144,78 @@ def make_fake_row():
 # =========================================================
 
 
-def make_context():
+def make_context(
+    workspace_root: Path,
+):
     """
     Build a fully materialized planning
-    context.
+    context for an isolated workspace.
+
+    Materialization follows the normal
+    Workspace pipeline:
+
+        load
+          ->
+        context
+          ->
+        workspace
+          ->
+        study
+          ->
+        activity
     """
 
     catalog = build_catalog_context()
 
-    row = load_workspace_row(".")
+    row = load_workspace_row(
+        workspace_root,
+    )
+
+    # -----------------------------------------------------
+    # Context
+    # -----------------------------------------------------
 
     row = materialize_context(
         row,
         catalog.workspace_registry,
     )
+
     row = materialize_context_tree(
         row,
         catalog.workspace_registry,
     )
 
+    # -----------------------------------------------------
+    # Workspace
+    # -----------------------------------------------------
+
     row = materialize_workspace(
         row,
         catalog.workspace_registry,
     )
+
     row = materialize_workspace_tree(
         row,
         catalog.workspace_registry,
     )
 
+    # -----------------------------------------------------
+    # Study
+    # -----------------------------------------------------
+
     row = materialize_study(
         row,
         catalog.study_registry,
     )
+
     row = materialize_study_tree(
         row,
         catalog.study_registry,
     )
+
+    # -----------------------------------------------------
+    # Activity
+    # -----------------------------------------------------
 
     row = materialize_activity(
         row,
@@ -193,11 +300,14 @@ def test_resolve_field_value_requires_row():
             None,
             "context.case_count",
         )
+
     except AttributeError:
         #
-        # Resolver expects a materialized row.
+        # Resolver expects a materialized
+        # row.
         #
         pass
+
     else:
         raise AssertionError("resolve_field_value() should require a row")
 
@@ -207,14 +317,30 @@ def test_resolve_field_value_requires_row():
 # =========================================================
 
 
-def test_resolution_integration():
+def test_resolution_integration(
+    tmp_path: Path,
+):
     """
     Ensure semantic field resolution works
     against a fully materialized planning
     context.
+
+    The test constructs its own workspace
+    and therefore does not depend upon the
+    directory from which pytest is run.
     """
 
-    catalog, row = make_context()
+    workspace_root = make_test_workspace(
+        tmp_path,
+    )
+
+    catalog, row = make_context(
+        workspace_root,
+    )
+
+    # -----------------------------------------------------
+    # Context resolution
+    # -----------------------------------------------------
 
     assert isinstance(
         resolve_field_value(
@@ -223,6 +349,10 @@ def test_resolution_integration():
         ),
         int,
     )
+
+    # -----------------------------------------------------
+    # Activity resolution
+    # -----------------------------------------------------
 
     assert (
         resolve_field_value(

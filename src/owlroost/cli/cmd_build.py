@@ -64,53 +64,192 @@ DEFAULT_VIEW = "build"
 # ---------------------------------------------------------
 
 
+def _override_key(
+    override: str,
+) -> str:
+    """
+    Return the configuration key
+    targeted by an override.
+
+    Parameters
+    ----------
+    override
+        Hydra override represented as
+        key=value.
+
+    Returns
+    -------
+    str
+        Canonical override key.
+
+    Raises
+    ------
+    ValueError
+        Override does not contain an
+        assignment.
+    """
+
+    key, separator, _ = override.partition(
+        "=",
+    )
+
+    if not separator:
+        raise ValueError(f"Invalid override; expected 'key=value': {override!r}")
+
+    #
+    # Hydra permits +key=value and
+    # ++key=value forms.  For precedence
+    # purposes these target the same
+    # configuration key.
+    #
+
+    return key.lstrip(
+        "+",
+    )
+
+
+def merge_overrides(
+    *layers: list[str] | None,
+    warn_on_replace: bool = False,
+) -> list[str]:
+    """
+    Merge ordered override layers.
+
+    Later layers have higher precedence
+    than earlier layers.
+
+    Each configuration key appears at
+    most once in the resulting override
+    list.
+
+    Parameters
+    ----------
+    *layers
+        Override layers supplied in
+        increasing precedence order.
+
+    warn_on_replace
+        Emit a warning when a later
+        override replaces an earlier
+        override for the same key.
+
+    Returns
+    -------
+    list[str]
+        Effective override list.
+    """
+
+    import warnings
+
+    merged: dict[
+        str,
+        str,
+    ] = {}
+
+    for layer in layers:
+        if not layer:
+            continue
+
+        for override in layer:
+            key = _override_key(
+                override,
+            )
+
+            previous = merged.get(
+                key,
+            )
+
+            if warn_on_replace and previous is not None and previous != override:
+                warnings.warn(
+                    (f"Override replaced by higher-precedence value: {previous!r} -> {override!r}"),
+                    UserWarning,
+                    stacklevel=2,
+                )
+
+            merged[key] = override
+
+    return list(
+        merged.values(),
+    )
+
+
 def build_hydra_command(
     case_path: Path,
-    overrides: list[str],
     *,
+    experiment_overrides: list[str] | None = None,
+    workspace_overrides: list[str] | None = None,
+    orphan_overrides: list[str] | None = None,
     study_name: str | None = None,
     experiment_name: str | None = None,
-    orphan_overrides: list[str] | None = None,
-    workspace_overrides: list[str] | None = None,
+    warn_on_override: bool = False,
 ):
     """
     Construct Hydra multirun command.
+
+    Override precedence is:
+
+        experiment
+        workspace
+        orphan / command line
+
+    Later layers replace earlier layers
+    targeting the same configuration key.
+
+    This is the sole location where
+    override layers are merged.
     """
 
-    package_root = Path(__file__).parents[1]
+    package_root = Path(
+        __file__,
+    ).parents[1]
 
     conf_dir = package_root / "conf"
 
-    overrides = expand_cli_overrides(overrides)
+    experiment_overrides = list(
+        experiment_overrides or [],
+    )
 
-    if workspace_overrides is None:
-        workspace_overrides = []
+    workspace_overrides = list(
+        workspace_overrides or [],
+    )
+
+    orphan_overrides = list(
+        orphan_overrides or [],
+    )
+
+    effective_overrides = merge_overrides(
+        experiment_overrides,
+        workspace_overrides,
+        orphan_overrides,
+        warn_on_replace=warn_on_override,
+    )
+
+    effective_overrides = expand_cli_overrides(
+        effective_overrides,
+    )
 
     cmd = [
         sys.executable,
         "-m",
         "owlroost.executive.generate_trials",
         "--multirun",
-        (f"--config-path={str(conf_dir.resolve())}"),
+        (f"--config-path={conf_dir.resolve()}"),
         "--config-name=config",
-        (f"case.file={str(case_path.resolve())}"),
+        (f"case.file={case_path.resolve()}"),
         (f"case.name={case_path.stem}"),
-        *overrides,
-        *workspace_overrides,
+        *effective_overrides,
     ]
 
     if study_name is not None:
         cmd.append(f"roost_settings.study_name={study_name}")
+
     if experiment_name is not None:
         cmd.append(f"roost_settings.experiment_name={experiment_name}")
-    if workspace_overrides is not None:
-        # print(workspace_overrides)
-        cmd.append(f"roost_settings.workspace_overrides='{','.join(workspace_overrides)}'")
-    if orphan_overrides is not None:
-        # print(orphan_overrides)
-        cmd.append(f"roost_settings.orphan_overrides='{','.join(orphan_overrides)}'")
 
-    # print(cmd)
+    cmd.append(f"roost_settings.workspace_overrides='{','.join(workspace_overrides)}'")
+
+    cmd.append(f"roost_settings.orphan_overrides='{','.join(orphan_overrides)}'")
+
     return cmd
 
 
@@ -149,17 +288,33 @@ def discover_latest_session(
 
 def run_direct_case_build(
     case_paths,
-    overrides,
     *,
+    experiment_overrides=None,
+    workspace_overrides=None,
+    orphan_overrides=None,
+    study_name=None,
+    experiment_name=None,
     progress,
     run,
 ):
+    """
+    Build explicitly selected case
+    files.
+
+    Override layers remain separate
+    until build_hydra_command().
+    """
+
     generated_runs = []
 
     for case_path in case_paths:
         runs = run_hydra_build(
             case_path,
-            list(overrides),
+            experiment_overrides=experiment_overrides,
+            workspace_overrides=workspace_overrides,
+            orphan_overrides=orphan_overrides,
+            study_name=study_name,
+            experiment_name=experiment_name,
         )
 
         generated_runs.extend(
@@ -216,31 +371,34 @@ def resolve_direct_case_paths(
 # ---------------------------------------------------------
 def run_hydra_build(
     case_path: Path,
-    overrides: list[str],
     *,
+    experiment_overrides: list[str] | None = None,
+    workspace_overrides: list[str] | None = None,
+    orphan_overrides: list[str] | None = None,
     study_name: str | None = None,
     experiment_name: str | None = None,
-    orphan_overrides: list[str] | None = None,
-    workspace_overrides: list[str] | None = None,
 ):
     """
-    Execute Hydra generator in multirun mode.
+    Execute Hydra generator in
+    multirun mode.
 
-    Returns:
-        list[Path] of generated run directories
+    Override layers remain separate
+    until build_hydra_command().
+
+    Returns
+    -------
+    list[Path]
+        Generated run directories.
     """
+
     cmd = build_hydra_command(
         case_path,
-        overrides,
+        experiment_overrides=experiment_overrides,
+        workspace_overrides=workspace_overrides,
+        orphan_overrides=orphan_overrides,
         study_name=study_name,
         experiment_name=experiment_name,
-        orphan_overrides=orphan_overrides,
-        workspace_overrides=workspace_overrides,
     )
-
-    #    click.echo("Running Hydra:")
-    #    logger.debug(f"Hydra CLI: {(" ".join(cmd))}")
-    #    click.echo()
 
     try:
         subprocess.run(
@@ -256,9 +414,13 @@ def run_hydra_build(
         if exp_dir is None:
             raise click.ClickException("Unable to locate generated session.")
 
-        runs = find_runs(exp_dir)
+        runs = find_runs(
+            exp_dir,
+        )
+
         if not runs:
             raise click.ClickException(f"No runs discovered in {exp_dir}")
+
         return runs
 
     except subprocess.CalledProcessError as exc:
@@ -464,20 +626,49 @@ def cmd_build(
             )
         )
 
-    # This code is used by the tests only.
-    # See bottom of file for CLI processing.
+    # =====================================================
+    # Direct case builds
+    # =====================================================
+    #
+    # Explicit case paths bypass case discovery and display
+    # processing, but they remain builds within the current
+    # workspace context.
+    #
+    # Override layers remain separate here.  Precedence is
+    # established exclusively by build_hydra_command():
+    #
+    #     experiment
+    #         <
+    #     workspace
+    #         <
+    #     orphan / command line
+    #
+    # Do not merge override layers in this branch.
+    #
 
     if direct_case_paths:
+        workspace_row = load_workspace_row(
+            ".",
+        )
+        planning_context = materialize_planning_context(
+            workspace_row,
+            catalog,
+        )
+        resolve = build_resolver(
+            catalog,
+            planning_context,
+        )
+        workspace_overrides = resolve("workspace.overrides")
+
         if experiments:
             for experiment in experiments:
-                experiment_overrides = [
-                    *overrides,
-                    *experiment.hydra_overrides(),
-                ]
-
                 run_direct_case_build(
                     direct_case_paths,
-                    experiment_overrides,
+                    experiment_overrides=list(experiment.hydra_overrides()),
+                    workspace_overrides=(workspace_overrides),
+                    orphan_overrides=overrides,
+                    study_name=None,
+                    experiment_name=(experiment.name),
                     progress=progress,
                     run=run,
                 )
@@ -485,7 +676,11 @@ def cmd_build(
         else:
             run_direct_case_build(
                 direct_case_paths,
-                overrides,
+                experiment_overrides=[],
+                workspace_overrides=(workspace_overrides),
+                orphan_overrides=overrides,
+                study_name=None,
+                experiment_name=None,
                 progress=progress,
                 run=run,
             )
@@ -742,64 +937,46 @@ def cmd_build(
     for row in selected_rows:
         case_path = Path(row["_path"]).resolve()
 
-        if 0:
-            print(f"Path: {case_path}")
-            print(f"Overrides: {overrides}")
-            print(f"Experiments: {experiments}")
-
-        experiment_overrides = overrides
+        workspace_overrides = resolve("workspace.overrides")
 
         if studies:
             for study in studies:
                 for experiment_name in study.experiment_names:
-                    print(f"{study.name} -> {experiment_name}")
+                    click.echo(f"{study.name} -> {experiment_name}")
 
                     experiment = catalog.study_registry.get_experiment(experiment_name)
 
-                    experiment_overrides = [
-                        *overrides,
-                        *experiment.hydra_overrides(),
-                    ]
-
                     runs = run_hydra_build(
                         case_path,
-                        list(experiment_overrides),
+                        experiment_overrides=(experiment.hydra_overrides()),
+                        workspace_overrides=workspace_overrides,
+                        orphan_overrides=overrides,
                         study_name=study.name,
                         experiment_name=experiment.name,
-                        orphan_overrides=overrides,
-                        workspace_overrides=resolve("workspace.overrides"),
                     )
-
                     generated_runs.extend(runs)
 
         elif experiments:
             for experiment in experiments:
-                experiment_overrides = [
-                    *overrides,
-                    *experiment.hydra_overrides(),
-                ]
-
                 runs = run_hydra_build(
                     case_path,
-                    list(experiment_overrides),
+                    experiment_overrides=(experiment.hydra_overrides()),
+                    workspace_overrides=workspace_overrides,
+                    orphan_overrides=overrides,
                     study_name=None,
                     experiment_name=experiment.name,
-                    orphan_overrides=overrides,
-                    workspace_overrides=resolve("workspace.overrides"),
                 )
-
                 generated_runs.extend(runs)
 
         else:
             runs = run_hydra_build(
                 case_path,
-                list(experiment_overrides),
+                experiment_overrides=[],
+                workspace_overrides=workspace_overrides,
+                orphan_overrides=overrides,
                 study_name=None,
                 experiment_name=None,
-                orphan_overrides=overrides,
-                workspace_overrides=resolve("workspace.overrides"),
             )
-
             generated_runs.extend(runs)
 
     # ----------------------------------------

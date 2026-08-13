@@ -7,15 +7,34 @@ from owlroost.schema.sweeps.ss_age_person1 import (
     materialize_override_to_canonical as materialize_person1,
 )
 
+# =========================================================
+# End-to-End Sweep Materialization
+# =========================================================
+
 
 def test_materialize_ss_age_pair(
     build_session,
     load_run_plan,
-    load_trial_toml,
 ):
     """
     Verify ss_age_pair materialization
-    survives the entire BUILD pipeline.
+    survives the complete workspace-based
+    BUILD pipeline.
+
+    The command-line sweep override must
+    survive:
+
+        command line
+            ->
+        build_hydra_command
+            ->
+        Hydra
+            ->
+        canonical materialization
+            ->
+        run.toml
+            ->
+        OWL Plan
     """
 
     session = build_session(
@@ -24,10 +43,6 @@ def test_materialize_ss_age_pair(
         "roost_settings.trials_per_run=10",
         "rates_selection.method=historical_bootstrap",
     )
-
-    # -------------------------------------------------
-    # Verify materialized run through OWL
-    # -------------------------------------------------
 
     plan = load_run_plan(
         session,
@@ -43,12 +58,16 @@ def test_materialize_ss_age_pair(
 def test_materialize_regime(
     build_session,
     load_run_plan,
-    load_trial_toml,
 ):
     """
-    Verify regime sweep materialization
-    survives the entire BUILD pipeline.
+    Verify named-window materialization
+    survives the complete workspace-based
+    BUILD pipeline.
     """
+
+    from owlroost.schema.sweeps.named_window import (
+        MARKET_REGIMES,
+    )
 
     regime = "stagflation"
 
@@ -56,14 +75,6 @@ def test_materialize_regime(
         "case_alex+jamie.toml",
         "rates_selection.method=bootstrap_sor",
         f"roost_sweeps.named_window={regime}",
-    )
-
-    # -------------------------------------------------
-    # Verify materialized run through OWL
-    # -------------------------------------------------
-
-    from owlroost.schema.sweeps.named_window import (
-        MARKET_REGIMES,
     )
 
     plan = load_run_plan(
@@ -79,11 +90,11 @@ def test_materialize_regime(
 def test_materialize_rates_from_to(
     build_session,
     load_run_plan,
-    load_trial_toml,
 ):
     """
     Verify rates_from_to materialization
-    survives the entire BUILD pipeline.
+    survives the complete workspace-based
+    BUILD pipeline.
     """
 
     session = build_session(
@@ -91,10 +102,6 @@ def test_materialize_rates_from_to(
         "rates_selection.method=bootstrap_sor",
         "roost_sweeps.rates_from_to=1928-2020",
     )
-
-    # -------------------------------------------------
-    # Verify materialized run through OWL
-    # -------------------------------------------------
 
     plan = load_run_plan(
         session,
@@ -108,21 +115,17 @@ def test_materialize_rates_from_to(
 def test_materialize_optimization_goal(
     build_session,
     load_run_plan,
-    load_trial_toml,
 ):
     """
-    Verify optimization_goal materialization
-    survives the entire BUILD pipeline.
+    Verify optimization_goal
+    materialization survives the complete
+    workspace-based BUILD pipeline.
     """
 
     session = build_session(
         "case_alex+jamie.toml",
         "roost_sweeps.optimization_goal=maxBeq-100",
     )
-
-    # -------------------------------------------------
-    # Verify materialized run through OWL
-    # -------------------------------------------------
 
     plan = load_run_plan(
         session,
@@ -135,7 +138,7 @@ def test_materialize_optimization_goal(
 
 
 # =========================================================
-# Social Security Age Sweeps
+# Social Security Age Materializers
 # =========================================================
 
 
@@ -168,8 +171,8 @@ def test_ss_age_person0_single_person():
 
 def test_ss_age_person1_two_person():
     """
-    Person1 sweep should populate the second
-    SS age slot.
+    Person1 sweep should populate the
+    second SS age slot.
     """
 
     run_dict = {

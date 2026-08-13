@@ -271,8 +271,12 @@ def materialize_context(
                 row,
             )
 
-        except Exception:
-            continue
+        except Exception as exc:
+            raise RuntimeError(
+                "Failed to materialize "
+                f"workspace field {field.name!r} "
+                f"using {field.compute_fn.__name__}."
+            ) from exc
 
         _set_row_value(
             row,
@@ -452,8 +456,12 @@ def materialize_workspace(
                 row,
             )
 
-        except Exception:
-            continue
+        except Exception as exc:
+            raise RuntimeError(
+                "Failed to materialize "
+                f"workspace field {field.name!r} "
+                f"using {field.compute_fn.__name__}."
+            ) from exc
 
         _set_row_value(
             row,
